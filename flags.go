@@ -9,6 +9,27 @@ type Flag struct {
 	help  string
 }
 
+func NewFlag(name string) *Flag {
+	return &Flag{
+		name: name,
+	}
+}
+
+func (f *Flag) Short(val string) *Flag {
+	f.short = val
+	return f
+}
+
+func (f *Flag) Long(val string) *Flag {
+	f.long = val
+	return f
+}
+
+func (f *Flag) Help(val string) *Flag {
+	f.help = val
+	return f
+}
+
 func new_flag(val string, help string) Flag {
 	values := strings.Split(val, " ")
 
