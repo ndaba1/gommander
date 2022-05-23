@@ -12,6 +12,29 @@ type Argument struct {
 	is_required bool
 }
 
+func NewArgument(name string) *Argument {
+	return &Argument{
+		name:        name,
+		is_required: false,
+	}
+}
+
+func (a *Argument) Help(val string) *Argument {
+	a.help = val
+	return a
+}
+
+func (a *Argument) Variadic(val bool) *Argument {
+	a.variadic = val
+	return a
+}
+
+func (a *Argument) Required(val bool) *Argument {
+	a.is_required = val
+	// TODO: Depending on whether required or not, infer the correct raw value
+	return a
+}
+
 func new_argument(val string, help string) *Argument {
 	var delimiters []string
 	var required bool
