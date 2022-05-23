@@ -11,6 +11,42 @@ type Option struct {
 	required bool
 }
 
+func NewOption(name string) *Option {
+	return &Option{
+		name: name,
+	}
+}
+
+func (o *Option) Short(val string) *Option {
+	o.short = val
+	return o
+}
+
+func (o *Option) Long(val string) *Option {
+	o.long = val
+	return o
+}
+
+func (o *Option) Help(val string) *Option {
+	o.help = val
+	return o
+}
+
+func (o *Option) Required(val bool) *Option {
+	o.required = val
+	return o
+}
+
+func (o *Option) Argument(val string) *Option {
+	o.args = append(o.args, new_argument(val, ""))
+	return o
+}
+
+func (o *Option) AddArgument(arg *Argument) *Option {
+	o.args = append(o.args, arg)
+	return o
+}
+
 func new_option(val string, help string, required bool) Option {
 	values := strings.Split(val, " ")
 
