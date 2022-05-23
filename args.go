@@ -12,7 +12,7 @@ type Argument struct {
 	is_required bool
 }
 
-func NewArgument(val string, help string) *Argument {
+func new_argument(val string, help string) *Argument {
 	var delimiters []string
 	var required bool
 	var variadic bool
