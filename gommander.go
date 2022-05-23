@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+type Callback = func(ParserMatches)
+
 type App struct {
 	name         string
 	alias        string
@@ -19,6 +21,7 @@ type App struct {
 	theme        Theme
 	discussion   string
 	is_root      bool
+	callback     Callback
 }
 
 func Program() *App {
@@ -80,6 +83,11 @@ func (app *App) Help(help string) *App {
 
 func (app *App) Version(version string) *App {
 	app.version = version
+	return app
+}
+
+func (app *App) Action(cb Callback) *App {
+	app.callback = cb
 	return app
 }
 
