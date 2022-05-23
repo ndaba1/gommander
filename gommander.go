@@ -1,6 +1,7 @@
 package gommander
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -14,6 +15,9 @@ type App struct {
 	parent       *App
 	help         string
 	version      string
+	settings     Settings
+	theme        Theme
+	discussion   string
 }
 
 func Command(name string) *App {
@@ -27,56 +31,59 @@ func Command(name string) *App {
 		parent:       nil,
 		help:         "",
 		version:      "",
+		settings:     Settings{},
+		theme:        Theme{},
+		discussion:   "",
 	}
 }
 
 // Value getters
-func (app *App) Name() string { return app.name }
+func (app *App) GetName() string { return app.name }
 
-func (app *App) Alias() string { return app.alias }
+func (app *App) GetAlias() string { return app.alias }
 
-func (app *App) Arguments() []*Argument { return app.arguments }
+func (app *App) GetArguments() []*Argument { return app.arguments }
 
-func (app *App) Flags() []*Flag { return app.flags }
+func (app *App) GetFlags() []*Flag { return app.flags }
 
-func (app *App) Options() []*Option { return app.options }
+func (app *App) GetOptions() []*Option { return app.options }
 
-func (app *App) SubCommands() []*App { return app.sub_commands }
+func (app *App) GetSubCommands() []*App { return app.sub_commands }
 
-func (app *App) Parent() *App { return app.parent }
+func (app *App) GetParent() *App { return app.parent }
 
-func (app *App) Help() string { return app.help }
+func (app *App) GetHelp() string { return app.help }
 
-func (app *App) Version() string { return app.version }
+func (app *App) GetVersion() string { return app.version }
 
 // Value setters
-func (app *App) SetName(name string) *App {
+func (app *App) Name(name string) *App {
 	app.name = name
 	return app
 }
 
-func (app *App) SetAlias(alias string) *App {
+func (app *App) Alias(alias string) *App {
 	app.alias = alias
 	return app
 }
 
-func (app *App) SetHelp(help string) *App {
+func (app *App) Help(help string) *App {
 	app.help = help
 	return app
 }
 
-func (app *App) SetVersion(version string) *App {
+func (app *App) Version(version string) *App {
 	app.version = version
 	return app
 }
 
-func (app *App) AddArgument(val string, help string) *App {
+func (app *App) Argument(val string, help string) *App {
 	argument := NewArgument(val, help)
 	app.arguments = append(app.arguments, argument)
 	return app
 }
 
-func (app *App) AddFlag(val string) *App {
+func (app *App) Flag(val string) *App {
 	values := strings.Split(val, ",")
 	flag := Flag{
 		short: values[0],
@@ -88,7 +95,7 @@ func (app *App) AddFlag(val string) *App {
 	return app
 }
 
-func (app *App) AddOption(val string) *App {
+func (app *App) Option(val string) *App {
 	values := strings.Split(val, ",")
 
 	var arg_slice []*Argument
@@ -111,12 +118,19 @@ func (app *App) AddOption(val string) *App {
 	return app
 }
 
-func (app *App) AddSubCommand(sub_command *App) *App {
+func (app *App) Subcommand(sub_command *App) *App {
 	app.sub_commands = append(app.sub_commands, sub_command)
 	return app
 }
 
-func (app *App) SetParent(parent *App) { app.parent = parent }
+func (app *App) Parent(parent *App) { app.parent = parent }
+
+func (app *App) PrintHelp() {
+	fmt.Printf(app.help)
+
+	fmt.Printf("\n USAGE: \n")
+	fmt.Printf("\t .exe [OPTIONS] [COMMAND]")
+}
 
 type Flag struct {
 	name  string
