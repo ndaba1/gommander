@@ -118,71 +118,18 @@ func (app *App) Option(val string) *App {
 	return app
 }
 
-func (app *App) Subcommand(sub_command *App) *App {
-	app.sub_commands = append(app.sub_commands, sub_command)
-	return app
+func (app *App) Subcommand(name string) *App {
+	return Command(name).set_parent(app)
 }
 
-func (app *App) Parent(parent *App) { app.parent = parent }
+func (app *App) set_parent(parent *App) *App {
+	app.parent = parent
+	return app
+}
 
 func (app *App) PrintHelp() {
 	fmt.Printf(app.help)
 
 	fmt.Printf("\n USAGE: \n")
 	fmt.Printf("\t .exe [OPTIONS] [COMMAND]")
-}
-
-type Flag struct {
-	name  string
-	long  string
-	short string
-	help  string
-}
-
-type Argument struct {
-	name        string
-	help        string
-	raw         string
-	variadic    bool
-	is_required bool
-}
-
-func NewArgument(val string, help string) *Argument {
-	var delimiters []string
-	var required bool
-	var variadic bool
-
-	// FIXME: Find more robust way for checking
-	if strings.ContainsAny(val, "<") {
-		delimiters = []string{"<", ">"}
-		required = true
-	} else if strings.ContainsAny(val, "[") {
-		delimiters = []string{"[", "]"}
-		required = false
-	}
-
-	name := strings.Replace(val, delimiters[0], "", -1)
-	name = strings.Replace(name, delimiters[1], "", -1)
-	name = strings.Replace(name, "-", "_", -1)
-
-	if strings.HasSuffix(val, "...") {
-		variadic = true
-		name = strings.Replace(name, "...", "", -1)
-	}
-
-	return &Argument{
-		name:        name,
-		help:        help,
-		raw:         val,
-		variadic:    variadic,
-		is_required: required,
-	}
-}
-
-type Option struct {
-	name  string
-	help  string
-	short string
-	long  string
-	args  []*Argument
 }
