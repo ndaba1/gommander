@@ -18,6 +18,11 @@ type App struct {
 	settings     Settings
 	theme        Theme
 	discussion   string
+	is_root      bool
+}
+
+func Program() *App {
+	return Command("").set_is_root(true)
 }
 
 func Command(name string) *App {
@@ -34,6 +39,7 @@ func Command(name string) *App {
 		settings:     Settings{},
 		theme:        Theme{},
 		discussion:   "",
+		is_root:      false,
 	}
 }
 
@@ -122,8 +128,14 @@ func (app *App) Subcommand(name string) *App {
 	return Command(name).set_parent(app)
 }
 
+// Interior utility functions
 func (app *App) set_parent(parent *App) *App {
 	app.parent = parent
+	return app
+}
+
+func (app *App) set_is_root(val bool) *App {
+	app.is_root = val
 	return app
 }
 
