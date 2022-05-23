@@ -2,7 +2,6 @@ package gommander
 
 import (
 	"fmt"
-	"strings"
 )
 
 type Callback = func(ParserMatches)
@@ -92,42 +91,19 @@ func (app *App) Action(cb Callback) *App {
 }
 
 func (app *App) Argument(val string, help string) *App {
-	argument := NewArgument(val, help)
+	argument := new_argument(val, help)
 	app.arguments = append(app.arguments, argument)
 	return app
 }
 
-func (app *App) Flag(val string) *App {
-	values := strings.Split(val, ",")
-	flag := Flag{
-		short: values[0],
-		long:  values[1],
-		help:  values[2],
-		name:  strings.Replace(values[1], "-", "", -1),
-	}
+func (app *App) Flag(val string, help string) *App {
+	flag := new_flag(val, help)
 	app.flags = append(app.flags, &flag)
 	return app
 }
 
-func (app *App) Option(val string) *App {
-	values := strings.Split(val, ",")
-
-	var arg_slice []*Argument
-	for idx, a := range values {
-		if idx > 1 && idx < (len(values)-1) {
-			arg := NewArgument(a, "")
-			arg_slice = append(arg_slice, arg)
-		}
-	}
-
-	option := Option{
-		short: values[0],
-		long:  values[1],
-		help:  values[2],
-		name:  strings.Replace(values[1], "-", "", -1),
-		args:  arg_slice,
-	}
-
+func (app *App) Option(val string, help string) *App {
+	option := new_option(val, help, false)
 	app.options = append(app.options, &option)
 	return app
 }
