@@ -1,6 +1,8 @@
 package gommander
 
-import "strings"
+import (
+	"strings"
+)
 
 type Flag struct {
 	name  string
@@ -10,18 +12,21 @@ type Flag struct {
 }
 
 func NewFlag(name string) *Flag {
+	// TODO(vndaba): append `--` more efficiently
+	temp := []string{"--"}
+	temp = append(temp, name)
+
 	return &Flag{
 		name: name,
+		long: strings.Join(temp, ""),
 	}
 }
 
-func (f *Flag) Short(val string) *Flag {
-	f.short = val
-	return f
-}
+func (f *Flag) Short(val rune) *Flag {
+	temp := []string{"-"}
+	temp = append(temp, string(val))
 
-func (f *Flag) Long(val string) *Flag {
-	f.long = val
+	f.short = strings.Join(temp, "")
 	return f
 }
 
