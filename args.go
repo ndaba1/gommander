@@ -5,17 +5,37 @@ import (
 )
 
 type Argument struct {
-	name        string
-	help        string
-	raw         string
-	variadic    bool
-	is_required bool
+	name         string
+	help         string
+	raw          string
+	variadic     bool
+	is_required  bool
+	valid_values []string
 }
 
 func NewArgument(name string) *Argument {
+	var required bool
+	var variadic bool
+
+	if strings.HasPrefix(name, "<") {
+		required = true
+		name = strings.ReplaceAll(name, "<", "")
+		name = strings.ReplaceAll(name, ">", "")
+	} else if strings.HasPrefix(name, "[") {
+		required = false
+		name = strings.ReplaceAll(name, "[", "")
+		name = strings.ReplaceAll(name, "]", "")
+	}
+
+	if strings.HasSuffix(name, "...") {
+		variadic = true
+		name = strings.ReplaceAll(name, "...", "")
+	}
+
 	return &Argument{
 		name:        name,
-		is_required: false,
+		is_required: required,
+		variadic:    variadic,
 	}
 }
 
@@ -35,27 +55,41 @@ func (a *Argument) Required(val bool) *Argument {
 	return a
 }
 
+func (a *Argument) ValidateWith(vals []string) *Argument {
+	a.valid_values = vals
+	return a
+}
+
+func (a *Argument) ValueIsValid(val string) bool {
+	for _, v := range a.valid_values {
+		if strings.EqualFold(v, val) {
+			return true
+		}
+	}
+
+	return false
+}
+
 func new_argument(val string, help string) *Argument {
 	var delimiters []string
 	var required bool
 	var variadic bool
 
-	// FIXME: Find more robust way for checking
-	if strings.ContainsAny(val, "<") {
+	if strings.HasPrefix(val, "<") {
 		delimiters = []string{"<", ">"}
 		required = true
-	} else if strings.ContainsAny(val, "[") {
+	} else if strings.HasPrefix(val, "[") {
 		delimiters = []string{"[", "]"}
 		required = false
 	}
 
-	name := strings.Replace(val, delimiters[0], "", -1)
-	name = strings.Replace(name, delimiters[1], "", -1)
-	name = strings.Replace(name, "-", "_", -1)
+	name := strings.ReplaceAll(val, delimiters[0], "")
+	name = strings.ReplaceAll(name, delimiters[1], "")
+	name = strings.ReplaceAll(name, "-", "_")
 
 	if strings.HasSuffix(val, "...") {
 		variadic = true
-		name = strings.Replace(name, "...", "", -1)
+		name = strings.ReplaceAll(name, "...", "")
 	}
 
 	return &Argument{
