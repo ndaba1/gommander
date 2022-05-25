@@ -33,7 +33,7 @@ func NewArgument(name string) *Argument {
 	}
 
 	return &Argument{
-		name:        name,
+		name:        strings.ReplaceAll(name, "-", "_"),
 		is_required: required,
 		variadic:    variadic,
 	}
