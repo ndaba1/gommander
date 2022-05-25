@@ -17,6 +17,14 @@ const (
 	UnresolvedArgument
 )
 
+var EVENTS_SLICE = []Event{
+	MissingRequiredArgument,
+	OptionMissingArgument,
+	OutputHelp, OutputVersion,
+	UnknownCommand, UnknownOption,
+	UnresolvedArgument,
+}
+
 type EventListener struct {
 	cb    EventCallback
 	index int
@@ -76,5 +84,17 @@ func (em *EventEmitter) emit(cfg EventConfig) {
 				lstnr.cb(&cfg)
 			}
 		}
+	}
+}
+
+func (em *EventEmitter) insert_before_all(cb EventCallback) {
+	for _, e := range EVENTS_SLICE {
+		em.on(e, cb, -5)
+	}
+}
+
+func (em *EventEmitter) insert_after_all(cb EventCallback) {
+	for _, e := range EVENTS_SLICE {
+		em.on(e, cb, 5)
 	}
 }
