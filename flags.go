@@ -1,6 +1,7 @@
 package gommander
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -12,21 +13,14 @@ type Flag struct {
 }
 
 func NewFlag(name string) *Flag {
-	// TODO(vndaba): append `--` more efficiently
-	temp := []string{"--"}
-	temp = append(temp, name)
-
 	return &Flag{
 		name: name,
-		long: strings.Join(temp, ""),
+		long: fmt.Sprintf("--%v", name),
 	}
 }
 
 func (f *Flag) Short(val rune) *Flag {
-	temp := []string{"-"}
-	temp = append(temp, string(val))
-
-	f.short = strings.Join(temp, "")
+	f.short = fmt.Sprintf("-%c", val)
 	return f
 }
 
@@ -38,8 +32,7 @@ func (f *Flag) Help(val string) *Flag {
 func new_flag(val string, help string) Flag {
 	values := strings.Split(val, " ")
 
-	short := ""
-	long := ""
+	short, long := "", ""
 
 	for _, v := range values {
 		if strings.HasPrefix(v, "--") {

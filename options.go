@@ -1,6 +1,9 @@
 package gommander
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 type Option struct {
 	name     string
@@ -14,16 +17,12 @@ type Option struct {
 func NewOption(name string) *Option {
 	return &Option{
 		name: name,
+		long: fmt.Sprintf("--%v", name),
 	}
 }
 
-func (o *Option) Short(val string) *Option {
-	o.short = val
-	return o
-}
-
-func (o *Option) Long(val string) *Option {
-	o.long = val
+func (o *Option) Short(val rune) *Option {
+	o.short = fmt.Sprintf("-%c", val)
 	return o
 }
 
@@ -50,8 +49,7 @@ func (o *Option) AddArgument(arg *Argument) *Option {
 func new_option(val string, help string, required bool) Option {
 	values := strings.Split(val, " ")
 
-	long := ""
-	short := ""
+	short, long := "", ""
 	raw_args := []string{}
 	args := []*Argument{}
 
