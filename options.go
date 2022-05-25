@@ -77,3 +77,23 @@ func new_option(val string, help string, required bool) Option {
 		required: required,
 	}
 }
+
+func (o *Option) generate() (string, string) {
+	var leading strings.Builder
+
+	if len(o.short) > 0 {
+		leading.WriteString(o.short)
+	}
+
+	if len(o.long) > 0 {
+		leading.WriteString(fmt.Sprintf(", %v", o.long))
+	}
+
+	if len(o.args) > 0 {
+		for _, a := range o.args {
+			leading.WriteString(a.name)
+		}
+	}
+
+	return leading.String(), o.help
+}
