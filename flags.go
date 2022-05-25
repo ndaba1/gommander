@@ -49,3 +49,8 @@ func new_flag(val string, help string) Flag {
 		help:  help,
 	}
 }
+
+func (f *Flag) generate() (string, string) {
+	// TODO: Check if one of the values is empty
+	return fmt.Sprintf("%v, %v", f.short, f.long), f.help
+}
