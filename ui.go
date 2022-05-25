@@ -59,6 +59,10 @@ func (f *Formatter) section(val string) {
 	f.add(Headline, fmt.Sprintf("\n%v: \n", val))
 }
 
+func (f *Formatter) close() {
+	f.add(Other, "\n")
+}
+
 func (f *Formatter) add(dsgn Designation, val string) {
 	c := f.theme.values[dsgn]
 
@@ -83,7 +87,7 @@ func (f *Formatter) format(items []FormatGenerator) {
 	for _, v := range values {
 		capacity := len([]byte(v[0]))
 		if capacity > max_offset {
-			max_offset = capacity + 5 // Padding
+			max_offset = capacity + 10 // Padding
 		}
 	}
 
@@ -98,14 +102,16 @@ func (f *Formatter) format(items []FormatGenerator) {
 func (f *Formatter) print_output(leading string, floating string, offset int) {
 	buffer := make([]byte, offset)
 	reader := strings.NewReader(leading)
+	var temp_str strings.Builder
 
 	numBytes, _ := reader.Read(buffer)
+	temp_str.Write(buffer[:numBytes])
 	diff := len(buffer) - numBytes
 
 	for i := 0; i < diff; i++ {
-		strings.NewReader(" ").Read(buffer)
+		temp_str.Write([]byte(" "))
 	}
 
-	f.add(Keyword, string(buffer))
-	f.add(Description, floating)
+	f.add(Keyword, fmt.Sprintf("    %v", temp_str.String()))
+	f.add(Description, fmt.Sprintf("%v\n", floating))
 }
