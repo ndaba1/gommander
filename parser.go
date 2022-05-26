@@ -7,11 +7,13 @@ import (
 	"strings"
 )
 
+// TODO: Make values to be more explicit, i.e. positional arg matches, matched_cmd_args etc.
 type ParserMatches struct {
 	arg_count       int
 	raw_args        []string
 	positional_args []string
 	matched_cmd     *Command
+	matched_cmd_idx int
 	root_cmd        *Command
 	flag_matches    []flag_matches
 	option_matches  []option_matches
@@ -20,17 +22,20 @@ type ParserMatches struct {
 
 type flag_matches struct {
 	matched_flag Flag
+	// cursor_index int
 }
 
 type option_matches struct {
 	matched_opt    Option
 	instance_count int
 	passed_args    []arg_matches
+	cursor_index   int
 }
 
 type arg_matches struct {
-	raw_value   string
-	instance_of Argument
+	raw_value    string
+	instance_of  Argument
+	cursor_index int
 }
 
 func (pm *ParserMatches) GetRawArgCount() int {
@@ -49,8 +54,8 @@ func (pm *ParserMatches) GetAppRef() *Command {
 	return pm.root_cmd
 }
 
-func (pm *ParserMatches) GetMatchedCommand() *Command {
-	return pm.matched_cmd
+func (pm *ParserMatches) GetMatchedCommand() (*Command, int) {
+	return pm.matched_cmd, pm.matched_cmd_idx
 }
 
 func (pm *ParserMatches) ContainsFlag(val string) bool {
@@ -73,26 +78,26 @@ func (pm *ParserMatches) ContainsOption(val string) bool {
 	return false
 }
 
-func (pm *ParserMatches) GetArgValue(val string) (string, error) {
+func (pm *ParserMatches) GetArgValue(val string) (string, int, error) {
 	for _, v := range pm.arg_matches {
 		arg := v.instance_of
 		if arg.name == val || arg.get_raw_value() == val {
-			return v.raw_value, nil
+			return v.raw_value, v.cursor_index, nil
 		}
 	}
 
-	return "", errors.New("no value found for provided argument")
+	return "", -1, errors.New("no value found for provided argument")
 }
 
-func (pm *ParserMatches) GetOptionArg(val string) (string, error) {
+func (pm *ParserMatches) GetOptionArg(val string) (string, int, error) {
 	for _, v := range pm.option_matches {
 		opt := v.matched_opt
 		if opt.short == val || opt.long == val || opt.name == val {
 			// TODO: Probably check if slice is empty
-			return v.passed_args[0].raw_value, nil
+			return v.passed_args[0].raw_value, v.cursor_index, nil
 		}
 	}
-	return "", errors.New("no value found for the provided option")
+	return "", -1, errors.New("no value found for the provided option")
 }
 
 func (pm *ParserMatches) GetOptionArgsCount(val string) int {
@@ -117,6 +122,8 @@ func (pm *ParserMatches) GetAllOptionArgs(val string) []string {
 	}
 	return instances
 }
+
+/*************************** Parser Functionality ************************/
 
 type Parser struct {
 	cursor      int
@@ -261,7 +268,6 @@ func (p *Parser) parse(raw_args []string) (ParserMatches, error) {
 			// handle subcmd
 			p._eat(arg)
 			p.current_cmd = sc
-			p.matches.matched_cmd = sc
 			p.cmd_idx = index
 			// p.parse_cmd(raw_args[p.cursor:])
 			continue
@@ -276,6 +282,7 @@ func (p *Parser) parse(raw_args []string) (ParserMatches, error) {
 	}
 	// sanity check incase its not set for some reason
 	p.matches.matched_cmd = p.current_cmd
+	p.matches.matched_cmd_idx = p.cmd_idx
 
 	return p.matches, nil
 }
