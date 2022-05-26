@@ -1,18 +1,22 @@
 package gommander
 
 import (
+	"fmt"
+	"os"
 	"strings"
 )
 
 type Argument struct {
-	name         string
-	help         string
-	raw          string
-	variadic     bool
-	is_required  bool
-	valid_values []string
+	name          string
+	help          string
+	raw           string
+	is_variadic   bool
+	is_required   bool
+	valid_values  []string
+	default_value string
 }
 
+// A Builder method for creating a new argument. Valid values include <arg>, [arg] or simply the name of the arg
 func NewArgument(name string) *Argument {
 	var required bool
 	var variadic bool
@@ -39,31 +43,50 @@ func NewArgument(name string) *Argument {
 	return &Argument{
 		name:        strings.ReplaceAll(name, "-", "_"),
 		is_required: required,
-		variadic:    variadic,
+		is_variadic: variadic,
 	}
 }
 
+// A method for setting the default value on an argument to be used when no value is provided but the argument value is required
+func (a *Argument) Default(val string) *Argument {
+	// Check if value valid
+	if a.has_default_value() {
+		if !a.test_value(val) {
+			fmt.Printf("error occurred when setting default value for argument: %v \n.  the passed value %v does not match the valid values: %v", a.name, val, a.valid_values)
+			os.Exit(10)
+		}
+	}
+	a.default_value = val
+	return a
+}
+
+// Simply sets the description or help string of the given argument
 func (a *Argument) Help(val string) *Argument {
 	a.help = val
 	return a
 }
 
+// Sets whether an argument is variadic or not
 func (a *Argument) Variadic(val bool) *Argument {
-	a.variadic = val
+	a.is_variadic = val
 	return a
 }
 
+// Sets whether an argument is required or not
 func (a *Argument) Required(val bool) *Argument {
 	a.is_required = val
 	return a
 }
 
+// Configures the valid values for an argument
 func (a *Argument) ValidateWith(vals []string) *Argument {
 	a.valid_values = vals
 	return a
 }
 
-func (a *Argument) ValueIsValid(val string) bool {
+/****************************** Package utilities ********************************/
+
+func (a *Argument) test_value(val string) bool {
 	for _, v := range a.valid_values {
 		if strings.EqualFold(v, val) {
 			return true
@@ -73,35 +96,18 @@ func (a *Argument) ValueIsValid(val string) bool {
 	return false
 }
 
+func (a *Argument) has_default_value() bool {
+	return len(a.default_value) > 0
+}
+
+func (a *Argument) compare(b *Argument) bool {
+	return a.help == b.help && a.name == b.name && a.get_raw_value() == b.get_raw_value()
+}
+
 func new_argument(val string, help string) *Argument {
-	var delimiters []string
-	var required bool
-	var variadic bool
-
-	if strings.HasPrefix(val, "<") {
-		delimiters = []string{"<", ">"}
-		required = true
-	} else if strings.HasPrefix(val, "[") {
-		delimiters = []string{"[", "]"}
-		required = false
-	}
-
-	name := strings.ReplaceAll(val, delimiters[0], "")
-	name = strings.ReplaceAll(name, delimiters[1], "")
-	name = strings.ReplaceAll(name, "-", "_")
-
-	if strings.HasSuffix(val, "...") {
-		variadic = true
-		name = strings.ReplaceAll(name, "...", "")
-	}
-
-	return &Argument{
-		name:        name,
-		help:        help,
-		raw:         val,
-		variadic:    variadic,
-		is_required: required,
-	}
+	arg := NewArgument(val)
+	arg.Help(help)
+	return arg
 }
 
 func (a *Argument) get_raw_value() string {
@@ -111,7 +117,7 @@ func (a *Argument) get_raw_value() string {
 		write := func(first rune, last rune) {
 			value.WriteRune(first)
 			value.WriteString(strings.ReplaceAll(a.name, "_", "-"))
-			if a.variadic {
+			if a.is_variadic {
 				value.WriteString("...")
 			}
 			value.WriteRune(last)
@@ -127,6 +133,8 @@ func (a *Argument) get_raw_value() string {
 		return a.raw
 	}
 }
+
+/****************************** Interface implementations ********************************/
 
 func (a *Argument) generate() (string, string) {
 	leading := a.get_raw_value()
