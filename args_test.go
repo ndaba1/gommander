@@ -3,18 +3,18 @@ package gommander
 import "testing"
 
 func TestArgsCreation(t *testing.T) {
-	arg := NewArgument("<test...>").Help("Test argument")
-	arg_b := new_argument("<test>", "Test argument")
+	arg := NewArgument("<test>").Help("Test argument").Variadic(true)
+	arg_b := new_argument("<test...>", "Test argument")
 
-	if arg.name != arg_b.name || arg.help != arg_b.help {
-		t.Errorf("Arg creation methods out of sync: first is: (%s - %s) and second is: (%s - %s)", arg.name, arg.help, arg_b.name, arg_b.help)
+	if !arg.compare(arg_b) {
+		t.Errorf("Arg creation methods out of sync: 1: %v 2: %v", arg, arg_b)
 	}
 
 	if !arg.is_required {
 		t.Errorf("Failed to make arg required")
 	}
 
-	if !arg.variadic {
+	if !arg.is_variadic {
 		t.Errorf("Failed to make arg variadic")
 	}
 
@@ -28,7 +28,7 @@ func TestArgsCreation(t *testing.T) {
 
 	arg.ValidateWith([]string{"ONE", "TWO"})
 
-	if !arg.ValueIsValid("one") {
+	if !arg.value_is_valid("one") {
 		t.Errorf("Arg validation working incorrectly")
 	}
 
@@ -44,7 +44,7 @@ func BenchmarkArgsBuilder(b *testing.B) {
 	}
 }
 
-func BenchmarkNewArgsFn(b *testing.B) {
+func BenchmarkNewArgFn(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		new_argument("<test>", "A test argument")
 	}
