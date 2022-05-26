@@ -54,7 +54,7 @@ func new_emitter() EventEmitter {
 }
 
 func (em *EventEmitter) on(event Event, cb EventCallback, pstn int) {
-	if len(em.listeners) == 0 {
+	if len(em.listeners[event]) == 0 {
 		em.listeners[event] = []EventListener{{cb, pstn}}
 	} else {
 		new_v := em.listeners[event]
