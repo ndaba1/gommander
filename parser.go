@@ -56,7 +56,7 @@ func (pm *ParserMatches) GetMatchedCommand() *Command {
 func (pm *ParserMatches) ContainsFlag(val string) bool {
 	for _, v := range pm.flag_matches {
 		flag := v.matched_flag
-		if flag.short == val || flag.long == val {
+		if flag.short == val || flag.long == val || flag.name == val {
 			return true
 		}
 	}
@@ -66,7 +66,7 @@ func (pm *ParserMatches) ContainsFlag(val string) bool {
 func (pm *ParserMatches) ContainsOption(val string) bool {
 	for _, v := range pm.option_matches {
 		opt := v.matched_opt
-		if opt.short == val || opt.long == val {
+		if opt.short == val || opt.long == val || opt.name == val {
 			return true
 		}
 	}
@@ -76,7 +76,7 @@ func (pm *ParserMatches) ContainsOption(val string) bool {
 func (pm *ParserMatches) GetArgValue(val string) (string, error) {
 	for _, v := range pm.arg_matches {
 		arg := v.instance_of
-		if arg.name == val || arg.raw == val {
+		if arg.name == val || arg.get_raw_value() == val {
 			return v.raw_value, nil
 		}
 	}
@@ -87,7 +87,7 @@ func (pm *ParserMatches) GetArgValue(val string) (string, error) {
 func (pm *ParserMatches) GetOptionArg(val string) (string, error) {
 	for _, v := range pm.option_matches {
 		opt := v.matched_opt
-		if opt.short == val || opt.long == val {
+		if opt.short == val || opt.long == val || opt.name == val {
 			// TODO: Probably check if slice is empty
 			return v.passed_args[0].raw_value, nil
 		}
@@ -98,7 +98,7 @@ func (pm *ParserMatches) GetOptionArg(val string) (string, error) {
 func (pm *ParserMatches) GetOptionArgsCount(val string) int {
 	for _, v := range pm.option_matches {
 		opt := v.matched_opt
-		if opt.short == val || opt.long == val {
+		if opt.short == val || opt.long == val || opt.name == val {
 			return v.instance_count
 		}
 	}
@@ -109,7 +109,7 @@ func (pm *ParserMatches) GetAllOptionArgs(val string) []string {
 	instances := []string{}
 	for _, v := range pm.option_matches {
 		opt := v.matched_opt
-		if opt.short == val || opt.long == val {
+		if opt.short == val || opt.long == val || opt.name == val {
 			for _, a := range v.passed_args {
 				instances = append(instances, a.raw_value)
 			}
@@ -124,6 +124,7 @@ type Parser struct {
 	current_cmd *Command
 	matches     ParserMatches
 	eaten       []string
+	cmd_idx     int
 }
 
 func NewParser(entry *Command) Parser {
@@ -172,7 +173,7 @@ func (p *Parser) getOption(val string) (*Option, error) {
 
 func (p *Parser) getSubCommand(val string) (*Command, error) {
 	for _, s := range p.current_cmd.sub_commands {
-		if s.name == val {
+		if s.name == val || s.alias == val {
 			return s, nil
 		}
 	}
@@ -261,6 +262,7 @@ func (p *Parser) parse(raw_args []string) (ParserMatches, error) {
 			p._eat(arg)
 			p.current_cmd = sc
 			p.matches.matched_cmd = sc
+			p.cmd_idx = index
 			// p.parse_cmd(raw_args[p.cursor:])
 			continue
 		} else if allow_positional_args {
@@ -307,7 +309,7 @@ func (p *Parser) parse_option(opt *Option, raw_args []string) error {
 }
 
 func (p *Parser) parse_cmd(raw_args []string) error {
-	arg_cfg_vals, err := p.get_arg_matches(p.current_cmd.arguments, raw_args[p.cursor:])
+	arg_cfg_vals, err := p.get_arg_matches(p.current_cmd.arguments, raw_args[p.cmd_idx:])
 	if err != nil {
 		return err
 	}
@@ -340,13 +342,15 @@ func (p *Parser) get_arg_matches(list []*Argument, args []string) ([]arg_matches
 					builder.WriteRune(' ')
 				}
 			}
-		} else if arg_idx <= max_len {
-			if len(args) == 0 && arg_val.is_required {
-				// TODO: Throw option missing argument error
-				return matches, errors.New("missing argument")
-			}
+		} else {
 
-			for _, v := range args[:max_len] {
+			for i := arg_idx; i < max_len; i++ {
+				if len(args) == 0 && arg_val.is_required {
+					// TODO: Throw option missing argument error
+					return matches, errors.New("missing argument")
+				}
+
+				v := args[i]
 				if p.isSpecialValue(v) {
 					break
 				} else if !p.isFlagLike(v) && !p._isEaten(v) {
@@ -359,6 +363,7 @@ func (p *Parser) get_arg_matches(list []*Argument, args []string) ([]arg_matches
 					continue
 				}
 			}
+
 		}
 
 		if len(arg_val.valid_values) > 0 && !arg_val.ValueIsValid(builder.String()) {
