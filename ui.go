@@ -3,6 +3,7 @@ package gommander
 import (
 	"bytes"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/fatih/color"
@@ -76,6 +77,14 @@ func (f *Formatter) print() {
 
 func (f *Formatter) format(items []FormatGenerator) {
 	values := []([2]string){}
+
+	// TODO: check for sort alphabetically setting
+	sort.Slice(items, func(i, j int) bool {
+		second, _ := items[j].generate()
+		first, _ := items[i].generate()
+
+		return second > first
+	})
 
 	for _, i := range items {
 		leading, floating := i.generate()
