@@ -16,15 +16,19 @@ type Argument struct {
 func NewArgument(name string) *Argument {
 	var required bool
 	var variadic bool
+	var delimiters []string
 
 	if strings.HasPrefix(name, "<") {
 		required = true
-		name = strings.ReplaceAll(name, "<", "")
-		name = strings.ReplaceAll(name, ">", "")
+		delimiters = []string{"<", ">"}
 	} else if strings.HasPrefix(name, "[") {
 		required = false
-		name = strings.ReplaceAll(name, "[", "")
-		name = strings.ReplaceAll(name, "]", "")
+		delimiters = []string{"[", "]"}
+	}
+
+	if len(delimiters) > 0 {
+		name = strings.ReplaceAll(name, delimiters[0], "")
+		name = strings.ReplaceAll(name, delimiters[1], "")
 	}
 
 	if strings.HasSuffix(name, "...") {
@@ -51,7 +55,6 @@ func (a *Argument) Variadic(val bool) *Argument {
 
 func (a *Argument) Required(val bool) *Argument {
 	a.is_required = val
-	// TODO: Depending on whether required or not, infer the correct raw value
 	return a
 }
 
@@ -99,4 +102,34 @@ func new_argument(val string, help string) *Argument {
 		variadic:    variadic,
 		is_required: required,
 	}
+}
+
+func (a *Argument) get_raw_value() string {
+	if len(a.raw) == 0 {
+		var value strings.Builder
+
+		write := func(first rune, last rune) {
+			value.WriteRune(first)
+			value.WriteString(strings.ReplaceAll(a.name, "_", "-"))
+			if a.variadic {
+				value.WriteString("...")
+			}
+			value.WriteRune(last)
+		}
+
+		if a.is_required {
+			write('<', '>')
+		} else {
+			write('[', ']')
+		}
+		return value.String()
+	} else {
+		return a.raw
+	}
+}
+
+func (a *Argument) generate() (string, string) {
+	leading := a.get_raw_value()
+
+	return leading, a.help
 }
