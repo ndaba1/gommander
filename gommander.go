@@ -197,9 +197,75 @@ func (app *Command) set_is_root(val bool) *Command {
 	return app
 }
 
-func (app *Command) PrintHelp() {
-	fmt.Printf(app.help)
+func (c *Command) PrintHelp() {
+	fmter := NewFormatter()
 
-	fmt.Printf("\n USAGE: \n")
-	fmt.Printf("\t .exe [OPTIONS] [COMMAND]")
+	fmter.add(Description, fmt.Sprintf("%v\n", c.help))
+
+	has_args := len(c.arguments) > 0
+	has_flags := len(c.flags) > 0
+	has_options := len(c.options) > 0
+	has_subcmds := len(c.sub_commands) > 0
+	has_custom_usage := len(c.custom_usage_str) > 0
+
+	fmter.section("USAGE")
+
+	if has_custom_usage {
+		fmter.add(Keyword, fmt.Sprintf("    %v", c.custom_usage_str))
+	} else {
+		fmter.add(Keyword, fmt.Sprintf("    %v", c.usage_str))
+		fmter.add(Other, " [OPTIONS]")
+
+		if has_args {
+			fmter.add(Other, " <ARGS>")
+		}
+
+		if has_subcmds {
+			fmter.add(Other, " <SUBCOMMAND>")
+		}
+	}
+
+	fmter.close()
+
+	if has_args {
+		fmter.section("ARGS")
+		args := []FormatGenerator{}
+		for _, a := range c.arguments {
+			args = append(args, a)
+		}
+		fmter.format(args)
+	}
+
+	if has_flags {
+		fmter.section("FLAGS")
+		flags := []FormatGenerator{}
+		for _, f := range c.flags {
+			flags = append(flags, f)
+		}
+		fmter.format(flags)
+	}
+
+	if has_options {
+		fmter.section("OPTIONS")
+		opts := []FormatGenerator{}
+		for _, o := range c.options {
+			opts = append(opts, o)
+		}
+		fmter.format(opts)
+	}
+
+	if has_subcmds {
+		fmter.section("SUBCOMMANDS")
+		subcmds := []FormatGenerator{}
+		for _, c := range c.sub_commands {
+			subcmds = append(subcmds, c)
+		}
+		fmter.format(subcmds)
+	}
+
+	fmter.print()
+}
+
+func (c *Command) generate() (string, string) {
+	return c.GetName(), c.GetHelp()
 }
