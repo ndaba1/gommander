@@ -82,16 +82,18 @@ func (o *Option) generate() (string, string) {
 	var leading strings.Builder
 
 	if len(o.short) > 0 {
-		leading.WriteString(o.short)
+		leading.WriteString(fmt.Sprintf("%v,", o.short))
+	} else {
+		leading.WriteString("   ")
 	}
 
 	if len(o.long) > 0 {
-		leading.WriteString(fmt.Sprintf(", %v", o.long))
+		leading.WriteString(fmt.Sprintf(" %v ", o.long))
 	}
 
 	if len(o.args) > 0 {
 		for _, a := range o.args {
-			leading.WriteString(a.name)
+			leading.WriteString(fmt.Sprintf("%v ", a.get_raw_value()))
 		}
 	}
 
