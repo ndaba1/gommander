@@ -9,7 +9,7 @@ func TestBasicParsing(t *testing.T) {
 	parser := NewParser(cmd)
 	matches, _ := parser.parse([]string{"-v", "-p", "90"})
 
-	if v, _ := matches.GetOptionArg("--port"); v != "90" {
+	if v, _, _ := matches.GetOptionArg("--port"); v != "90" {
 		t.Error("Option arg parsing not working correctly")
 	}
 
@@ -26,7 +26,7 @@ func TestStandardParsing(t *testing.T) {
 	parser := NewParser(app)
 	matches, _ := parser.parse([]string{"first", "-v", "-n", "one", "-n", "two"})
 
-	if matches.GetMatchedCommand().name != "first" {
+	if v, _ := matches.GetMatchedCommand(); v.name != "first" {
 		t.Error("Subcommand resolution has some errors")
 	}
 
@@ -68,11 +68,11 @@ func TestComplexParsing(t *testing.T) {
 	parser := NewParser(app)
 	matches, _ := parser.parse([]string{"i", "image-one", "--all", "-p", "800", "--", "ng", "serve"})
 
-	if matches.GetMatchedCommand().name != "image" {
+	if v, _ := matches.GetMatchedCommand(); v.name != "image" {
 		t.Error("Subcommand resolution has some errors")
 	}
 
-	if v, _ := matches.GetArgValue("<image-name>"); v != "image-one" {
+	if v, _, _ := matches.GetArgValue("<image-name>"); v != "image-one" {
 		t.Errorf("Command argument parsing failed. Expected: image-one, got: %v", v)
 	}
 
@@ -80,7 +80,7 @@ func TestComplexParsing(t *testing.T) {
 		t.Error("Flag parsing has some errors")
 	}
 
-	if v, _ := matches.GetOptionArg("--port"); v != "800" {
+	if v, _, _ := matches.GetOptionArg("--port"); v != "800" {
 		t.Error("Option arg parsing not working correctly")
 	}
 
