@@ -51,6 +51,17 @@ func new_flag(val string, help string) Flag {
 }
 
 func (f *Flag) generate() (string, string) {
-	// TODO: Check if one of the values is empty
-	return fmt.Sprintf("%v, %v", f.short, f.long), f.help
+	var leading strings.Builder
+
+	if len(f.short) > 0 {
+		leading.WriteString(fmt.Sprintf("%v,", f.short))
+	} else {
+		leading.WriteString("   ")
+	}
+
+	if len(f.long) > 0 {
+		leading.WriteString(fmt.Sprintf(" %v", f.long))
+	}
+
+	return leading.String(), f.help
 }
