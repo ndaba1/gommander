@@ -81,11 +81,21 @@ func (c *Command) Argument(val string, help string) *Command {
 }
 
 func (c *Command) AddFlag(flag *Flag) *Command {
+	for _, f := range c.flags {
+		if f.short == flag.short {
+			return c
+		}
+	}
 	c.flags = append(c.flags, flag)
 	return c
 }
 
 func (c *Command) AddOption(opt *Option) *Command {
+	for _, o := range c.options {
+		if o.short == opt.short {
+			return c
+		}
+	}
 	c.options = append(c.options, opt)
 	return c
 }
@@ -93,6 +103,11 @@ func (c *Command) AddOption(opt *Option) *Command {
 func (c *Command) Flag(val string, help string) *Command {
 	flag := new_flag(val, help)
 	return c.AddFlag(&flag)
+}
+
+func (c *Command) Info(info string) *Command {
+	c.discussion = info
+	return c
 }
 
 func (c *Command) Help(help string) *Command {
@@ -107,6 +122,11 @@ func (c *Command) Name(name string) *Command {
 
 func (c *Command) Version(version string) *Command {
 	c.version = version
+	return c
+}
+
+func (c *Command) UsageStr(val string) *Command {
+	c.custom_usage_str = val
 	return c
 }
 
