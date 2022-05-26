@@ -9,20 +9,19 @@ type EventCallback = func(*EventConfig)
 
 const (
 	MissingRequiredArgument Event = iota
-	OptionMissingArgument
 	OutputHelp
 	OutputVersion
 	UnknownCommand
 	UnknownOption
 	UnresolvedArgument
+	InvalidArgumentValue
 )
 
 var EVENTS_SLICE = []Event{
 	MissingRequiredArgument,
-	OptionMissingArgument,
 	OutputHelp, OutputVersion,
 	UnknownCommand, UnknownOption,
-	UnresolvedArgument,
+	UnresolvedArgument, InvalidArgumentValue,
 }
 
 type EventListener struct {
