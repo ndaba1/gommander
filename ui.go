@@ -87,7 +87,7 @@ func (f *Formatter) format(items []FormatGenerator) {
 	for _, v := range values {
 		capacity := len([]byte(v[0]))
 		if capacity > max_offset {
-			max_offset = capacity + 10 // Padding
+			max_offset = capacity + 8 // Padding
 		}
 	}
 
