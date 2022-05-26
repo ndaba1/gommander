@@ -28,7 +28,7 @@ func TestArgsCreation(t *testing.T) {
 
 	arg.ValidateWith([]string{"ONE", "TWO"})
 
-	if !arg.value_is_valid("one") {
+	if !arg.test_value("one") {
 		t.Errorf("Arg validation working incorrectly")
 	}
 
