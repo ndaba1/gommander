@@ -2,48 +2,51 @@ package gommander
 
 import (
 	"fmt"
+	"os"
+	"strings"
 )
 
 type CommandCallback = func(*ParserMatches)
 
 type Command struct {
-	alias        string
-	arguments    []*Argument
-	callback     CommandCallback
-	discussion   string
-	emitter      EventEmitter
-	flags        []*Flag
-	help         string
-	is_root      bool
-	name         string
-	options      []*Option
-	parent       *Command
-	sub_commands []*Command
-	settings     Settings
-	theme        Theme
-	version      string
+	alias            string
+	arguments        []*Argument
+	callback         CommandCallback
+	discussion       string
+	emitter          EventEmitter
+	flags            []*Flag
+	help             string
+	is_root          bool
+	name             string
+	options          []*Option
+	parent           *Command
+	sub_commands     []*Command
+	settings         Settings
+	global_settings  *Settings
+	theme            Theme
+	version          string
+	usage_str        string
+	custom_usage_str string
 }
 
 func Program() *Command {
-	return App("").set_is_root(true)
+	return NewCommand("").set_is_root(true)
 }
 
-func App(name string) *Command {
+func NewCommand(name string) *Command {
 	return &Command{
-		name:         name,
-		alias:        "",
-		arguments:    []*Argument{},
-		flags:        []*Flag{},
-		options:      []*Option{},
-		sub_commands: []*Command{},
-		parent:       nil,
-		help:         "",
-		version:      "",
-		settings:     Settings{},
-		theme:        Theme{},
-		discussion:   "",
-		is_root:      false,
-		emitter:      new_emitter(),
+		name:            name,
+		arguments:       []*Argument{},
+		flags:           []*Flag{NewFlag("help").Short('h').Help("Print out help information")},
+		options:         []*Option{},
+		sub_commands:    []*Command{},
+		parent:          nil,
+		settings:        Settings{},
+		theme:           DefaultTheme(),
+		is_root:         false,
+		emitter:         new_emitter(),
+		global_settings: &Settings{},
+		usage_str:       name,
 	}
 }
 
@@ -57,6 +60,7 @@ func (c *Command) GetOptions() []*Option      { return c.options }
 func (c *Command) GetParent() *Command        { return c.parent }
 func (c *Command) GetSubCommands() []*Command { return c.sub_commands }
 func (c *Command) GetVersion() string         { return c.version }
+func (c *Command) GetUsageStr() string        { return c.usage_str }
 
 // Value setters
 
