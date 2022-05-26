@@ -141,24 +141,49 @@ func (c *Command) RequiredOption(val string, help string) *Command {
 }
 
 func (c *Command) Subcommand(name string) *Command {
-	return App(name).set_parent(c)
+	sub_cmd := NewCommand(name).set_parent(c)
+
+	cmd_path := []string{c.usage_str, sub_cmd.usage_str}
+	c.sub_commands = append(c.sub_commands, sub_cmd)
+	sub_cmd.usage_str = strings.Join(cmd_path, " ")
+
+	return sub_cmd
 }
+
+func (c *Command) Parse() {
+	parser := NewParser(c)
+	matches, err := parser.parse(os.Args[1:])
+	if err != nil {
+		println(err.Error())
+	}
+	val := fmt.Sprintf("%v", matches)
+	fmt.Print(val)
+}
+
+// Event emitters functionality
 
 func (c *Command) On(event Event, cb EventCallback) {
 	c.emitter.on(event, cb, 0)
 }
 
 func (c *Command) BeforeAll(cb EventCallback) {
-	c.emitter.on(OutputHelp, cb, -5)
+	c.emitter.insert_before_all(cb)
+}
+
+func (c *Command) AfterAll(cb EventCallback) {
+	c.emitter.insert_after_all(cb)
+}
+
+func (c *Command) BeforeHelp(cb EventCallback) {
+	c.emitter.on(OutputHelp, cb, -4)
+}
+
+func (c *Command) AfterHelp(cb EventCallback) {
+	c.emitter.on(OutputHelp, cb, 4)
 }
 
 func (c *Command) Emit(cfg EventConfig) {
 	c.emitter.emit(cfg)
-}
-
-func (c *Command) TestEmit() {
-	c.Emit(EventConfig{[]string{""}, OutputHelp, c, int(1), c.alias})
-
 }
 
 // Interior utility functions
