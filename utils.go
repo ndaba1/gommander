@@ -1,11 +1,13 @@
 package gommander
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type HelpWriter struct{}
 
 func (HelpWriter) Write(c *Command) {
-	fmter := NewFormatter()
+	fmter := NewFormatter(c.theme)
 
 	has_args := len(c.arguments) > 0
 	has_flags := len(c.flags) > 0
@@ -14,7 +16,7 @@ func (HelpWriter) Write(c *Command) {
 	has_custom_usage := len(c.custom_usage_str) > 0
 	has_subcmd_groups := len(c.sub_cmd_groups) > 0
 
-	fmter.add(Description, fmt.Sprintf("%v\n", c.help))
+	fmter.add(Description, fmt.Sprintf("\n%v\n", c.help))
 	fmter.section("USAGE")
 
 	if has_custom_usage {
