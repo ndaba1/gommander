@@ -35,3 +35,17 @@ func TestAfterAllFn(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkLstnrCreation(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		em := new_emitter()
+		em.on(OutputHelp, func(ec *EventConfig) {}, 0)
+	}
+}
+
+func BenchmarkBatchLstnrs(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		em := new_emitter()
+		em.insert_before_all(func(ec *EventConfig) {})
+	}
+}
