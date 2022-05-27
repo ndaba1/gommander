@@ -46,6 +46,10 @@ func (o *Option) AddArgument(arg *Argument) *Option {
 	return o
 }
 
+func (o *Option) compare(p *Option) bool {
+	return o.name == p.name && o.help == p.help && o.long == p.long && o.short == p.short && o.required == p.required
+}
+
 func new_option(val string, help string, required bool) Option {
 	values := strings.Split(val, " ")
 

@@ -6,11 +6,11 @@ func TestOptionsCreation(t *testing.T) {
 	opt := NewOption("port").Short('p').Help("The port option").Argument("<port-number>").Required(true)
 	opt_b := new_option("-p --port <port-number>", "The port option", true)
 
-	if opt.name != opt_b.name || opt.short != opt_b.short || opt.help != opt_b.help {
-		t.Error("Option creation methods out of sync")
+	if !opt.compare(&opt_b) {
+		t.Errorf("Option creation methods out of sync: 1: %v  2: %v", opt, opt_b)
 	}
 
-	if !opt.required || !opt_b.required {
+	if !opt.required {
 		t.Error("Failed to set required value on options")
 	}
 

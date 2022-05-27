@@ -29,6 +29,10 @@ func (f *Flag) Help(val string) *Flag {
 	return f
 }
 
+func (f *Flag) compare(b *Flag) bool {
+	return f.name == b.name && f.short == b.short && f.long == b.long && f.help == b.help
+}
+
 func new_flag(val string, help string) Flag {
 	values := strings.Split(val, " ")
 
