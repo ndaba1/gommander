@@ -10,6 +10,7 @@ import (
 )
 
 type Designation byte
+type PredefinedTheme byte
 
 const (
 	Keyword Designation = iota
@@ -17,6 +18,11 @@ const (
 	Description
 	Error
 	Other
+)
+
+const (
+	Colorful PredefinedTheme = iota
+	Plain
 )
 
 var DESIGNATION_SLICE = []Designation{
@@ -44,6 +50,17 @@ type FormatGenerator interface {
 func NewFormatter(theme Theme) Formatter {
 	return Formatter{
 		theme: theme,
+	}
+}
+
+func GetPredefinedTheme(val PredefinedTheme) Theme {
+	switch val {
+	case Colorful:
+		return NewTheme(color.FgGreen, color.FgMagenta, color.FgHiBlue, color.FgHiRed, color.FgHiWhite)
+	case Plain:
+		return NewTheme(color.FgWhite, color.FgWhite, color.FgWhite, color.FgWhite, color.FgWhite)
+	default:
+		return DefaultTheme()
 	}
 }
 
