@@ -255,7 +255,15 @@ func (c *Command) Parse() {
 	matches, err := parser.parse(os.Args[1:])
 
 	if !err.is_nil {
-		c.emit(err.into_event_cfg())
+		event := EventConfig{
+			err:         err,
+			args:        err.args,
+			event:       err.kind,
+			exit_code:   err.exit_code,
+			app_ref:     c,
+			matched_cmd: matches.matched_cmd,
+		}
+		c.emit(event)
 	}
 
 	// TODO: No errors, check special flags
