@@ -19,9 +19,18 @@ const (
 	Other
 )
 
+var DESIGNATION_SLICE = []Designation{
+	Keyword,
+	Headline,
+	Description,
+	Error,
+	Other,
+}
+
 type Formatter struct {
-	theme  Theme
-	buffer bytes.Buffer
+	theme       Theme
+	buffer      bytes.Buffer
+	prev_offset int
 }
 
 type Theme struct {
@@ -32,20 +41,30 @@ type FormatGenerator interface {
 	generate() (string, string)
 }
 
-func NewFormatter() Formatter {
+func NewFormatter(theme Theme) Formatter {
 	return Formatter{
-		theme: DefaultTheme(),
+		theme: theme,
 	}
 }
 
-func DefaultTheme() Theme {
+// Creates as many colors as there are designations
+func NewVariadicTheme(values ...color.Attribute) Theme {
+	theme := make(map[Designation]color.Color)
+	for i, v := range DESIGNATION_SLICE {
+		theme[v] = *color.New(values[i])
+	}
+
+	return Theme{values: theme}
+}
+
+func NewTheme(keyword, headline, description, errors, others color.Attribute) Theme {
 	theme := make(map[Designation]color.Color)
 
-	kw_color := color.New(color.FgCyan)
-	hd_color := color.New(color.FgGreen)
-	ds_color := color.New(color.FgWhite)
-	er_color := color.New(color.FgRed)
-	ot_color := color.New(color.FgWhite)
+	kw_color := color.New(keyword)
+	hd_color := color.New(headline)
+	ds_color := color.New(description)
+	er_color := color.New(errors)
+	ot_color := color.New(others)
 
 	theme[Keyword] = *kw_color
 	theme[Headline] = *hd_color
@@ -54,6 +73,10 @@ func DefaultTheme() Theme {
 	theme[Other] = *ot_color
 
 	return Theme{values: theme}
+}
+
+func DefaultTheme() Theme {
+	return NewTheme(color.FgCyan, color.FgGreen, color.FgWhite, color.FgRed, color.FgWhite)
 }
 
 func (f *Formatter) section(val string) {
