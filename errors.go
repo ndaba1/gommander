@@ -7,48 +7,44 @@ import (
 )
 
 type GommanderError struct {
-	kind    Event
-	message string
-	// args        []string
-	context     string
-	exit_code   int
-	matched_cmd *Command
-	is_nil      bool
-}
-
-func new_error(event Event) *GommanderError {
-	return &GommanderError{
-		kind:   event,
-		is_nil: false,
-	}
+	kind      Event
+	message   string
+	args      []string
+	context   string
+	exit_code int
+	is_nil    bool
 }
 
 func nil_error() GommanderError {
 	return GommanderError{is_nil: true}
 }
 
-func (e *GommanderError) msg(val string) *GommanderError {
-	e.message = val
-	return e
+func throw_error(kind Event, msg string, ctx string) GommanderError {
+	var exit_code int
+	switch kind {
+	case InvalidArgumentValue:
+		exit_code = 10
+	case MissingRequiredArgument:
+		exit_code = 20
+	case MissingRequiredOption:
+		exit_code = 30
+	case UnknownCommand:
+		exit_code = 40
+	case UnknownOption:
+		exit_code = 50
+	default:
+		exit_code = 1
+	}
+	return GommanderError{
+		kind:      kind,
+		message:   msg,
+		context:   ctx,
+		exit_code: exit_code,
+	}
 }
 
-// func (e *GommanderError) values(vals []string) *GommanderError {
-// 	e.args = vals
-// 	return e
-// }
-
-func (e *GommanderError) ctx(val string) *GommanderError {
-	e.context = val
-	return e
-}
-
-func (e *GommanderError) exit(val int) *GommanderError {
-	e.exit_code = val
-	return e
-}
-
-func (e *GommanderError) cmd_ref(val *Command) *GommanderError {
-	e.matched_cmd = val
+func (e GommanderError) set_args(vals []string) GommanderError {
+	e.args = vals
 	return e
 }
 
@@ -57,7 +53,7 @@ func (e *GommanderError) Error() string {
 }
 
 func (e *GommanderError) Display() {
-	fmter := NewFormatter()
+	fmter := NewFormatter(DefaultTheme())
 
 	fmter.add(Error, "error:  ")
 	fmter.add(Other, strings.ToLower(e.message))
@@ -82,13 +78,4 @@ func (e *GommanderError) Display() {
 	fmter.add(Other, "Run a COMMAND with --help for detailed usage information")
 	fmter.close()
 	fmter.print()
-}
-
-func (e *GommanderError) into_event_cfg() EventConfig {
-	return EventConfig{
-		event:     e.kind,
-		app_ref:   e.matched_cmd,
-		exit_code: e.exit_code,
-		err:       *e,
-	}
 }
