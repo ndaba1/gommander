@@ -116,11 +116,25 @@ func (f *Formatter) format(items []FormatGenerator) {
 	}
 
 	max_offset := 0
+	current_offset := 0
+
+	// Finds the longest value, adds some padding to it and sets it as the max offset
 	for _, v := range values {
 		capacity := len([]byte(v[0]))
-		if capacity > max_offset {
-			max_offset = capacity + 8 // Padding
+		if capacity > current_offset {
+			current_offset = capacity + 8 // Padding
 		}
+		if capacity > f.prev_offset {
+			f.prev_offset = current_offset
+		}
+	}
+
+	// If different sections have almost similar max_offsets, use equal values
+	diff := f.prev_offset - current_offset
+	if diff < 8 && diff > 0 {
+		max_offset = f.prev_offset
+	} else {
+		max_offset = current_offset
 	}
 
 	for _, v := range values {
@@ -129,9 +143,11 @@ func (f *Formatter) format(items []FormatGenerator) {
 
 		f.print_output(leading, floating, max_offset)
 	}
+
 }
 
 func (f *Formatter) print_output(leading string, floating string, offset int) {
+	// TODO: Add support for sentence wrap
 	buffer := make([]byte, offset)
 	reader := strings.NewReader(leading)
 	var temp_str strings.Builder
