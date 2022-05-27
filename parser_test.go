@@ -9,7 +9,7 @@ func TestBasicParsing(t *testing.T) {
 	parser := NewParser(cmd)
 	matches, _ := parser.parse([]string{"-v", "-p", "90"})
 
-	if v, _, _ := matches.GetOptionArg("--port"); v != "90" {
+	if v, _, _ := matches.GetOptionArgValue("--port"); v != "90" {
 		t.Error("Option arg parsing not working correctly")
 	}
 
@@ -21,7 +21,7 @@ func TestBasicParsing(t *testing.T) {
 
 func TestStandardParsing(t *testing.T) {
 	app := NewCommand("echo")
-	app.Subcommand("first").Flag("-v --verbose", "Set verbose").Option("-n --name <value>", "Some name")
+	app.SubCommand("first").Flag("-v --verbose", "Set verbose").Option("-n --name <value>", "Some name")
 
 	parser := NewParser(app)
 	matches, _ := parser.parse([]string{"first", "-v", "-n", "one", "-n", "two"})
@@ -44,7 +44,7 @@ func TestStandardParsing(t *testing.T) {
 func TestComplexParsing(t *testing.T) {
 	app := NewCommand("echo").Version("0.1.0").Help("A test CLI")
 
-	app.Subcommand("image").
+	app.SubCommand("image").
 		Argument("<image-name>", "Provide an image name").
 		Alias("i").
 		Flag("--all", "Ran across all variants").
@@ -80,7 +80,7 @@ func TestComplexParsing(t *testing.T) {
 		t.Error("Flag parsing has some errors")
 	}
 
-	if v, _, _ := matches.GetOptionArg("--port"); v != "800" {
+	if v, _, _ := matches.GetOptionArgValue("--port"); v != "800" {
 		t.Error("Option arg parsing not working correctly")
 	}
 
@@ -89,4 +89,33 @@ func TestComplexParsing(t *testing.T) {
 		t.Error("Positional args parsing failed")
 	}
 
+}
+
+func TestOptionSyntaxParsing(t *testing.T) {
+	app := NewCommand("basic").Option("-p --port <port-number>", "Port option")
+	parser := NewParser(app)
+
+	m_1, _ := parser.parse([]string{"-p", "9000"})
+	m_2, _ := parser.parse([]string{"--port", "9000"})
+	m_3, _ := parser.parse([]string{"--port=9000"})
+
+	a_1, _, _ := m_1.GetOptionArgValue("port")
+	a_2, _, _ := m_2.GetOptionArgValue("port")
+	a_3, _, _ := m_3.GetOptionArgValue("port")
+
+	if a_1 != a_2 {
+		t.Error("Short option parsing and long option parsing out of sync")
+	}
+
+	if a_2 != a_3 {
+		t.Error("Long option syntax with `=` parsing failed")
+	}
+
+}
+
+func BenchmarkParseEmpty(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		parser := NewParser(NewCommand("empty"))
+		parser.parse([]string{})
+	}
 }
