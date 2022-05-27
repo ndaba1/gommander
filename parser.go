@@ -3,7 +3,6 @@ package gommander
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 )
 
@@ -89,7 +88,7 @@ func (pm *ParserMatches) GetArgValue(val string) (string, int, error) {
 	return "", -1, errors.New("no value found for provided argument")
 }
 
-func (pm *ParserMatches) GetOptionArg(val string) (string, int, error) {
+func (pm *ParserMatches) GetOptionArgValue(val string) (string, int, error) {
 	for _, v := range pm.option_matches {
 		opt := v.matched_opt
 		if opt.short == val || opt.long == val || opt.name == val {
@@ -126,12 +125,13 @@ func (pm *ParserMatches) GetAllOptionArgs(val string) []string {
 /*************************** Parser Functionality ************************/
 
 type Parser struct {
-	cursor      int
-	root_cmd    *Command
-	current_cmd *Command
-	matches     ParserMatches
-	eaten       []string
-	cmd_idx     int
+	cursor        int
+	root_cmd      *Command
+	current_cmd   *Command
+	matches       ParserMatches
+	eaten         []string
+	cmd_idx       int
+	current_token string
 }
 
 func NewParser(entry *Command) Parser {
@@ -201,12 +201,7 @@ func (p *Parser) _isEaten(val string) bool {
 	return false
 }
 
-func (p *Parser) parse(raw_args []string) (ParserMatches, error) {
-	if len(raw_args) == 0 {
-		p.current_cmd.PrintHelp()
-		os.Exit(0)
-	}
-
+func (p *Parser) parse(raw_args []string) (ParserMatches, GommanderError) {
 	p.matches.raw_args = raw_args
 	p.matches.arg_count = len(raw_args)
 
@@ -214,9 +209,7 @@ func (p *Parser) parse(raw_args []string) (ParserMatches, error) {
 
 	for index, arg := range raw_args {
 		p.cursor = index
-		// Basic lookahead
-		// next_token := raw_args[index+1]
-		// prev_token := raw_args[index-1]
+		p.current_token = arg
 
 		if p.isFlagLike(arg) {
 			if flag, err := p.getFlag(arg); err == nil {
@@ -234,7 +227,7 @@ func (p *Parser) parse(raw_args []string) (ParserMatches, error) {
 				// Handle is option
 				p._eat(arg)
 				err := p.parse_option(opt, raw_args[(index+1):])
-				if err != nil {
+				if !err.is_nil {
 					return p.matches, err
 				}
 			} else if arg == "--" {
@@ -245,51 +238,93 @@ func (p *Parser) parse(raw_args []string) (ParserMatches, error) {
 				p._eat(arg)
 				parts := strings.Split(arg, "=")
 
-				opt, err := p.getOption(parts[0])
-				if err != nil {
-					return p.matches, err
-				}
+				opt, _ := p.getOption(parts[0])
+				// FIXME: err handling
+				// if err != nil {
+				// 	return p.matches, err
+				// }
 
 				temp := []string{parts[1]}
 				temp = append(temp, raw_args[(index+1):]...)
 
-				err = p.parse_option(opt, temp)
-				if err != nil {
-					return p.matches, err
+				e := p.parse_option(opt, temp)
+				if !e.is_nil {
+					return p.matches, e
 				}
 			} else if allow_positional_args {
 				p._eat(arg)
 				p.matches.positional_args = append(p.matches.positional_args, arg)
 			} else if !p._isEaten(arg) && !allow_positional_args {
 				// TODO: Throw unresolved option error
-				return p.matches, fmt.Errorf("unresolved option found: %v", arg)
+				msg := fmt.Sprintf("Failed to resolve argument: `%v`", p.current_token)
+				ctx := fmt.Sprintf("Found value: `%v`, which was unexpected or is invalid in this context", p.current_token)
+
+				err := new_error(UnresolvedArgument).
+					cmd_ref(p.current_cmd).
+					exit(50).
+					msg(msg).ctx(ctx)
+
+				return p.matches, *err
 			}
 		} else if sc, err := p.getSubCommand(arg); err == nil {
 			// handle subcmd
 			p._eat(arg)
 			p.current_cmd = sc
 			p.cmd_idx = index
-			// p.parse_cmd(raw_args[p.cursor:])
 			continue
 		} else if allow_positional_args {
 			// TODO: More conditionals
 			p._eat(arg)
 			p.matches.positional_args = append(p.matches.positional_args, arg)
 		} else if !p._isEaten(arg) {
-			p.parse_cmd(raw_args[p.cursor:])
+			err := p.parse_cmd(raw_args[p.cursor:])
+			if !err.is_nil {
+				return p.matches, err
+			}
 		}
 
 	}
-	// sanity check incase its not set for some reason
+
 	p.matches.matched_cmd = p.current_cmd
 	p.matches.matched_cmd_idx = p.cmd_idx
 
-	return p.matches, nil
+	// TODO: Check for required options
+	if !p.matches.ContainsFlag("help") {
+		for _, o := range p.current_cmd.options {
+			if o.required && !p.matches.ContainsOption(o.long) {
+				var arg_vals []string
+				for _, a := range o.args {
+					if len(a.default_value) == 0 {
+						// No default value and value is required
+						// TODO: Throw missing required option
+						msg := fmt.Sprintf("Missing required option: `%v`", o.long)
+						ctx := fmt.Sprintf("The option: `%v` is marked as required but no value was provided and it is not configured with a default value", o.long)
+
+						err := new_error(MissingRequiredArgument).
+							cmd_ref(p.current_cmd).
+							exit(40).
+							msg(msg).ctx(ctx)
+
+						return p.matches, *err
+					} else {
+						// Generate opt match with default value
+						arg_vals = append(arg_vals, a.default_value)
+					}
+				}
+				err := p.parse_option(o, arg_vals)
+				if !err.is_nil {
+					return p.matches, err
+				}
+			}
+		}
+	}
+
+	return p.matches, nil_error()
 }
 
-func (p *Parser) parse_option(opt *Option, raw_args []string) error {
+func (p *Parser) parse_option(opt *Option, raw_args []string) GommanderError {
 	args, err := p.get_arg_matches(opt.args, raw_args)
-	if err != nil {
+	if !err.is_nil {
 		return err
 	}
 
@@ -312,36 +347,53 @@ func (p *Parser) parse_option(opt *Option, raw_args []string) error {
 		p.matches.option_matches = append(p.matches.option_matches, opt_cfg)
 	}
 
-	return nil
+	return nil_error()
 }
 
-func (p *Parser) parse_cmd(raw_args []string) error {
+func (p *Parser) parse_cmd(raw_args []string) GommanderError {
 	arg_cfg_vals, err := p.get_arg_matches(p.current_cmd.arguments, raw_args[p.cmd_idx:])
-	if err != nil {
+	if !err.is_nil {
 		return err
 	}
 
 	if len(arg_cfg_vals) > 0 {
 		p.matches.arg_matches = append(p.matches.arg_matches, arg_cfg_vals...)
+	} else if len(p.current_cmd.sub_commands) > 0 {
+		// return errors.New("no such subcmd found")
+		// TODO: Cmd suggestions
+		msg := fmt.Sprintf("No such subcommand found: `%v`", p.current_token)
+		ctx := fmt.Sprintf("Expected a subcommand, but instead found: `%v`, which could not be resolved as one", p.current_token)
+
+		err := new_error(UnknownCommand).
+			cmd_ref(p.current_cmd).
+			exit(30).
+			msg(msg).ctx(ctx)
+
+		return *err
+	} else if !p._isEaten(p.current_token) {
+		// return errors.New("could not resolve argument")
+		msg := fmt.Sprintf("Failed to resolve argument: `%v`", p.current_token)
+		ctx := fmt.Sprintf("Found value: `%v`, which was unexpected or is invalid in this context", p.current_token)
+
+		err := new_error(UnresolvedArgument).
+			cmd_ref(p.current_cmd).
+			exit(30).
+			msg(msg).ctx(ctx)
+
+		return *err
 	}
 
-	if len(p.current_cmd.sub_commands) > 0 {
-		return errors.New("no such subcmd found")
-	} else {
-		return errors.New("argument not resolved")
-	}
-
-	// return nil
+	return nil_error()
 }
 
-func (p *Parser) get_arg_matches(list []*Argument, args []string) ([]arg_matches, error) {
+func (p *Parser) get_arg_matches(list []*Argument, args []string) ([]arg_matches, GommanderError) {
 	max_len := len(list)
 	matches := []arg_matches{}
 
 	for arg_idx, arg_val := range list {
 		var builder strings.Builder
 
-		if arg_val.variadic {
+		if arg_val.is_variadic {
 			for _, v := range args {
 				if !p.isFlagLike(v) && !p._isEaten(v) {
 					p._eat(v)
@@ -350,32 +402,59 @@ func (p *Parser) get_arg_matches(list []*Argument, args []string) ([]arg_matches
 				}
 			}
 		} else {
-
 			for i := arg_idx; i < max_len; i++ {
 				if len(args) == 0 && arg_val.is_required {
-					// TODO: Throw option missing argument error
-					return matches, errors.New("missing argument")
-				}
+					if !arg_val.has_default_value() {
+						// TODO: Throw option missing argument error
+						msg := fmt.Sprintf("Missing required argument: `%v`", arg_val.get_raw_value())
+						ctx := fmt.Sprintf("Expected a required value corresponding to: %v but none was provided", arg_val.get_raw_value())
+						err := new_error(MissingRequiredArgument).
+							cmd_ref(p.current_cmd).
+							exit(10).
+							msg(msg).ctx(ctx)
 
-				v := args[i]
-				if p.isSpecialValue(v) {
-					break
-				} else if !p.isFlagLike(v) && !p._isEaten(v) {
-					p._eat(v)
-					builder.WriteString(v)
-				} else if arg_val.is_required {
-					// TODO: Throw option missing argument error
-					return matches, errors.New("missing required argument")
+						return matches, *err
+					} else {
+						builder.WriteString(arg_val.default_value)
+					}
 				} else {
-					continue
+					v := args[i]
+					if p.isSpecialValue(v) {
+						break
+					} else if !p.isFlagLike(v) && !p._isEaten(v) {
+						p._eat(v)
+						builder.WriteString(v)
+					} else if arg_val.has_default_value() {
+						builder.WriteString(arg_val.default_value)
+					} else if arg_val.is_required {
+						// TODO: Throw option missing argument error
+						msg := fmt.Sprintf("Missing required argument: `%v`", arg_val.get_raw_value())
+						ctx := fmt.Sprintf("Expected a value for argument: `%v`, but instead found: %v", arg_val.name, v)
+
+						err := new_error(MissingRequiredArgument).
+							cmd_ref(p.current_cmd).
+							exit(10).
+							msg(msg).ctx(ctx)
+
+						return matches, *err
+					} else {
+						continue
+					}
 				}
 			}
-
 		}
 
-		if len(arg_val.valid_values) > 0 && !arg_val.ValueIsValid(builder.String()) {
+		if len(arg_val.valid_values) > 0 && !arg_val.test_value(builder.String()) {
 			// TODO: Throw invalid argument value
-			return matches, errors.New("invalid argument value")
+			msg := fmt.Sprintf("The passed value: `%v`, is not a valid argument", builder.String())
+			ctx := fmt.Sprintf("Expected one of: `%v`, but instead found: `%v`, which is not a valid value", arg_val.valid_values, builder.String())
+
+			err := new_error(InvalidArgumentValue).
+				cmd_ref(p.current_cmd).
+				exit(20).
+				msg(msg).ctx(ctx)
+
+			return matches, *err
 		}
 
 		arg_cfg := arg_matches{
@@ -386,5 +465,5 @@ func (p *Parser) get_arg_matches(list []*Argument, args []string) ([]arg_matches
 		matches = append(matches, arg_cfg)
 	}
 
-	return matches, nil
+	return matches, nil_error()
 }
