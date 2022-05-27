@@ -1,6 +1,7 @@
 package gommander
 
 import (
+	"os"
 	"sort"
 )
 
@@ -15,6 +16,7 @@ const (
 	UnknownOption
 	UnresolvedArgument
 	InvalidArgumentValue
+	MissingRequiredOption
 )
 
 var EVENTS_SLICE = []Event{
@@ -22,6 +24,7 @@ var EVENTS_SLICE = []Event{
 	OutputHelp, OutputVersion,
 	UnknownCommand, UnknownOption,
 	UnresolvedArgument, InvalidArgumentValue,
+	MissingRequiredOption,
 }
 
 type EventListener struct {
@@ -30,22 +33,23 @@ type EventListener struct {
 }
 
 type EventConfig struct {
-	args      []string
-	event     Event
-	app_ref   *Command
-	exit_code int
-	err       string
+	args        []string
+	event       Event
+	app_ref     *Command
+	exit_code   int
+	err         GommanderError
+	matched_cmd *Command
 }
 
 type EventEmitter struct {
 	listeners map[Event][]EventListener
 }
 
-func (c *EventConfig) GetArgs() *[]string { return &c.args }
-func (c *EventConfig) GetEvent() Event    { return c.event }
-func (c *EventConfig) GetApp() *Command   { return c.app_ref }
-func (c *EventConfig) GetExitCode() int   { return c.exit_code }
-func (c *EventConfig) GetError() string   { return c.err }
+func (c *EventConfig) GetArgs() *[]string       { return &c.args }
+func (c *EventConfig) GetEvent() Event          { return c.event }
+func (c *EventConfig) GetApp() *Command         { return c.app_ref }
+func (c *EventConfig) GetExitCode() int         { return c.exit_code }
+func (c *EventConfig) GetError() GommanderError { return c.err }
 
 func new_emitter() EventEmitter {
 	return EventEmitter{
@@ -82,6 +86,8 @@ func (em *EventEmitter) emit(cfg EventConfig) {
 			for _, lstnr := range v {
 				lstnr.cb(&cfg)
 			}
+
+			os.Exit(cfg.exit_code)
 		}
 	}
 }
@@ -95,5 +101,14 @@ func (em *EventEmitter) insert_before_all(cb EventCallback) {
 func (em *EventEmitter) insert_after_all(cb EventCallback) {
 	for _, e := range EVENTS_SLICE {
 		em.on(e, cb, 5)
+	}
+}
+
+func (em *EventEmitter) on_errors(cb EventCallback) {
+	for _, e := range EVENTS_SLICE {
+		if e == OutputHelp || e == OutputVersion {
+			continue
+		}
+		em.on(e, cb, -4)
 	}
 }
