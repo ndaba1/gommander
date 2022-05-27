@@ -11,6 +11,7 @@ type CommandCallback = func(*ParserMatches)
 type Command struct {
 	alias            string
 	arguments        []*Argument
+	author           string
 	callback         CommandCallback
 	discussion       string
 	emitter          EventEmitter
@@ -27,10 +28,15 @@ type Command struct {
 	version          string
 	usage_str        string
 	custom_usage_str string
+	sub_cmd_groups   map[string][]*Command
 }
 
-func Program() *Command {
-	return NewCommand("").set_is_root(true)
+func App() *Command {
+	return NewCommand("").set_is_root(true).AddFlag(
+		NewFlag("version").
+			Short('v').
+			Help("Print out version information"),
+	)
 }
 
 func NewCommand(name string) *Command {
@@ -207,6 +213,7 @@ func (c *Command) PrintHelp() {
 	has_options := len(c.options) > 0
 	has_subcmds := len(c.sub_commands) > 0
 	has_custom_usage := len(c.custom_usage_str) > 0
+	has_subcmd_groups := len(c.sub_cmd_groups) > 0
 
 	fmter.section("USAGE")
 
@@ -214,7 +221,14 @@ func (c *Command) PrintHelp() {
 		fmter.add(Keyword, fmt.Sprintf("    %v", c.custom_usage_str))
 	} else {
 		fmter.add(Keyword, fmt.Sprintf("    %v", c.usage_str))
-		fmter.add(Other, " [OPTIONS]")
+
+		if has_flags {
+			fmter.add(Other, " [FLAGS]")
+		}
+
+		if has_options {
+			fmter.add(Other, " [OPTIONS]")
+		}
 
 		if has_args {
 			fmter.add(Other, " <ARGS>")
@@ -254,7 +268,7 @@ func (c *Command) PrintHelp() {
 		fmter.format(opts)
 	}
 
-	if has_subcmds {
+	if has_subcmds && !has_subcmd_groups {
 		fmter.section("SUBCOMMANDS")
 		subcmds := []FormatGenerator{}
 		for _, c := range c.sub_commands {
@@ -263,9 +277,23 @@ func (c *Command) PrintHelp() {
 		fmter.format(subcmds)
 	}
 
+	if has_subcmds && has_subcmd_groups {
+		for k, v := range c.sub_cmd_groups {
+			fmter.section(k)
+			subcmds := []FormatGenerator{}
+			for _, c := range v {
+				subcmds = append(subcmds, c)
+			}
+			fmter.format(subcmds)
+		}
+	}
+
 	fmter.print()
 }
 
+/****************************** Interface Implementations ****************************/
+
 func (c *Command) generate() (string, string) {
+	// TODO: Check if allow command aliases
 	return c.GetName(), c.GetHelp()
 }
