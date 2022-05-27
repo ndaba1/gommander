@@ -1,7 +1,6 @@
 package gommander
 
 import (
-	"fmt"
 	"os"
 	"strings"
 )
@@ -337,91 +336,7 @@ func (app *Command) set_is_root(val bool) *Command {
 }
 
 func (c *Command) PrintHelp() {
-	fmter := NewFormatter()
-
-	fmter.add(Description, fmt.Sprintf("%v\n", c.help))
-
-	has_args := len(c.arguments) > 0
-	has_flags := len(c.flags) > 0
-	has_options := len(c.options) > 0
-	has_subcmds := len(c.sub_commands) > 0
-	has_custom_usage := len(c.custom_usage_str) > 0
-	has_subcmd_groups := len(c.sub_cmd_groups) > 0
-
-	fmter.section("USAGE")
-
-	if has_custom_usage {
-		fmter.add(Keyword, fmt.Sprintf("    %v", c.custom_usage_str))
-	} else {
-		fmter.add(Keyword, fmt.Sprintf("    %v", c.usage_str))
-
-		if has_flags {
-			fmter.add(Other, " [FLAGS]")
-		}
-
-		if has_options {
-			fmter.add(Other, " [OPTIONS]")
-		}
-
-		if has_args {
-			fmter.add(Other, " <ARGS>")
-		}
-
-		if has_subcmds {
-			fmter.add(Other, " <SUBCOMMAND>")
-		}
-	}
-
-	fmter.close()
-
-	if has_args {
-		fmter.section("ARGS")
-		args := []FormatGenerator{}
-		for _, a := range c.arguments {
-			args = append(args, a)
-		}
-		fmter.format(args)
-	}
-
-	if has_flags {
-		fmter.section("FLAGS")
-		flags := []FormatGenerator{}
-		for _, f := range c.flags {
-			flags = append(flags, f)
-		}
-		fmter.format(flags)
-	}
-
-	if has_options {
-		fmter.section("OPTIONS")
-		opts := []FormatGenerator{}
-		for _, o := range c.options {
-			opts = append(opts, o)
-		}
-		fmter.format(opts)
-	}
-
-	if has_subcmds && !has_subcmd_groups {
-		fmter.section("SUBCOMMANDS")
-		subcmds := []FormatGenerator{}
-		for _, c := range c.sub_commands {
-			subcmds = append(subcmds, c)
-		}
-		fmter.format(subcmds)
-	}
-
-	if has_subcmds && has_subcmd_groups {
-		for k, v := range c.sub_cmd_groups {
-			fmter.section(k)
-			subcmds := []FormatGenerator{}
-			for _, c := range v {
-				subcmds = append(subcmds, c)
-			}
-			fmter.format(subcmds)
-		}
-	}
-
-	fmter.print()
+	HelpWriter{}.Write(c)
 }
 
 /****************************** Interface Implementations ****************************/
