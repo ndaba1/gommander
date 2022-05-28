@@ -1,4 +1,12 @@
 package gommander
 
-type Settings struct {
-}
+type AppSettings = map[Setting]bool
+
+type Setting byte
+
+const (
+	ShowCommandAliases Setting = iota
+	ShowHelpOnAllErrors
+	IncludeHelpSubcommand
+	OverrideAllDefaultListeners
+)
