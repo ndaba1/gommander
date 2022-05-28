@@ -1,7 +1,10 @@
 package gommander
 
 import (
+	"errors"
+	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -21,21 +24,22 @@ type Command struct {
 	options          []*Option
 	parent           *Command
 	sub_commands     []*Command
-	settings         Settings
-	global_settings  *Settings
+	settings         AppSettings
+	global_settings  *AppSettings
 	theme            Theme
 	version          string
 	usage_str        string
 	custom_usage_str string
 	sub_cmd_groups   map[string][]*Command
+	app_ref          *Command
 }
 
 func App() *Command {
-	return NewCommand("").set_is_root(true).AddFlag(
+	return NewCommand("")._set_is_root().AddFlag(
 		NewFlag("version").
 			Short('v').
 			Help("Print out version information"),
-	)
+	).Theme(DefaultTheme())
 }
 
 func NewCommand(name string) *Command {
@@ -46,11 +50,10 @@ func NewCommand(name string) *Command {
 		options:         []*Option{},
 		sub_commands:    []*Command{},
 		parent:          nil,
-		settings:        Settings{},
-		theme:           DefaultTheme(),
+		settings:        AppSettings{},
 		is_root:         false,
 		emitter:         new_emitter(),
-		global_settings: &Settings{},
+		global_settings: &AppSettings{},
 		usage_str:       name,
 		sub_cmd_groups:  make(map[string][]*Command),
 	}
@@ -207,10 +210,19 @@ func (c *Command) AddToSubCommandGroup(name string) *Command {
 
 // Receives a reference to a command, sets the command parent and usage string then adds its to the slice of subcommands. This method is called internally by the `.SubCommand()` method but users can also invoke it directly
 func (c *Command) AddSubCommand(sub_cmd *Command) *Command {
-	sub_cmd.set_parent(c)
+	sub_cmd._set_parent(c)
 	cmd_path := []string{c.usage_str, sub_cmd.usage_str}
 	c.sub_commands = append(c.sub_commands, sub_cmd)
 	sub_cmd.usage_str = strings.Join(cmd_path, " ")
+
+	// propagate theme
+	sub_cmd.theme = c.theme
+
+	if c.is_root {
+		sub_cmd.app_ref = c
+	} else {
+		sub_cmd.app_ref = c.app_ref
+	}
 
 	return c
 }
