@@ -387,6 +387,12 @@ func (c *Command) On(event Event, cb EventCallback) {
 	c.emitter.on(event, cb, 0)
 }
 
+// This method is also used a new listener to a specific event but also overrides the default listener created by the package for said event
+func (c *Command) Override(event Event, cb EventCallback) {
+	c.emitter.override(event)
+	c.emitter.on(event, cb, 0)
+}
+
 // A method for setting a listener that gets executed after all events encountered in the program
 func (c *Command) AfterAll(cb EventCallback) {
 	c.emitter.insert_after_all(cb)
@@ -409,15 +415,46 @@ func (c *Command) BeforeHelp(cb EventCallback) {
 
 /****************************** Other Command Utilities ****************************/
 
-// Interior utility functions
-func (app *Command) set_parent(parent *Command) *Command {
-	app.parent = parent
-	return app
+func (c *Command) find_subcommand(val string) (*Command, error) {
+	for _, sc := range c.sub_commands {
+		if sc.name == val || sc.alias == val {
+			return sc, nil
+		}
+	}
+
+	return NewCommand(""), errors.New("no such subcmd")
 }
 
-func (app *Command) set_is_root(val bool) *Command {
-	app.is_root = val
-	return app
+func (c *Command) _set_parent(parent *Command) *Command {
+	c.parent = parent
+	return c
+}
+
+func (c *Command) _set_is_root() *Command {
+	c.is_root = true
+	return c
+}
+
+func (c *Command) _get_usage_str() string {
+	var new_usage strings.Builder
+
+	if c.parent != nil && c.parent.is_root && !strings.Contains(c.usage_str, c.parent.usage_str) {
+		new_usage.WriteString(c.parent.usage_str)
+		new_usage.WriteString(c.usage_str)
+	} else {
+		new_usage.WriteString(c.usage_str)
+	}
+
+	return new_usage.String()
+}
+
+func (c *Command) _set_bin_name(val string) {
+	if len(c.name) == 0 {
+		bin_name := filepath.Base(val)
+
+		// TODO: Validation
+		c.Name(bin_name)
+	}
 }
 
 func (c *Command) PrintHelp() {
