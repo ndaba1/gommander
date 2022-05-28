@@ -342,9 +342,24 @@ func (p *Parser) parse_cmd(raw_args []string) GommanderError {
 	} else if len(p.current_cmd.sub_commands) > 0 {
 		// TODO: Cmd suggestions
 		msg := fmt.Sprintf("No such subcommand found: `%v`", p.current_token)
-		ctx := fmt.Sprintf("Expected a subcommand, but instead found: `%v`, which could not be resolved as one", p.current_token)
+		suggestions := suggest_sub_cmd(p.current_cmd, p.current_token)
 
-		return throw_error(UnknownCommand, msg, ctx).set_args([]string{p.current_token})
+		var ctx strings.Builder
+		ctx.WriteString(fmt.Sprintf("The value: `%v`, could not be resolved as a subcommand. ", p.current_token))
+		if len(suggestions) > 0 {
+			ctx.WriteString("Did you mean ")
+
+			for i, s := range suggestions {
+				if i > 0 {
+					ctx.WriteString("or")
+				}
+				ctx.WriteString(fmt.Sprintf("`%v` ", s))
+			}
+
+			ctx.WriteString("?")
+		}
+
+		return throw_error(UnknownCommand, msg, ctx.String()).set_args([]string{p.current_token})
 	} else if !p._isEaten(p.current_token) {
 		msg := fmt.Sprintf("Failed to resolve argument: `%v`", p.current_token)
 		ctx := fmt.Sprintf("Found value: `%v`, which was unexpected or is invalid in this context", p.current_token)
