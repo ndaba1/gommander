@@ -39,9 +39,7 @@ type Formatter struct {
 	prev_offset int
 }
 
-type Theme struct {
-	values map[Designation]color.Color
-}
+type Theme = map[Designation]color.Color
 
 type FormatGenerator interface {
 	generate() (string, string)
@@ -71,7 +69,7 @@ func NewVariadicTheme(values ...color.Attribute) Theme {
 		theme[v] = *color.New(values[i])
 	}
 
-	return Theme{values: theme}
+	return theme
 }
 
 func NewTheme(keyword, headline, description, errors, others color.Attribute) Theme {
@@ -89,7 +87,7 @@ func NewTheme(keyword, headline, description, errors, others color.Attribute) Th
 	theme[Error] = *er_color
 	theme[Other] = *ot_color
 
-	return Theme{values: theme}
+	return theme
 }
 
 func DefaultTheme() Theme {
@@ -105,7 +103,7 @@ func (f *Formatter) close() {
 }
 
 func (f *Formatter) add(dsgn Designation, val string) {
-	c := f.theme.values[dsgn]
+	c := f.theme[dsgn]
 
 	colored_val := c.Sprintf(val)
 	f.buffer.WriteString(colored_val)
