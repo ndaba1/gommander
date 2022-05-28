@@ -2,6 +2,7 @@ package gommander
 
 import (
 	"fmt"
+	"strings"
 )
 
 type HelpWriter struct{}
@@ -90,4 +91,31 @@ func standardize[T FormatterType](vals []T) []FormatGenerator {
 		values = append(values, c)
 	}
 	return values
+}
+
+func suggest_sub_cmd(c *Command, val string) []string {
+	var MIN_MATCH_SIZE = 3
+	var matches []string
+
+	cmd_map := make(map[string]int, 0)
+
+	for _, v := range c.sub_commands {
+		cmd_map[v.name] = 0
+	}
+
+	for _, v := range strings.Split(val, "") {
+		for _, sc := range c.sub_commands {
+			if strings.ContainsAny(sc.name, v) {
+				cmd_map[sc.name] = cmd_map[sc.name] + 1
+			}
+		}
+	}
+
+	for k, v := range cmd_map {
+		if v >= MIN_MATCH_SIZE {
+			matches = append(matches, k)
+		}
+	}
+
+	return matches
 }
