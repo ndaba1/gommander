@@ -277,6 +277,44 @@ func (c *Command) _init() {
 		cmd := ec.matched_cmd
 		cmd.PrintHelp()
 	}, -4)
+
+	if !c.settings[OverrideAllDefaultListeners] {
+		c.emitter.on_errors(func(ec *EventConfig) {
+			err := ec.err
+			err.Display()
+		})
+
+		c.emitter.on(OutputVersion, func(ec *EventConfig) {
+			// TODO: Print version in a better way
+			app := ec.app_ref
+
+			fmt.Println(app.GetName(), app.GetVersion())
+			fmt.Println(app.GetAuthor())
+			fmt.Println(app.GetHelp())
+		}, -4)
+
+		for _, event := range c.emitter.events_to_override {
+			c.emitter.rm_default_lstnr(event)
+		}
+	}
+}
+
+// A method for configuring the settings of a command
+func (c *Command) Set(s Setting, value bool) *Command {
+	c.settings[s] = value
+	return c
+}
+
+// A method for configuring the theme of a command
+func (c *Command) Theme(value Theme) *Command {
+	c.theme = value
+	return c
+}
+
+// A method for configuring a command use a predefined theme when printing output
+func (c *Command) UsePredefinedTheme(value PredefinedTheme) *Command {
+	c.Theme(GetPredefinedTheme(value))
+	return c
 }
 
 /****************************** Parser Functionality ****************************/
@@ -288,6 +326,7 @@ func (c *Command) _isExpectingValues() bool {
 func (c *Command) Parse() {
 	// TODO: Init/build the commands- set default listeners, add help subcmd, sync settings
 	c._init()
+	c._set_bin_name(os.Args[0])
 
 	parser := NewParser(c)
 	matches, err := parser.parse(os.Args[1:])
