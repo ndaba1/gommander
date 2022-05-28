@@ -9,5 +9,4 @@ const (
 	ShowHelpOnAllErrors
 	IncludeHelpSubcommand
 	OverrideAllDefaultListeners
-	SortCommandsAlphabetically
 )
