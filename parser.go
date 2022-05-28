@@ -88,7 +88,7 @@ func (pm *ParserMatches) GetArgValue(val string) (string, int, error) {
 	return "", -1, errors.New("no value found for provided argument")
 }
 
-func (pm *ParserMatches) GetOptionArgValue(val string) (string, int, error) {
+func (pm *ParserMatches) GetOptionValue(val string) (string, int, error) {
 	for _, v := range pm.option_matches {
 		opt := v.matched_opt
 		if opt.short == val || opt.long == val || opt.name == val {
@@ -99,17 +99,7 @@ func (pm *ParserMatches) GetOptionArgValue(val string) (string, int, error) {
 	return "", -1, errors.New("no value found for the provided option")
 }
 
-func (pm *ParserMatches) GetOptionArgsCount(val string) int {
-	for _, v := range pm.option_matches {
-		opt := v.matched_opt
-		if opt.short == val || opt.long == val || opt.name == val {
-			return v.instance_count
-		}
-	}
-	return 0
-}
-
-func (pm *ParserMatches) GetAllOptionArgs(val string) []string {
+func (pm *ParserMatches) GetAllOptionInstances(val string) []string {
 	instances := []string{}
 	for _, v := range pm.option_matches {
 		opt := v.matched_opt
