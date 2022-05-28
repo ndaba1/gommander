@@ -229,7 +229,6 @@ func (p *Parser) parse(raw_args []string) (ParserMatches, GommanderError) {
 				parts := strings.Split(arg, "=")
 
 				opt, err := p.getOption(parts[0])
-				// FIXME: err handling
 				if err != nil {
 					msg := fmt.Sprintf("Failed to resolve option: %v in value: %v", parts[0], arg)
 					ctx := fmt.Sprintf("Found value: %v, with long option syntax but the option: %v is not valid in this context", arg, parts[0])
@@ -275,7 +274,6 @@ func (p *Parser) parse(raw_args []string) (ParserMatches, GommanderError) {
 	p.matches.matched_cmd = p.current_cmd
 	p.matches.matched_cmd_idx = p.cmd_idx
 
-	// TODO: Check for required options
 	if !p.matches.ContainsFlag("help") {
 		for _, o := range p.current_cmd.options {
 			if o.required && !p.matches.ContainsOption(o.long) {
@@ -340,7 +338,6 @@ func (p *Parser) parse_cmd(raw_args []string) GommanderError {
 	if len(arg_cfg_vals) > 0 {
 		p.matches.arg_matches = append(p.matches.arg_matches, arg_cfg_vals...)
 	} else if len(p.current_cmd.sub_commands) > 0 {
-		// TODO: Cmd suggestions
 		msg := fmt.Sprintf("No such subcommand found: `%v`", p.current_token)
 		suggestions := suggest_sub_cmd(p.current_cmd, p.current_token)
 
