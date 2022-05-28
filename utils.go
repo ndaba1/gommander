@@ -7,7 +7,14 @@ import (
 type HelpWriter struct{}
 
 func (HelpWriter) Write(c *Command) {
-	fmter := NewFormatter(c.theme)
+	app := c.app_ref
+
+	if c.is_root {
+		app = c
+	}
+	// TODO: Check settings
+
+	fmter := NewFormatter(app.theme)
 
 	has_args := len(c.arguments) > 0
 	has_flags := len(c.flags) > 0
