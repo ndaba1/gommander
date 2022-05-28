@@ -21,8 +21,8 @@ const (
 )
 
 const (
-	Colorful PredefinedTheme = iota
-	Plain
+	ColorfulTheme PredefinedTheme = iota
+	PlainTheme
 )
 
 var DESIGNATION_SLICE = []Designation{
@@ -53,9 +53,9 @@ func NewFormatter(theme Theme) Formatter {
 
 func GetPredefinedTheme(val PredefinedTheme) Theme {
 	switch val {
-	case Colorful:
+	case ColorfulTheme:
 		return NewTheme(color.FgGreen, color.FgMagenta, color.FgHiBlue, color.FgHiRed, color.FgHiWhite)
-	case Plain:
+	case PlainTheme:
 		return NewTheme(color.FgWhite, color.FgWhite, color.FgWhite, color.FgWhite, color.FgWhite)
 	default:
 		return DefaultTheme()
