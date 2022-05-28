@@ -42,7 +42,8 @@ type EventConfig struct {
 }
 
 type EventEmitter struct {
-	listeners map[Event][]EventListener
+	listeners          map[Event][]EventListener
+	events_to_override []Event
 }
 
 func (c *EventConfig) GetArgs() *[]string       { return &c.args }
@@ -90,6 +91,24 @@ func (em *EventEmitter) emit(cfg EventConfig) {
 			os.Exit(cfg.exit_code)
 		}
 	}
+}
+
+func (em *EventEmitter) override(e Event) {
+	em.events_to_override = append(em.events_to_override, e)
+}
+
+func (em *EventEmitter) rm_default_lstnr(e Event) {
+	new_arr := []EventListener{}
+	for k, v := range em.listeners {
+		if k == e {
+			for _, lstnr := range v {
+				if lstnr.index != -4 {
+					new_arr = append(new_arr, lstnr)
+				}
+			}
+		}
+	}
+	em.listeners[e] = new_arr
 }
 
 func (em *EventEmitter) insert_before_all(cb EventCallback) {
