@@ -272,7 +272,7 @@ func (c *Command) _init() {
 			})
 	}
 
-	// Default help listener cannot be overriden
+	// Default help listener cannot be overridden
 	c.emitter.on(OutputHelp, func(ec *EventConfig) {
 		cmd := ec.matched_cmd
 		cmd.PrintHelp()
