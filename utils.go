@@ -22,7 +22,7 @@ func (HelpWriter) Write(c *Command) {
 	if has_custom_usage {
 		fmter.add(Keyword, fmt.Sprintf("    %v", c.custom_usage_str))
 	} else {
-		fmter.add(Keyword, fmt.Sprintf("    %v", c.usage_str))
+		fmter.add(Keyword, fmt.Sprintf("    %v", c._get_usage_str()))
 
 		if has_flags {
 			fmter.add(Other, " [FLAGS]")
