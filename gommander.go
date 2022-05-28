@@ -136,10 +136,15 @@ func (c *Command) Alias(alias string) *Command {
 	return c
 }
 
+func (c *Command) AddArgument(arg *Argument) *Command {
+	c.arguments = append(c.arguments, arg)
+	return c
+}
+
 // A method for setting any expected arguments for a command, it takes in the value of the argument e.g. `<image-name>` and the help string for said argument
 func (c *Command) Argument(val string, help string) *Command {
 	argument := new_argument(val, help)
-	c.arguments = append(c.arguments, argument)
+	c.AddArgument(argument)
 	return c
 }
 
@@ -242,11 +247,32 @@ func (c *Command) SubCommandGroup(name string, vals []*Command) {
 /****************************** Settings ****************************/
 func (c *Command) _init() {
 	// TODO: Check if override default listeners, add help subcmd
-	c.emitter.on_errors(func(ec *EventConfig) {
-		err := ec.err
-		err.Display()
-	})
+	if c.settings[IncludeHelpSubcommand] && len(c.sub_commands) > 0 {
+		valid_subcmds := []string{}
 
+		for _, c := range c.sub_commands {
+			valid_subcmds = append(valid_subcmds, c.name)
+		}
+
+		c.SubCommand("help").
+			Help("Print out help information for the passed command").
+			AddArgument(
+				NewArgument("<COMMAND>").
+					Help("The name of the command to output help for").
+					ValidateWith(valid_subcmds),
+			).
+			Action(func(pm *ParserMatches) {
+				val, _, _ := pm.GetArgValue("<COMMAND>")
+				parent := pm.matched_cmd.parent
+
+				if parent != nil {
+					cmd, _ := parent.find_subcommand(val)
+					cmd.PrintHelp()
+				}
+			})
+	}
+
+	// Default help listener cannot be overriden
 	c.emitter.on(OutputHelp, func(ec *EventConfig) {
 		cmd := ec.matched_cmd
 		cmd.PrintHelp()
