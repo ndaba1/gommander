@@ -119,7 +119,7 @@ func (c *Command) AddFlag(flag *Flag) *Command {
 	return c
 }
 
-// Identical to the `.AddFlag()` method except this one is for options instead of flags
+// A method for adding a new option to a command. The `.Option()` method invokes this one internally. Identical to the `.AddFlag()` method except this one is for options instead of flags
 func (c *Command) AddOption(opt *Option) *Command {
 	for _, o := range c.options {
 		if o.short == opt.short {
@@ -245,6 +245,7 @@ func (c *Command) SubCommandGroup(name string, vals []*Command) {
 }
 
 /****************************** Settings ****************************/
+
 func (c *Command) _init() {
 	// TODO: Check if override default listeners, add help subcmd
 	if c.settings[IncludeHelpSubcommand] && len(c.sub_commands) > 0 {
@@ -312,7 +313,7 @@ func (c *Command) Theme(value Theme) *Command {
 	return c
 }
 
-// A method for configuring a command use a predefined theme when printing output
+// A method for configuring a command to use a package-predefined theme when printing output
 func (c *Command) UsePredefinedTheme(value PredefinedTheme) *Command {
 	c.Theme(GetPredefinedTheme(value))
 	return c
