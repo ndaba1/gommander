@@ -75,6 +75,7 @@ func (HelpWriter) Write(c *Command) {
 			fmter.section(k)
 			fmter.format(standardize(v))
 		}
+		// TODO: Check for `other subcommands`
 	}
 
 	fmter.print()
