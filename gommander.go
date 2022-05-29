@@ -281,7 +281,8 @@ func (c *Command) _init() {
 	if !c.settings[OverrideAllDefaultListeners] {
 		c.emitter.on_errors(func(ec *EventConfig) {
 			err := ec.err
-			err.Display()
+			// TODO: Match theme in better way
+			err.Display(c.theme)
 		})
 
 		c.emitter.on(OutputVersion, func(ec *EventConfig) {
