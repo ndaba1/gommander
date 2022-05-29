@@ -52,8 +52,8 @@ func (e *GommanderError) Error() string {
 	return e.message
 }
 
-func (e *GommanderError) Display() {
-	fmter := NewFormatter(DefaultTheme())
+func (e *GommanderError) Display(theme Theme) {
+	fmter := NewFormatter(theme)
 
 	fmter.add(Error, "error:  ")
 	fmter.add(Other, strings.ToLower(e.message))
