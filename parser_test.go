@@ -9,7 +9,7 @@ func TestBasicParsing(t *testing.T) {
 	parser := NewParser(cmd)
 	matches, _ := parser.parse([]string{"-v", "-p", "90"})
 
-	if v, _, _ := matches.GetOptionValue("--port"); v != "90" {
+	if v, _ := matches.GetOptionValue("--port"); v != "90" {
 		t.Error("Option arg parsing not working correctly")
 	}
 
@@ -26,7 +26,7 @@ func TestStandardParsing(t *testing.T) {
 	parser := NewParser(app)
 	matches, _ := parser.parse([]string{"first", "-v", "-n", "one", "-n", "two"})
 
-	if v, _ := matches.GetMatchedCommand(); v.name != "first" {
+	if v := matches.GetMatchedCommand(); v.name != "first" {
 		t.Error("Subcommand resolution has some errors")
 	}
 
@@ -68,11 +68,11 @@ func TestComplexParsing(t *testing.T) {
 	parser := NewParser(app)
 	matches, _ := parser.parse([]string{"i", "image-one", "--all", "-p", "800", "--", "ng", "serve"})
 
-	if v, _ := matches.GetMatchedCommand(); v.name != "image" {
+	if v := matches.GetMatchedCommand(); v.name != "image" {
 		t.Error("Subcommand resolution has some errors")
 	}
 
-	if v, _, _ := matches.GetArgValue("<image-name>"); v != "image-one" {
+	if v, _ := matches.GetArgValue("<image-name>"); v != "image-one" {
 		t.Errorf("Command argument parsing failed. Expected: image-one, got: %v", v)
 	}
 
@@ -80,7 +80,7 @@ func TestComplexParsing(t *testing.T) {
 		t.Error("Flag parsing has some errors")
 	}
 
-	if v, _, _ := matches.GetOptionValue("--port"); v != "800" {
+	if v, _ := matches.GetOptionValue("--port"); v != "800" {
 		t.Error("Option arg parsing not working correctly")
 	}
 
@@ -99,9 +99,9 @@ func TestOptionSyntaxParsing(t *testing.T) {
 	m_2, _ := parser.parse([]string{"--port", "9000"})
 	m_3, _ := parser.parse([]string{"--port=9000"})
 
-	a_1, _, _ := m_1.GetOptionValue("port")
-	a_2, _, _ := m_2.GetOptionValue("port")
-	a_3, _, _ := m_3.GetOptionValue("port")
+	a_1, _ := m_1.GetOptionValue("port")
+	a_2, _ := m_2.GetOptionValue("port")
+	a_3, _ := m_3.GetOptionValue("port")
 
 	if a_1 != a_2 {
 		t.Error("Short option parsing and long option parsing out of sync")
