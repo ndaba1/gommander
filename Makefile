@@ -9,6 +9,9 @@ test:
 bench:
 	go test --bench=.
 
+cover:
+	go test -cover
+
 examples: $(EXAMPLES)
 	go build -o $(BIN) $(EXAMPLES)
 
