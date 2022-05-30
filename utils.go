@@ -76,7 +76,35 @@ func (HelpWriter) Write(c *Command) {
 			fmter.section(k)
 			fmter.format(standardize(v))
 		}
-		// TODO: Check for `other subcommands`
+		// TODO: Simplify this logic
+		group_contains := func(val *Command) bool {
+			included, total := 0, 0
+			for _, g := range c.sub_cmd_groups {
+				total += 1
+				if slice_contains(g, val) {
+					included -= 1
+				} else {
+					included += 1
+				}
+			}
+			if included != total {
+				return true
+			} else {
+				return false
+			}
+		}
+
+		other_cmds := []*Command{}
+		for _, sc := range c.sub_commands {
+			if !group_contains(sc) {
+				other_cmds = append(other_cmds, sc)
+			}
+		}
+
+		if len(other_cmds) > 0 {
+			fmter.section("Other Commands")
+			fmter.format(standardize(other_cmds))
+		}
 	}
 
 	if has_info {
@@ -86,6 +114,16 @@ func (HelpWriter) Write(c *Command) {
 	}
 
 	fmter.print()
+}
+
+func slice_contains(slice []*Command, val *Command) bool {
+	for _, v := range slice {
+		if v == val {
+			return true
+		}
+	}
+
+	return false
 }
 
 type FormatterType interface {
