@@ -6,10 +6,11 @@ import (
 )
 
 type Flag struct {
-	name  string
-	long  string
-	short string
-	help  string
+	name      string
+	long      string
+	short     string
+	help      string
+	is_global bool
 }
 
 func NewFlag(name string) *Flag {
@@ -26,6 +27,11 @@ func (f *Flag) Short(val rune) *Flag {
 
 func (f *Flag) Help(val string) *Flag {
 	f.help = val
+	return f
+}
+
+func (f *Flag) Global(val bool) *Flag {
+	f.is_global = val
 	return f
 }
 
