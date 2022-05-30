@@ -104,9 +104,9 @@ func suggest_sub_cmd(c *Command, val string) []string {
 		cmd_map[v.name] = 0
 	}
 
-	for _, v := range strings.Split(val, "") {
+	for i, v := range strings.Split(val, "") {
 		for _, sc := range c.sub_commands {
-			if strings.ContainsAny(sc.name, v) {
+			if len(sc.name) > i && string(sc.name[i]) == v {
 				cmd_map[sc.name] = cmd_map[sc.name] + 1
 			}
 		}
