@@ -216,9 +216,17 @@ func (c *Command) AddToSubCommandGroup(name string) *Command {
 // Receives a reference to a command, sets the command parent and usage string then adds its to the slice of subcommands. This method is called internally by the `.SubCommand()` method but users can also invoke it directly
 func (c *Command) AddSubCommand(sub_cmd *Command) *Command {
 	sub_cmd._set_parent(c)
-	cmd_path := []string{c.usage_str, sub_cmd.usage_str}
 	c.sub_commands = append(c.sub_commands, sub_cmd)
+
+	cmd_path := []string{c.usage_str, sub_cmd.usage_str}
 	sub_cmd.usage_str = strings.Join(cmd_path, " ")
+
+	// Propagate global flags to children
+	for _, f := range c.GetFlags() {
+		if f.is_global {
+			sub_cmd.AddFlag(f)
+		}
+	}
 
 	// propagate theme
 	sub_cmd.theme = c.theme
