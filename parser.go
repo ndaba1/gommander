@@ -28,13 +28,13 @@ type option_matches struct {
 	matched_opt    Option
 	instance_count int
 	passed_args    []arg_matches
-	cursor_index   int
+	// cursor_index   int
 }
 
 type arg_matches struct {
-	raw_value    string
-	instance_of  Argument
-	cursor_index int
+	raw_value   string
+	instance_of Argument
+	// cursor_index int
 }
 
 func (pm *ParserMatches) GetRawArgCount() int {
@@ -53,10 +53,15 @@ func (pm *ParserMatches) GetAppRef() *Command {
 	return pm.root_cmd
 }
 
-func (pm *ParserMatches) GetMatchedCommand() (*Command, int) {
-	return pm.matched_cmd, pm.matched_cmd_idx
+func (pm *ParserMatches) GetMatchedCommand() *Command {
+	return pm.matched_cmd
 }
 
+func (pm *ParserMatches) GetMatchedCommandIndex() int {
+	return pm.matched_cmd_idx
+}
+
+// Returns whether or not a flag was passed to the program args
 func (pm *ParserMatches) ContainsFlag(val string) bool {
 	for _, v := range pm.flag_matches {
 		flag := v.matched_flag
@@ -67,6 +72,7 @@ func (pm *ParserMatches) ContainsFlag(val string) bool {
 	return false
 }
 
+// Returns whether or not an option was passed to the program args
 func (pm *ParserMatches) ContainsOption(val string) bool {
 	for _, v := range pm.option_matches {
 		opt := v.matched_opt
@@ -77,26 +83,27 @@ func (pm *ParserMatches) ContainsOption(val string) bool {
 	return false
 }
 
-func (pm *ParserMatches) GetArgValue(val string) (string, int, error) {
+// A method used to get the value of an argument passed to the program. Takes as input the name of the argument or the raw value of the argument. If no value is found, or the argument is misspelled, an error is returned. If no value was passed to the argument but it is required, the default value is used if one exists, otherwise an error is thrown.
+func (pm *ParserMatches) GetArgValue(val string) (string, error) {
 	for _, v := range pm.arg_matches {
 		arg := v.instance_of
 		if arg.name == val || arg.get_raw_value() == val {
-			return v.raw_value, v.cursor_index, nil
+			return v.raw_value, nil
 		}
 	}
 
-	return "", -1, errors.New("no value found for provided argument")
+	return "", errors.New("no value found for provided argument")
 }
 
-func (pm *ParserMatches) GetOptionValue(val string) (string, int, error) {
+func (pm *ParserMatches) GetOptionValue(val string) (string, error) {
 	for _, v := range pm.option_matches {
 		opt := v.matched_opt
 		if opt.short == val || opt.long == val || opt.name == val {
 			// TODO: Probably check if slice is empty
-			return v.passed_args[0].raw_value, v.cursor_index, nil
+			return v.passed_args[0].raw_value, nil
 		}
 	}
-	return "", -1, errors.New("no value found for the provided option")
+	return "", errors.New("no value found for the provided option")
 }
 
 func (pm *ParserMatches) GetAllOptionInstances(val string) []string {
@@ -247,6 +254,7 @@ func (p *Parser) parse(raw_args []string) (ParserMatches, GommanderError) {
 				p._eat(arg)
 				p.matches.positional_args = append(p.matches.positional_args, arg)
 			} else if !p._isEaten(arg) && !allow_positional_args {
+				// TODO: Try for posix flags
 				msg := fmt.Sprintf("found unknown flag or option: `%v`", p.current_token)
 				ctx := fmt.Sprintf("The value: `%v`, could not be resolved as a flag or option.", p.current_token)
 
@@ -348,7 +356,7 @@ func (p *Parser) parse_cmd(raw_args []string) GommanderError {
 
 			for i, s := range suggestions {
 				if i > 0 {
-					ctx.WriteString("or")
+					ctx.WriteString("or ")
 				}
 				ctx.WriteString(fmt.Sprintf("`%v` ", s))
 			}
