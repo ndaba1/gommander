@@ -78,6 +78,17 @@ func BenchmarkArgsBuilder(b *testing.B) {
 	}
 }
 
+func BenchmarkComplexArgBuilder(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		NewArgument("complex").
+			Help("Arg with many options").
+			Required(true).
+			ValidateWith([]string{"ONE", "TEN"}).
+			Default("TEN").
+			Variadic(false)
+	}
+}
+
 func BenchmarkNewArgFn(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		new_argument("<test>", "A test argument")
