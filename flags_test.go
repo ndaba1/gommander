@@ -11,6 +11,18 @@ func TestFlagsCreation(t *testing.T) {
 			flag, flag_2,
 		)
 	}
+
+	flag.Global(true)
+	if !flag.is_global {
+		t.Error("Failed to set flag as global")
+	}
+
+	exp_l := "-h, --help"
+	exp_f := "The help flag"
+
+	if l, f := flag.generate(); l != exp_l || f != exp_f {
+		t.Errorf("Flag generate functioning incorrectly. Expected (%v, %v), but found (%v, %v)", exp_l, exp_f, l, f)
+	}
 }
 
 func BenchmarkFlagsBuilder(b *testing.B) {
