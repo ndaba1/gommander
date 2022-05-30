@@ -3,6 +3,9 @@ package gommander
 import "testing"
 
 func TestArgsCreation(t *testing.T) {
+
+	/********************* Required arguments tests ********************/
+
 	arg := NewArgument("<test>").Help("Test argument").Variadic(true)
 	arg_b := new_argument("<test...>", "Test argument")
 
@@ -28,8 +31,39 @@ func TestArgsCreation(t *testing.T) {
 
 	arg.ValidateWith([]string{"ONE", "TWO"})
 
-	if !arg.test_value("one") {
+	if !arg.test_value("one") && arg.test_value("TWO") {
 		t.Errorf("Arg validation working incorrectly")
+	}
+
+	if arg.get_raw_value() != "<test...>" {
+		t.Errorf("Raw value return function working incorrectly")
+	}
+
+	// Other tests
+	exp_l := "<test...>"
+	exp_f := "Test argument"
+
+	if l, f := arg.generate(); l != exp_l || f != exp_f {
+		t.Errorf("The arg generate function is problematic. Expected: (%v, %v) but found (%v, %v)", exp_l, exp_f, l, f)
+	}
+
+	/********************* Optional arguments tests ********************/
+
+	arg = NewArgument("[optional]").Default("DEFAULT").Help("Optional value with default")
+
+	if arg.is_required {
+		t.Error("Failed to set argument as optional")
+	}
+
+	if !arg.has_default_value() || arg.default_value != "DEFAULT" {
+		t.Error("Failed to set default value for argument")
+	}
+
+	exp_l = "[optional]"
+	exp_f = "Optional value with default"
+
+	if l, f := arg.generate(); l != exp_l || f != exp_f {
+		t.Errorf("The arg generate function is problematic. Expected: (%v, %v) but found (%v, %v)", exp_l, exp_f, l, f)
 	}
 
 }
