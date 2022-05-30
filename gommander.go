@@ -255,7 +255,10 @@ func (c *Command) SubCommandGroup(name string, vals []*Command) {
 /****************************** Settings ****************************/
 
 func (c *Command) _init() {
-	// TODO: Check if override default listeners, add help subcmd
+	if c.settings[DisableVersionFlag] {
+		c.remove_flag("--version")
+	}
+
 	if c.settings[IncludeHelpSubcommand] && len(c.sub_commands) > 0 {
 		valid_subcmds := []string{}
 
@@ -438,6 +441,16 @@ func (c *Command) find_subcommand(val string) (*Command, error) {
 	}
 
 	return NewCommand(""), errors.New("no such subcmd")
+}
+
+func (c *Command) remove_flag(val string) {
+	new_flags := []*Flag{}
+	for _, f := range c.flags {
+		if !(f.short == val || f.long == val) {
+			new_flags = append(new_flags, f)
+		}
+	}
+	c.flags = new_flags
 }
 
 func (c *Command) _set_parent(parent *Command) *Command {
