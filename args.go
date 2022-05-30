@@ -84,6 +84,12 @@ func (a *Argument) ValidateWith(vals []string) *Argument {
 	return a
 }
 
+// A method for setting what the argument should be displayed as when printing help
+func (a *Argument) DisplayAs(val string) *Argument {
+	a.raw = val
+	return a
+}
+
 /****************************** Package utilities ********************************/
 
 func (a *Argument) test_value(val string) bool {
