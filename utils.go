@@ -18,6 +18,7 @@ func (HelpWriter) Write(c *Command) {
 	fmter := NewFormatter(app.theme)
 
 	has_args := len(c.arguments) > 0
+	has_info := len(c.discussion) > 0
 	has_flags := len(c.flags) > 0
 	has_options := len(c.options) > 0
 	has_subcmds := len(c.sub_commands) > 0
@@ -76,6 +77,12 @@ func (HelpWriter) Write(c *Command) {
 			fmter.format(standardize(v))
 		}
 		// TODO: Check for `other subcommands`
+	}
+
+	if has_info {
+		// TODO: Format discussion here
+		fmter.section(strings.ToUpper("discussion"))
+		// fmter.discussion(app.discussion, 80)
 	}
 
 	fmter.print()
