@@ -36,6 +36,19 @@ func TestAfterAllFn(t *testing.T) {
 	}
 }
 
+func TestEmitterFunctionality(t *testing.T) {
+	em := new_emitter()
+
+	// Add some basic listeners
+	em.on_errors(func(ec *EventConfig) {})
+
+	for _, v := range em.listeners {
+		if v[0].index != -4 {
+			t.Error("Failed to add default listener")
+		}
+	}
+}
+
 func BenchmarkLstnrCreation(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		em := new_emitter()
