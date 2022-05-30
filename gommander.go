@@ -359,8 +359,13 @@ func (c *Command) Parse() {
 		}
 		c.emit(event)
 	} else if matches.ContainsFlag("version") {
-		// emit version event
-		os.Exit(0)
+		event := EventConfig{
+			event:       OutputVersion,
+			exit_code:   0,
+			app_ref:     c,
+			matched_cmd: matched_cmd,
+		}
+		c.emit(event)
 	}
 
 	if matched_cmd.callback != nil {
