@@ -14,6 +14,13 @@ func TestOptionsCreation(t *testing.T) {
 		t.Error("Failed to set required value on options")
 	}
 
+	exp_l := "-p, --port <port-number> "
+	exp_f := "The port option"
+
+	if l, f := opt.generate(); exp_f != f || exp_l != l {
+		t.Errorf("The option generate func is faulty. Expected (%v, %v), but found (%v, %v)", exp_l, exp_f, l, f)
+	}
+
 	expected_arg := NewArgument("<port-number>")
 	if opt.args[0].name != expected_arg.name {
 		t.Error("Option args created incorrectly")
