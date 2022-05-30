@@ -50,7 +50,7 @@ func NewArgument(name string) *Argument {
 // A method for setting the default value on an argument to be used when no value is provided but the argument value is required
 func (a *Argument) Default(val string) *Argument {
 	// Check if value valid
-	if a.has_default_value() {
+	if len(a.valid_values) > 0 {
 		if !a.test_value(val) {
 			fmt.Printf("error occurred when setting default value for argument: %v \n.  the passed value %v does not match the valid values: %v", a.name, val, a.valid_values)
 			os.Exit(10)
