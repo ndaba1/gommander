@@ -95,7 +95,7 @@ func DefaultTheme() Theme {
 }
 
 func (f *Formatter) section(val string) {
-	f.add(Headline, fmt.Sprintf("\n%v: \n", val))
+	f.add(Headline, fmt.Sprintf("\n%v: \n", strings.ToUpper(val)))
 }
 
 func (f *Formatter) close() {
