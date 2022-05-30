@@ -298,10 +298,25 @@ func (p *Parser) parse(raw_args []string) (ParserMatches, GommanderError) {
 						arg_vals = append(arg_vals, a.default_value)
 					}
 				}
+
 				err := p.parse_option(o, arg_vals)
 				if !err.is_nil {
 					return p.matches, err
 				}
+			}
+		}
+
+		var arg_vals []string
+		for _, a := range p.current_cmd.arguments {
+			if a.has_default_value() {
+				arg_vals = append(arg_vals, a.default_value)
+			}
+		}
+
+		if len(arg_vals) > 0 {
+			err := p.parse_cmd(arg_vals)
+			if !err.is_nil {
+				return p.matches, err
 			}
 		}
 	}
