@@ -52,8 +52,9 @@ func (e *GommanderError) Error() string {
 	return e.message
 }
 
-func (e *GommanderError) Display(theme Theme) {
-	fmter := NewFormatter(theme)
+func (e *GommanderError) Display(c *Command) {
+	app := c._get_app_ref()
+	fmter := NewFormatter(app.theme)
 
 	fmter.add(Error, "error:  ")
 	fmter.add(Other, strings.ToLower(e.message))
@@ -73,6 +74,11 @@ func (e *GommanderError) Display(theme Theme) {
 		if err == io.EOF {
 			break
 		}
+	}
+
+	if app.settings[ShowHelpOnAllErrors] {
+		c.PrintHelp()
+		fmt.Println()
 	}
 
 	fmter.add(Other, "Run a COMMAND with --help for detailed usage information")
