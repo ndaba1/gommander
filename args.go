@@ -18,8 +18,8 @@ type Argument struct {
 
 // A Builder method for creating a new argument. Valid values include <arg>, [arg] or simply the name of the arg
 func NewArgument(name string) *Argument {
-	var required bool
-	var variadic bool
+	required := false
+	variadic := false
 	var delimiters []string
 
 	if strings.HasPrefix(name, "<") {
