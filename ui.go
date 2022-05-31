@@ -148,7 +148,7 @@ func (f *Formatter) format(items []FormatGenerator) {
 
 	// If different sections have almost similar max_offsets, use equal values
 	diff := f.prev_offset - current_offset
-	if diff < 8 && diff > 0 {
+	if diff < 8 && diff > -8 {
 		max_offset = f.prev_offset
 	} else {
 		max_offset = current_offset
