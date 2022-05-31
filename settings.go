@@ -10,4 +10,5 @@ const (
 	IncludeHelpSubcommand
 	OverrideAllDefaultListeners
 	DisableVersionFlag
+	IgnoreAllErrors
 )
