@@ -95,6 +95,8 @@ func DefaultTheme() Theme {
 }
 
 func (f *Formatter) section(val string) {
+	// lower := strings.ToLower(val)
+	// TODO: Remove use of deprecated functionality
 	f.add(Headline, fmt.Sprintf("\n%v: \n", strings.ToUpper(val)))
 }
 
