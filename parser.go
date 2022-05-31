@@ -254,7 +254,32 @@ func (p *Parser) parse(raw_args []string) (ParserMatches, GommanderError) {
 				p._eat(arg)
 				p.matches.positional_args = append(p.matches.positional_args, arg)
 			} else if !p._isEaten(arg) && !allow_positional_args {
-				// TODO: Try for posix flags
+				values := strings.Split(arg, "")
+
+				// TODO: More validation
+				if len(values) > 2 && values[0] == "-" {
+					p._eat(arg)
+					for _, v := range values[1:] {
+						flag, err := p.getFlag(fmt.Sprintf("-%v", v))
+
+						if err != nil {
+							msg := fmt.Sprintf("unknown shorthand flag: `%v` in: `%v`", v, p.current_token)
+							ctx := fmt.Sprintf("Expected to find valid flags values in: `%v`, but instead found: `-%v` , which could not be resolved as a flag", p.current_token, v)
+
+							return p.matches, throw_error(UnknownOption, msg, ctx).set_args([]string{v, p.current_token})
+						}
+
+						flag_cfg := flag_matches{
+							matched_flag: *flag,
+						}
+						if !p.matches.ContainsFlag(flag.long) {
+							p.matches.flag_matches = append(p.matches.flag_matches, flag_cfg)
+						}
+					}
+					continue
+				}
+
+				fmt.Printf("%v", strings.Split(arg, ""))
 				msg := fmt.Sprintf("found unknown flag or option: `%v`", p.current_token)
 				ctx := fmt.Sprintf("The value: `%v`, could not be resolved as a flag or option.", p.current_token)
 
