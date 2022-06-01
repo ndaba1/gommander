@@ -2,6 +2,7 @@
 
 <p align="center">
 <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/ndaba1/gommander/gommander-ci-workflow?label=CI&logo=github%20actions&logoColor=fff">
+<img alt="Go report card", src="https://goreportcard.com/badge/github.com/ndaba1/gommander">
 </p>
 
 A commander package for creating CLIs in Go. This package aims to be a complete solution for command line argument parsing by providing you with an easy-to-use and extensible api, but without compromising speed.
@@ -51,8 +52,8 @@ func main() {
   app := gommander.App();
 
   app.Author("vndaba").
-	  Version("0.1.0").
-	  Help("A demo usage of gommander").
+      Version("0.1.0").
+      Help("A demo usage of gommander").
       Name("demo")
 
   app.Subcommand("greet").
@@ -178,11 +179,12 @@ func main() {
 
 Here, we see the value of the argument enclosed between angle brackets. **This means that the argument is required** and therefore, an error will be thrown if one is not passed to the program. Optional arguments are represented by square brackets: `[arg]`. If neither the square or angle brackets are provided, the argument is marked as optional.
 The `.Argument()` method takes in the value of the argument and its help string/description. Here are the acceptable forms for the argument value:
-| value | semantics
-| <arg> | Argument is required
-| <arg...> | Argument is required and is variadic
-| [arg] | Argument is optional
-| [arg...] | Argument is optional but variadic if provided
+| Value | Semantics|
+|:-----|:--------|
+| `<arg>` | Argument is required |
+| `<arg...>` | Argument is required and is variadic|
+| `[arg]` | Argument is optional|
+| `[arg...]` | Argument is optional but variadic if provided|
 
 ### **AddArgument() method**
 
