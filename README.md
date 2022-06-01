@@ -51,8 +51,8 @@ func main() {
   app := gommander.App();
 
   app.Author("vndaba").
-	  Version("0.1.0").
-	  Help("A demo usage of gommander").
+      Version("0.1.0").
+      Help("A demo usage of gommander").
       Name("demo")
 
   app.Subcommand("greet").
