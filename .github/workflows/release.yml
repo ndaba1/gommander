@@ -19,6 +19,10 @@ jobs:
         with:
           go-version: 1.18
 
+      - name: "Create gommander release"
+        run: |
+          make release VERSION={{ github.ref }}
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -31,6 +35,4 @@ jobs:
           prerelease: false  
       
 
-      - name: "Create gommander release"
-        run: |
-          make release VERSION={{ github.ref }}
+     
