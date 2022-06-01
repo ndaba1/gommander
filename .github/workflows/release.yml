@@ -19,9 +19,13 @@ jobs:
         with:
           go-version: 1.18
 
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
       - name: "Create gommander release"
         run: |
-          make release VERSION=${{ github.ref }}
+          make release VERSION=${{ steps.get_version.outputs.VERSION }}
 
       - name: Create Release
         id: create_release
