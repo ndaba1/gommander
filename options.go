@@ -14,6 +14,7 @@ type Option struct {
 	required bool
 }
 
+// A builder method to generate a new option
 func NewOption(name string) *Option {
 	return &Option{
 		name: name,
@@ -21,26 +22,31 @@ func NewOption(name string) *Option {
 	}
 }
 
+// Simply sets the shorthand version of the option
 func (o *Option) Short(val rune) *Option {
 	o.short = fmt.Sprintf("-%c", val)
 	return o
 }
 
+// A method for setting the help string / description for an option
 func (o *Option) Help(val string) *Option {
 	o.help = val
 	return o
 }
 
+// Sets whether or not the option is required
 func (o *Option) Required(val bool) *Option {
 	o.required = val
 	return o
 }
 
+// A method for adding a new argument to an option. Takes as input the name of the argument
 func (o *Option) Argument(val string) *Option {
 	o.args = append(o.args, new_argument(val, ""))
 	return o
 }
 
+// A builder method for adding an argument. Expects an instance of an argument as input
 func (o *Option) AddArgument(arg *Argument) *Option {
 	o.args = append(o.args, arg)
 	return o
