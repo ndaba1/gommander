@@ -137,6 +137,11 @@ func (c *Command) Alias(alias string) *Command {
 }
 
 func (c *Command) AddArgument(arg *Argument) *Command {
+	for _, a := range c.arguments {
+		if a.name == arg.name {
+			return c
+		}
+	}
 	c.arguments = append(c.arguments, arg)
 	return c
 }
@@ -208,7 +213,7 @@ func (c *Command) UsageStr(val string) *Command {
 /****************************** Subcommand related methods ****************************/
 
 // When chained on a command, this method adds said command to the provided sub_cmd group in the parent of the command.
-func (c *Command) AddToSubCommandGroup(name string) *Command {
+func (c *Command) AddToGroup(name string) *Command {
 	c.parent.sub_cmd_groups[name] = append(c.parent.sub_cmd_groups[name], c)
 	return c
 }
@@ -274,7 +279,7 @@ func (c *Command) _init() {
 					ValidateWith(valid_subcmds),
 			).
 			Action(func(pm *ParserMatches) {
-				val, _, _ := pm.GetArgValue("<COMMAND>")
+				val, _ := pm.GetArgValue("<COMMAND>")
 				parent := pm.matched_cmd.parent
 
 				if parent != nil {
@@ -294,7 +299,7 @@ func (c *Command) _init() {
 		c.emitter.on_errors(func(ec *EventConfig) {
 			err := ec.err
 			// TODO: Match theme in better way
-			err.Display(c.theme)
+			err.Display(c)
 		})
 
 		c.emitter.on(OutputVersion, func(ec *EventConfig) {
@@ -333,16 +338,27 @@ func (c *Command) UsePredefinedTheme(value PredefinedTheme) *Command {
 /****************************** Parser Functionality ****************************/
 
 func (c *Command) _isExpectingValues() bool {
-	return len(c.sub_commands) > 0 || len(c.arguments) > 0
+	has_defaults := func(list []*Argument) bool {
+		for _, a := range c.arguments {
+			if a.has_default_value() {
+			} else {
+				return false
+			}
+		}
+		return true
+	}
+
+	return len(c.sub_commands) > 0 || (len(c.arguments) > 0 && !has_defaults(c.arguments))
 }
 
-func (c *Command) Parse() {
+func (c *Command) _parse(vals []string) {
 	// TODO: Init/build the commands- set default listeners, add help subcmd, sync settings
 	c._init()
 	c._set_bin_name(os.Args[0])
 
+	raw_args := os.Args[1:]
 	parser := NewParser(c)
-	matches, err := parser.parse(os.Args[1:])
+	matches, err := parser.parse(raw_args)
 
 	if !err.is_nil {
 		event := EventConfig{
@@ -357,7 +373,8 @@ func (c *Command) Parse() {
 	}
 
 	// TODO: No errors, check special flags
-	matched_cmd, cmd_idx := matches.GetMatchedCommand()
+	matched_cmd := matches.GetMatchedCommand()
+	cmd_idx := matches.GetMatchedCommandIndex()
 
 	// Check special flags
 	// TODO: Sync with program settings
@@ -381,7 +398,7 @@ func (c *Command) Parse() {
 
 	if matched_cmd.callback != nil {
 		// No args passed to the matched cmd
-		if len(matches.raw_args[cmd_idx+1:]) == 0 && matched_cmd._isExpectingValues() {
+		if (len(raw_args) == 0 || len(matches.raw_args[cmd_idx+1:]) == 0) && matched_cmd._isExpectingValues() {
 			matched_cmd.PrintHelp()
 			return
 		} else {
@@ -391,6 +408,15 @@ func (c *Command) Parse() {
 	} else {
 		matched_cmd.PrintHelp()
 	}
+}
+
+// A method for parsing the arguments passed to a program and invoking the callback on a command if one is found. This method also handles any errors encountered while parsing.
+func (c *Command) Parse() {
+	c._parse(os.Args)
+}
+
+func (c *Command) ParseFrom(args []string) {
+	c._parse(args)
 }
 
 /****************************** Event emitter functionality ****************************/
@@ -405,7 +431,7 @@ func (c *Command) On(event Event, cb EventCallback) {
 	c.emitter.on(event, cb, 0)
 }
 
-// This method is also used a new listener to a specific event but also overrides the default listener created by the package for said event
+// This method is also used to add a new listener to a specific event but also overrides the default listener created by the package for said event
 func (c *Command) Override(event Event, cb EventCallback) {
 	c.emitter.override(event)
 	c.emitter.on(event, cb, 0)
@@ -451,6 +477,13 @@ func (c *Command) remove_flag(val string) {
 		}
 	}
 	c.flags = new_flags
+}
+
+func (c *Command) _get_app_ref() *Command {
+	if c.is_root {
+		return c
+	}
+	return c.app_ref
 }
 
 func (c *Command) _set_parent(parent *Command) *Command {
