@@ -23,5 +23,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fair amount of tests and coverage
 
 [unreleased]: https://github.com/ndaba1/gommander/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/ndaba1/gommander/compare/v0.1.1...v0.1.0
+[0.1.1]: https://github.com/ndaba1/gommander/compare/v0.1.1...v0.1.0
 [0.1.0]: https://github.com/ndaba1/gommander/releases/tag/v0.1.0
