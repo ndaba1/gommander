@@ -398,7 +398,7 @@ func (c *Command) _parse(vals []string) {
 
 	if matched_cmd.callback != nil {
 		// No args passed to the matched cmd
-		if (len(raw_args) == 0 || len(matches.raw_args[cmd_idx+1:]) == 0) && matched_cmd._isExpectingValues() {
+		if (len(raw_args) == 0 || len(matches.raw_args[cmd_idx:]) == 0) && matched_cmd._isExpectingValues() {
 			matched_cmd.PrintHelp()
 			return
 		} else {
