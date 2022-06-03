@@ -35,7 +35,7 @@ Features of this package include:
 To add the package to your go project, execute the following command:
 
 ```bash
-go get github.com/ndaba1/gommander
+go get -u github.com/ndaba1/gommander
 ```
 
 ## Quick Start
