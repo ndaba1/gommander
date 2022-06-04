@@ -48,6 +48,11 @@ func (e GommanderError) set_args(vals []string) GommanderError {
 	return e
 }
 
+func (e *GommanderError) compare(err *GommanderError) bool {
+	// TODO: Validate all fields
+	return e.message == err.message && e.context == err.context && e.kind == err.kind
+}
+
 func (e *GommanderError) Error() string {
 	return e.message
 }
