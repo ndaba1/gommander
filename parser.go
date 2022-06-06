@@ -299,7 +299,11 @@ func (p *Parser) parse(raw_args []string) (ParserMatches, GommanderError) {
 			p._eat(arg)
 			p.current_cmd = sc
 			p.cmd_idx = index
-			continue
+
+			err := p.parse_cmd(raw_args[p.cmd_idx+1:])
+			if !err.is_nil {
+				return p.matches, err
+			}
 		} else if allow_positional_args {
 			// TODO: More conditionals
 			p._eat(arg)
@@ -464,7 +468,7 @@ func (p *Parser) get_arg_matches(list []*Argument, args []string) ([]arg_matches
 					} else if arg_val.is_required {
 						args := []string{arg_val.get_raw_value()}
 						msg := fmt.Sprintf("missing required argument: `%v`", args[0])
-						ctx := fmt.Sprintf("Expected a value for argument: `%v`, but instead found: %v", arg_val.name, v)
+						ctx := fmt.Sprintf("Expected a value for argument: `%v`, but instead found: `%v`", arg_val.name, v)
 
 						return matches, throw_error(MissingRequiredArgument, msg, ctx).set_args(args)
 					} else {
