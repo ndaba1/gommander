@@ -48,6 +48,11 @@ func (HelpWriter) Write(c *Command) {
 	}
 	fmter.close()
 
+	if app.settings[ShowCommandAliases] {
+		fmter.section("ALIASES")
+		fmter.Add(Description, fmt.Sprintf("    [%v]\n", strings.Join(c.aliases, ", ")))
+	}
+
 	if has_args {
 		fmter.section("ARGS")
 		fmter.format(standardize(c.arguments))
