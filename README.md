@@ -17,6 +17,10 @@ Features of this package include:
 - Subcommands nesting
 - Automatic help generation
 
+## API Overview
+
+<img src="./assets/overview.png">
+
 ## Index
 
 - [Gommander](#gommander-go-commander)
@@ -414,7 +418,58 @@ app.Theme(
 	)
 ```
 
-The NewTheme method takes in values of type `ColorAttribute` defined in the `fatih/color` package.
+The NewTheme method takes in values of type `ColorAttribute` defined in the `fatih/color` package. Here are examples of the said themes:
+
+### The default app theme:
+
+<img src="./assets/default_theme.png">
+
+### The plain theme:
+
+You can configure the app to use the plain theme as follows:
+
+```go
+// ...
+    app.UsePredefineTheme(gommander.PlainTheme)
+// ...
+```
+
+<img src="./assets/plain_theme.png">
+
+### The colorful theme:
+
+```go
+// ...
+    app.UsePredefineTheme(gommander.ColorfulTheme)
+// ...
+```
+
+<img src="./assets/colorful_theme.png">
+
+### Custom-defined themes:
+
+You can easily define your own custom theme as shown below:
+
+```go
+package main
+
+import (
+    "github.com/ndaba1/gommander"
+    "github.com/fatih/color"
+)
+
+func main() {
+    app := gommander.App()
+
+    app.Theme(
+		gommander.
+			NewTheme(color.FgYellow, color.FgCyan, color.FgMagenta, color.FgRed, color.FgWhite),
+	)
+}
+
+```
+
+<img src="./assets/custom_theme.png">
 
 ## Command Callbacks
 
