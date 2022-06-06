@@ -479,7 +479,7 @@ func (p *Parser) get_arg_matches(list []*Argument, args []string) ([]arg_matches
 			if err := arg_val.validator_fn(builder.String()); err != nil {
 				args := []string{builder.String()}
 				msg := fmt.Sprintf("the passed value: `%v`, is not a valid argument", args[0])
-				ctx := fmt.Sprintf("The validator function threw an error when checking the value: `%v`", builder.String())
+				ctx := fmt.Sprintf("The validator function threw the following error: \"%v\" when checking the value: `%v`", err.Error(), builder.String())
 
 				return matches, throw_error(InvalidArgumentValue, msg, ctx).set_args(args)
 			}
