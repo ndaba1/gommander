@@ -8,11 +8,8 @@ import (
 type HelpWriter struct{}
 
 func (HelpWriter) Write(c *Command) {
-	app := c.app_ref
+	app := c._get_app_ref()
 
-	if c.is_root {
-		app = c
-	}
 	// TODO: Check settings
 
 	fmter := NewFormatter(app.theme)
@@ -25,28 +22,28 @@ func (HelpWriter) Write(c *Command) {
 	has_custom_usage := len(c.custom_usage_str) > 0
 	has_subcmd_groups := len(c.sub_cmd_groups) > 0
 
-	fmter.add(Description, fmt.Sprintf("\n%v\n", c.help))
+	fmter.Add(Description, fmt.Sprintf("\n%v\n", c.help))
 	fmter.section("USAGE")
 
 	if has_custom_usage {
-		fmter.add(Keyword, fmt.Sprintf("    %v", c.custom_usage_str))
+		fmter.Add(Keyword, fmt.Sprintf("    %v", c.custom_usage_str))
 	} else {
-		fmter.add(Keyword, fmt.Sprintf("    %v", c._get_usage_str()))
+		fmter.Add(Keyword, fmt.Sprintf("    %v", c._get_usage_str()))
 
 		if has_flags {
-			fmter.add(Other, " [FLAGS]")
+			fmter.Add(Other, " [FLAGS]")
 		}
 
 		if has_options {
-			fmter.add(Other, " [OPTIONS]")
+			fmter.Add(Other, " [OPTIONS]")
 		}
 
 		if has_args {
-			fmter.add(Other, " <ARGS>")
+			fmter.Add(Other, " <ARGS>")
 		}
 
 		if has_subcmds {
-			fmter.add(Other, " <SUBCOMMAND>")
+			fmter.Add(Other, " <SUBCOMMAND>")
 		}
 	}
 	fmter.close()
@@ -113,7 +110,7 @@ func (HelpWriter) Write(c *Command) {
 		// fmter.discussion(app.discussion, 80)
 	}
 
-	fmter.print()
+	fmter.Print()
 }
 
 func slice_contains(slice []*Command, val *Command) bool {
