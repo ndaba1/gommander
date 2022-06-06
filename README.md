@@ -117,6 +117,24 @@ func main() {
 // ...
 ```
 
+Subcommands can have multiple aliases which are hidden by default but you can this behavior can be modified easily as shown:
+
+```go
+// ...
+func main() {
+    app := gommander.App()
+
+    app.SubCommand("image").
+		Help("A test subcmd").
+		Alias("img").
+		Alias("images")
+
+    // to display the aliases
+    app.Set(gommander.ShowCommandAliases, true)
+}
+// ...
+```
+
 Subcommand Nesting is also supported by the package. You can chain as many subcommands as you would like. The following is an example:
 
 ```go
