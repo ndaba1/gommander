@@ -11,7 +11,7 @@ import (
 type CommandCallback = func(*ParserMatches)
 
 type Command struct {
-	alias            string
+	aliases          []string
 	arguments        []*Argument
 	author           string
 	callback         CommandCallback
@@ -62,7 +62,7 @@ func NewCommand(name string) *Command {
 /****************************** Value Getters ****************************/
 
 // Simply returns the alias of the command or an empty string
-func (c *Command) GetAlias() string { return c.alias }
+func (c *Command) GetAliases() []string { return c.aliases }
 
 // Returns the author of the program if one is set
 func (c *Command) GetAuthor() string { return c.author }
@@ -132,7 +132,7 @@ func (c *Command) AddOption(opt *Option) *Command {
 
 // Simply sets the alias of a command
 func (c *Command) Alias(alias string) *Command {
-	c.alias = alias
+	c.aliases = append(c.aliases, alias)
 	return c
 }
 
@@ -461,7 +461,16 @@ func (c *Command) BeforeHelp(cb EventCallback) {
 
 func (c *Command) find_subcommand(val string) (*Command, error) {
 	for _, sc := range c.sub_commands {
-		if sc.name == val || sc.alias == val {
+		includes := func(val string) bool {
+			for _, v := range sc.aliases {
+				if v == val {
+					return true
+				}
+			}
+			return false
+		}
+
+		if sc.name == val || includes(val) {
 			return sc, nil
 		}
 	}
