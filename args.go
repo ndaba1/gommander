@@ -57,6 +57,15 @@ func (a *Argument) Default(val string) *Argument {
 			os.Exit(10)
 		}
 	}
+	// verify value against validator fn if any
+	if a.validator_fn != nil {
+		err := a.validator_fn(val)
+		if err != nil {
+			fmt.Printf("you tried to set a default value for argument: %v, but the validator function returned an error for values: %v", a.name, val)
+			os.Exit(10)
+		}
+	}
+
 	a.default_value = val
 	return a
 }
