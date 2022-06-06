@@ -113,6 +113,35 @@ func TestOptionSyntaxParsing(t *testing.T) {
 
 }
 
+func TestParserErrors(t *testing.T) {
+	app := NewCommand("echo").Version("0.1.0").Help("A test CLI")
+
+	app.SubCommand("image").
+		Argument("<image-name>", "Provide an image name").
+		Alias("i").
+		Flag("--all", "Ran across all variants").
+		Help("A first value subcommand").
+		AddFlag(
+			NewFlag("test").
+				Short('t').
+				Help("A simple test flag"),
+		)
+
+	parser := NewParser(app)
+	_, err := parser.parse([]string{"i"})
+
+	msg := "missing required argument: `<image-name>`"
+	ctx := "Expected a required value corresponding to: `<image-name>` but none was provided"
+
+	// Test missing required argument
+	exp_err := throw_error(MissingRequiredArgument, msg, ctx)
+	if !exp_err.compare(&err) {
+		t.Error("Missing require argument error thrown incorrectly")
+		t.Errorf("Expected error was: %v", exp_err.Error())
+		t.Errorf("Found error was: %v", err.Error())
+	}
+}
+
 func BenchmarkParseEmpty(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		parser := NewParser(NewCommand("empty"))
