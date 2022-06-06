@@ -465,12 +465,24 @@ func (p *Parser) get_arg_matches(list []*Argument, args []string) ([]arg_matches
 			}
 		}
 
+		// test the value against default values if any
 		if len(arg_val.valid_values) > 0 && !arg_val.test_value(builder.String()) {
 			args := []string{builder.String()}
 			msg := fmt.Sprintf("the passed value: `%v`, is not a valid argument", args[0])
 			ctx := fmt.Sprintf("Expected one of: `%v`, but instead found: `%v`, which is not a valid value", arg_val.valid_values, builder.String())
 
 			return matches, throw_error(InvalidArgumentValue, msg, ctx).set_args(args)
+		}
+
+		// test the value against the validator func if any
+		if arg_val.validator_fn != nil {
+			if err := arg_val.validator_fn(builder.String()); err != nil {
+				args := []string{builder.String()}
+				msg := fmt.Sprintf("the passed value: `%v`, is not a valid argument", args[0])
+				ctx := fmt.Sprintf("The validator function threw an error when checking the value: `%v`", builder.String())
+
+				return matches, throw_error(InvalidArgumentValue, msg, ctx).set_args(args)
+			}
 		}
 
 		arg_cfg := arg_matches{
