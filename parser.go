@@ -177,7 +177,16 @@ func (p *Parser) getOption(val string) (*Option, error) {
 
 func (p *Parser) getSubCommand(val string) (*Command, error) {
 	for _, s := range p.current_cmd.sub_commands {
-		if s.name == val || s.alias == val {
+		includes := func(val string) bool {
+			for _, v := range s.aliases {
+				if v == val {
+					return true
+				}
+			}
+			return false
+		}
+
+		if s.name == val || includes(val) {
 			return s, nil
 		}
 	}
