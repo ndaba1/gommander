@@ -407,7 +407,9 @@ func (c *Command) _parse(vals []string) {
 		}
 	} else {
 		matched_cmd.PrintHelp()
-		fmt.Printf("\nHelp information was printed because no callback was found for command: `%v`\n", matched_cmd.name)
+		if len(matches.raw_args[cmd_idx:]) > 0 {
+			fmt.Printf("\nHelp information was printed because no callback was found for command: `%v`\n", matched_cmd.name)
+		}
 	}
 }
 
