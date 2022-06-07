@@ -300,30 +300,39 @@ func (p *Parser) parse(raw_args []string) (ParserMatches, GommanderError) {
 			p.current_cmd = sc
 			p.cmd_idx = index
 
-			err := p.parse_cmd(raw_args[p.cmd_idx+1:])
-			if !err.is_nil {
-				return p.matches, err
-			}
+			continue
 		} else if allow_positional_args {
 			// TODO: More conditionals
 			p._eat(arg)
 			p.matches.positional_args = append(p.matches.positional_args, arg)
-		} else if !p._isEaten(arg) {
-			err := p.parse_cmd(raw_args[p.cursor:])
-			if !err.is_nil {
-				return p.matches, err
-			}
 		}
-
 	}
 
 	p.matches.matched_cmd = p.current_cmd
 	p.matches.matched_cmd_idx = p.cmd_idx
 
+	cmd_args := []string{}
+	if !(len(raw_args) == p.cmd_idx+1) {
+		cmd_args = append(cmd_args, raw_args[p.cmd_idx+1:]...)
+	}
+	err := p.parse_cmd(cmd_args)
+	if !err.is_nil {
+		return p.matches, err
+	}
+
 	if !p.matches.ContainsFlag("help") {
 		var arg_vals []string
 		for _, a := range p.current_cmd.arguments {
-			if a.has_default_value() {
+			if a.is_required && !a.has_default_value() {
+				if _, err := p.matches.GetArgValue(a.name); err != nil {
+					// throw err
+					args := []string{a.get_raw_value()}
+					msg := fmt.Sprintf("missing required argument: `%v`", args[0])
+					ctx := fmt.Sprintf("Expected a required value corresponding to: `%v` but none was provided", a.get_raw_value())
+
+					return p.matches, throw_error(MissingRequiredArgument, msg, ctx).set_args(args)
+				}
+			} else if a.has_default_value() {
 				arg_vals = append(arg_vals, a.default_value)
 			}
 		}
@@ -392,14 +401,14 @@ func (p *Parser) parse_option(opt *Option, raw_args []string) GommanderError {
 }
 
 func (p *Parser) parse_cmd(raw_args []string) GommanderError {
-	arg_cfg_vals, err := p.get_arg_matches(p.current_cmd.arguments, raw_args[p.cmd_idx:])
+	arg_cfg_vals, err := p.get_arg_matches(p.current_cmd.arguments, raw_args)
 	if !err.is_nil {
 		return err
 	}
 
 	if len(arg_cfg_vals) > 0 {
 		p.matches.arg_matches = append(p.matches.arg_matches, arg_cfg_vals...)
-	} else if len(p.current_cmd.sub_commands) > 0 {
+	} else if len(p.current_cmd.sub_commands) > 0 && !p._isEaten(p.current_token) {
 		msg := fmt.Sprintf("no such subcommand found: `%v`", p.current_token)
 		suggestions := suggest_sub_cmd(p.current_cmd, p.current_token)
 
