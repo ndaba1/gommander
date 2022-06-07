@@ -321,29 +321,6 @@ func (p *Parser) parse(raw_args []string) (ParserMatches, GommanderError) {
 	}
 
 	if !p.matches.ContainsFlag("help") {
-		var arg_vals []string
-		for _, a := range p.current_cmd.arguments {
-			if a.is_required && !a.has_default_value() {
-				if _, err := p.matches.GetArgValue(a.name); err != nil {
-					// throw err
-					args := []string{a.get_raw_value()}
-					msg := fmt.Sprintf("missing required argument: `%v`", args[0])
-					ctx := fmt.Sprintf("Expected a required value corresponding to: `%v` but none was provided", a.get_raw_value())
-
-					return p.matches, throw_error(MissingRequiredArgument, msg, ctx).set_args(args)
-				}
-			} else if a.has_default_value() {
-				arg_vals = append(arg_vals, a.default_value)
-			}
-		}
-
-		if len(arg_vals) > 0 {
-			err := p.parse_cmd(arg_vals)
-			if !err.is_nil {
-				return p.matches, err
-			}
-		}
-
 		for _, o := range p.current_cmd.options {
 			if o.required && !p.matches.ContainsOption(o.long) {
 				var arg_vals []string

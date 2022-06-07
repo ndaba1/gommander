@@ -129,9 +129,9 @@ func main() {
     app := gommander.App()
 
     app.SubCommand("image").
-		Help("A test subcmd").
-		Alias("img").
-		Alias("images")
+        Help("A test subcmd").
+        Alias("img").
+        Alias("images")
 
     // to display the aliases
     app.Set(gommander.ShowCommandAliases, true)
@@ -164,10 +164,10 @@ func main() {
     app := gommander.App()
 
     app.AddSubCommand(
-		gommander.NewCommand("first").Help("A basic subcommand"),
-	).AddSubCommand(
-		gommander.NewCommand("second").Help("Another basic subcommand"),
-	)
+        gommander.NewCommand("first").Help("A basic subcommand"),
+    ).AddSubCommand(
+        gommander.NewCommand("second").Help("Another basic subcommand"),
+    )
 }
 // ...
 ```
@@ -219,13 +219,13 @@ func main() {
     app := gommander.App()
 
     app.AddArgument(
-		gommander.NewArgument("language").
-			Required(true).
-			Variadic(false).
-			ValidateWith([]string{"ENGLISH", "SPANISH", "FRENCH", "SWAHILI"}).
-			Default("ENGLISH").
-			Help("The language to use"),
-	)
+        gommander.NewArgument("language").
+            Required(true).
+            Variadic(false).
+            ValidateWith([]string{"ENGLISH", "SPANISH", "FRENCH", "SWAHILI"}).
+            Default("ENGLISH").
+            Help("The language to use"),
+    )
 }
 // ...
 ```
@@ -243,17 +243,17 @@ func main() {
     app := gommander.App()
 
     app.AddArgument(
-		gommander.
-			NewArgument("<language>").
-			ValidateWith([]string{"ENGLISH", "SPANISH", "SWAHILI"}).
-			ValidatorFunc(func(s string) error {
-				if strings.HasPrefix(s, "X") {
-					return errors.New("values cannot begin with X")
-				}
-				return nil
-			}).
-			Default("ENGLISH"),
-	)
+        gommander.
+            NewArgument("<language>").
+            ValidateWith([]string{"ENGLISH", "SPANISH", "SWAHILI"}).
+            ValidatorFunc(func(s string) error {
+                if strings.HasPrefix(s, "X") {
+                    return errors.New("values cannot begin with X")
+                }
+                return nil
+            }).
+            Default("ENGLISH"),
+    )
 }
 // ...
 ```
@@ -414,8 +414,8 @@ You can also create your own theme. You will need to import the `github.com/fati
 
 ```go
 app.Theme(
-		gommander.NewTheme(color.FgGreen, color.FgBlue, color.FgRed, color.FgWhite, color.FgWhite),
-	)
+    gommander.NewTheme(color.FgGreen, color.FgBlue, color.FgRed, color.FgWhite, color.FgWhite),
+)
 ```
 
 The NewTheme method takes in values of type `ColorAttribute` defined in the `fatih/color` package. Here are examples of the said themes:
@@ -462,9 +462,9 @@ func main() {
     app := gommander.App()
 
     app.Theme(
-		gommander.
-			NewTheme(color.FgYellow, color.FgCyan, color.FgMagenta, color.FgRed, color.FgWhite),
-	)
+        gommander.
+           NewTheme(color.FgYellow, color.FgCyan, color.FgMagenta, color.FgRed, color.FgWhite),
+    )
 }
 
 ```
@@ -473,7 +473,7 @@ func main() {
 
 ## Command Callbacks
 
-The package only serves one purpose, to parse command line arguments. To define what to do with the parsed arguments, command callbacks are defined. There are simply functions of the type: `func(*gommander.ParserMatches)` that get invoked when a command is matched.
+The package only serves one purpose, to parse command line arguments. To define what to do with the parsed arguments, command callbacks are defined. There are simply functions of the type: `func(*gommander.ParserMatches)` that get invoked when a command is matched. If a callback is not defined for a subcommand and the subcommand gets matched, help information gets printed out as the fallback behavior.
 These functions are defined by the `Command.Action()` method.
 
 See an example of this [here](./examples/demo/demo.go).
