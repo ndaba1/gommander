@@ -14,6 +14,7 @@ type Argument struct {
 	is_required   bool
 	valid_values  []string
 	default_value string
+	validator_fn  func(string) error
 }
 
 // A Builder method for creating a new argument. Valid values include <arg>, [arg] or simply the name of the arg
@@ -56,6 +57,15 @@ func (a *Argument) Default(val string) *Argument {
 			os.Exit(10)
 		}
 	}
+	// verify value against validator fn if any
+	if a.validator_fn != nil {
+		err := a.validator_fn(val)
+		if err != nil {
+			fmt.Printf("you tried to set a default value for argument: %v, but the validator function returned an error for values: %v", a.name, val)
+			os.Exit(10)
+		}
+	}
+
 	a.default_value = val
 	return a
 }
@@ -81,6 +91,12 @@ func (a *Argument) Required(val bool) *Argument {
 // Configures the valid values for an argument
 func (a *Argument) ValidateWith(vals []string) *Argument {
 	a.valid_values = vals
+	return a
+}
+
+// A method to pass a custom validator function for arguments passed
+func (a *Argument) ValidatorFunc(fn func(string) error) *Argument {
+	a.validator_fn = fn
 	return a
 }
 

@@ -48,6 +48,11 @@ func (e GommanderError) set_args(vals []string) GommanderError {
 	return e
 }
 
+func (e *GommanderError) compare(err *GommanderError) bool {
+	// TODO: Validate all fields
+	return e.message == err.message && e.context == err.context && e.kind == err.kind
+}
+
 func (e *GommanderError) Error() string {
 	return e.message
 }
@@ -56,8 +61,8 @@ func (e *GommanderError) Display(c *Command) {
 	app := c._get_app_ref()
 	fmter := NewFormatter(app.theme)
 
-	fmter.add(Error, "error:  ")
-	fmter.add(Other, strings.ToLower(e.message))
+	fmter.Add(Error, "error:  ")
+	fmter.Add(Other, strings.ToLower(e.message))
 	fmter.close()
 	fmter.close()
 
@@ -70,7 +75,7 @@ func (e *GommanderError) Display(c *Command) {
 		bytes, err := reader.Read(buffer)
 		chunk := buffer[:bytes]
 
-		fmter.add(Description, fmt.Sprintf("   %v\n", string(chunk)))
+		fmter.Add(Description, fmt.Sprintf("   %v\n", string(chunk)))
 		if err == io.EOF {
 			break
 		}
@@ -81,7 +86,7 @@ func (e *GommanderError) Display(c *Command) {
 		fmt.Println()
 	}
 
-	fmter.add(Other, "Run a COMMAND with --help for detailed usage information")
+	fmter.Add(Other, "Run a COMMAND with --help for detailed usage information")
 	fmter.close()
-	fmter.print()
+	fmter.Print()
 }

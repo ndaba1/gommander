@@ -38,29 +38,29 @@ func main() {
 						ValidateWith([]string{"ENGLISH", "SPANISH", "SWAHILI"}).
 						Default("ENGLISH"),
 				),
-		).Action(greet_cb)
+		).Action(greetCb)
 
 	app.Set(gommander.IncludeHelpSubcommand, true)
 
 	app.Parse()
 }
 
-func greet_cb(matches *gommander.ParserMatches) {
-	var complete_greeting strings.Builder
+func greetCb(matches *gommander.ParserMatches) {
+	var completeGreeting strings.Builder
 
 	greeting, _ := matches.GetOptionValue("lang")
 	switch greeting {
 	case "ENGLISH":
-		complete_greeting.WriteString("Hello! ")
+		completeGreeting.WriteString("Hello! ")
 	case "SPANISH":
-		complete_greeting.WriteString("Hola! ")
+		completeGreeting.WriteString("Hola! ")
 	case "SWAHILI":
-		complete_greeting.WriteString("Jambo! ")
+		completeGreeting.WriteString("Jambo! ")
 	}
 
 	// Returns the value and error if any
 	name, _ := matches.GetOptionValue("name")
-	complete_greeting.WriteString(name)
+	completeGreeting.WriteString(name)
 
-	fmt.Println(complete_greeting.String())
+	fmt.Println(completeGreeting.String())
 }

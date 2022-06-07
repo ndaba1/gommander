@@ -39,12 +39,12 @@ func main() {
 	app.Flag("-n --newline", "Whether or not to add a newline")
 
 	// Declaring a callback for the command
-	app.Action(echo_cb)
+	app.Action(echoCb)
 
 	app.Parse()
 }
 
-func echo_cb(pm *gommander.ParserMatches) {
+func echoCb(pm *gommander.ParserMatches) {
 	// returns the value of an arg or an error if no such value is found
 	text, err := pm.GetArgValue("text")
 	if err != nil {

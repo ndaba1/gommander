@@ -17,6 +17,10 @@ Features of this package include:
 - Subcommands nesting
 - Automatic help generation
 
+## API Overview
+
+<img src="./assets/overview.png">
+
 ## Index
 
 - [Gommander](#gommander-go-commander)
@@ -117,6 +121,24 @@ func main() {
 // ...
 ```
 
+Subcommands can have multiple aliases which are hidden by default but you can this behavior can be modified easily as shown:
+
+```go
+// ...
+func main() {
+    app := gommander.App()
+
+    app.SubCommand("image").
+		Help("A test subcmd").
+		Alias("img").
+		Alias("images")
+
+    // to display the aliases
+    app.Set(gommander.ShowCommandAliases, true)
+}
+// ...
+```
+
 Subcommand Nesting is also supported by the package. You can chain as many subcommands as you would like. The following is an example:
 
 ```go
@@ -210,7 +232,33 @@ func main() {
 
 The `.AddArgument()` method, while more verbose, provides more flexibility in defining arguments. It ought to be used when defining more complex arguments. The `gommander.NewArgument()` returns an instance of an Argument to which more methods can be chained. Most of the methods are axiomatic and their functionality can be deduced from their names.
 The `.ValidateWith()` method sets valid_values for an argument. If the value passed is not one of those values, a well-described error is thrown by the program and printed out.
+The `.ValidatorFunc()` method is similar to the `ValidateWith()` method but instead takes in a function that accepts a string as input, to perform custom validation on and return an error instance or nil depending on the value.
 The `.Default()` method sets a default value for an argument. If the argument is required but no value was passed, the default value is used.
+
+An example of the above discussed methods is shown below:
+
+```go
+// ...
+func main() {
+    app := gommander.App()
+
+    app.AddArgument(
+		gommander.
+			NewArgument("<language>").
+			ValidateWith([]string{"ENGLISH", "SPANISH", "SWAHILI"}).
+			ValidatorFunc(func(s string) error {
+				if strings.HasPrefix(s, "X") {
+					return errors.New("values cannot begin with X")
+				}
+				return nil
+			}).
+			Default("ENGLISH"),
+	)
+}
+// ...
+```
+
+Note: it is uncoventional for the `ValidateWith()` and `ValidatorFunc()` method to both be set on a single argument, one of them will take precedence over the other.
 
 Arguments can also be passed to options. This is discussed in depth in the [options](#options) section
 
@@ -370,7 +418,58 @@ app.Theme(
 	)
 ```
 
-The NewTheme method takes in values of type `ColorAttribute` defined in the `fatih/color` package.
+The NewTheme method takes in values of type `ColorAttribute` defined in the `fatih/color` package. Here are examples of the said themes:
+
+### The default app theme:
+
+<img src="./assets/default_theme.png">
+
+### The plain theme:
+
+You can configure the app to use the plain theme as follows:
+
+```go
+// ...
+    app.UsePredefineTheme(gommander.PlainTheme)
+// ...
+```
+
+<img src="./assets/plain_theme.png">
+
+### The colorful theme:
+
+```go
+// ...
+    app.UsePredefineTheme(gommander.ColorfulTheme)
+// ...
+```
+
+<img src="./assets/colorful_theme.png">
+
+### Custom-defined themes:
+
+You can easily define your own custom theme as shown below:
+
+```go
+package main
+
+import (
+    "github.com/ndaba1/gommander"
+    "github.com/fatih/color"
+)
+
+func main() {
+    app := gommander.App()
+
+    app.Theme(
+		gommander.
+			NewTheme(color.FgYellow, color.FgCyan, color.FgMagenta, color.FgRed, color.FgWhite),
+	)
+}
+
+```
+
+<img src="./assets/custom_theme.png">
 
 ## Command Callbacks
 
