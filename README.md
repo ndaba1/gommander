@@ -353,11 +353,11 @@ func main() {
     // .... app logic
 
     app.Set(gommander.IncludeHelpSubcommand, true).
-		Set(gommander.DisableVersionFlag, true).
-		Set(gommander.IgnoreAllErrors, false).
-		Set(gommander.ShowHelpOnAllErrors, true).
-		Set(gommander.ShowCommandAliases, true).
-		Set(gommander.OverrideAllDefaultListeners, false)
+        Set(gommander.DisableVersionFlag, true).
+        Set(gommander.IgnoreAllErrors, false).
+        Set(gommander.ShowHelpOnAllErrors, true).
+        Set(gommander.ShowCommandAliases, true).
+        Set(gommander.OverrideAllDefaultListeners, false)
 
     app.Parse()
 }
@@ -374,10 +374,10 @@ func main() {
     // .... app logic
 
     app.On(gommander.OutputVersion, func(ec *gommander.EventConfig) {
-		app := ec.GetApp()
+        app := ec.GetApp()
 
-		fmt.Printf("You are version: %v of %v which was authored by: %v", app.GetVersion(), app.GetName(), app.GetAuthor())
-	})
+       fmt.Printf("You are version: %v of %v which was authored by: %v", app.GetVersion(), app.GetName(), app.GetAuthor())
+    })
 }
 // ...
 ```
