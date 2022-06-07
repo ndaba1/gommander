@@ -312,9 +312,10 @@ func (p *Parser) parse(raw_args []string) (ParserMatches, GommanderError) {
 	p.matches.matched_cmd_idx = p.cmd_idx
 
 	cmd_args := []string{}
-	if !(len(raw_args) == p.cmd_idx+1) {
+	if len(raw_args) > p.cmd_idx+1 {
 		cmd_args = append(cmd_args, raw_args[p.cmd_idx+1:]...)
 	}
+
 	err := p.parse_cmd(cmd_args)
 	if !err.is_nil {
 		return p.matches, err
@@ -385,31 +386,33 @@ func (p *Parser) parse_cmd(raw_args []string) GommanderError {
 
 	if len(arg_cfg_vals) > 0 {
 		p.matches.arg_matches = append(p.matches.arg_matches, arg_cfg_vals...)
-	} else if len(p.current_cmd.sub_commands) > 0 && !p._isEaten(p.current_token) {
-		msg := fmt.Sprintf("no such subcommand found: `%v`", p.current_token)
-		suggestions := suggest_sub_cmd(p.current_cmd, p.current_token)
+	} else if len(raw_args) > 0 {
+		if len(p.current_cmd.sub_commands) > 0 && !p._isEaten(p.current_token) {
+			msg := fmt.Sprintf("no such subcommand found: `%v`", p.current_token)
+			suggestions := suggest_sub_cmd(p.current_cmd, p.current_token)
 
-		var ctx strings.Builder
-		ctx.WriteString(fmt.Sprintf("The value: `%v`, could not be resolved as a subcommand. ", p.current_token))
-		if len(suggestions) > 0 {
-			ctx.WriteString("Did you mean ")
+			var ctx strings.Builder
+			ctx.WriteString(fmt.Sprintf("The value: `%v`, could not be resolved as a subcommand. ", p.current_token))
+			if len(suggestions) > 0 {
+				ctx.WriteString("Did you mean ")
 
-			for i, s := range suggestions {
-				if i > 0 {
-					ctx.WriteString("or ")
+				for i, s := range suggestions {
+					if i > 0 {
+						ctx.WriteString("or ")
+					}
+					ctx.WriteString(fmt.Sprintf("`%v` ", s))
 				}
-				ctx.WriteString(fmt.Sprintf("`%v` ", s))
+
+				ctx.WriteString("?")
 			}
 
-			ctx.WriteString("?")
+			return throw_error(UnknownCommand, msg, ctx.String()).set_args([]string{p.current_token})
+		} else if !p._isEaten(p.current_token) {
+			msg := fmt.Sprintf("failed to resolve argument: `%v`", p.current_token)
+			ctx := fmt.Sprintf("Found value: `%v`, which was unexpected or is invalid in this context", p.current_token)
+
+			return throw_error(UnresolvedArgument, msg, ctx).set_args([]string{p.current_token})
 		}
-
-		return throw_error(UnknownCommand, msg, ctx.String()).set_args([]string{p.current_token})
-	} else if !p._isEaten(p.current_token) {
-		msg := fmt.Sprintf("failed to resolve argument: `%v`", p.current_token)
-		ctx := fmt.Sprintf("Found value: `%v`, which was unexpected or is invalid in this context", p.current_token)
-
-		return throw_error(UnresolvedArgument, msg, ctx).set_args([]string{p.current_token})
 	}
 
 	return nil_error()
