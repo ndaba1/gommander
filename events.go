@@ -9,13 +9,21 @@ type Event byte
 type EventCallback = func(*EventConfig)
 
 const (
+	// Only one argument passed along, the name of the argument in the form <arg>
 	MissingRequiredArgument Event = iota
+	// No arguments passed for this event
 	OutputHelp
+	// No arguments passed for this event
 	OutputVersion
+	// A single argument is passed for this event, the value of the unknown command
 	UnknownCommand
+	// A single argument is passed, the value of the unknown option
 	UnknownOption
+	// Single argument passed, the value of the unresolved argument
 	UnresolvedArgument
+	// Single argument: the value of the invalid argument
 	InvalidArgumentValue
+	// Single argument: the name of the missing option
 	MissingRequiredOption
 )
 
