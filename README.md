@@ -492,7 +492,7 @@ func main() {
 
     app.On(gommander.MissingRequiredArgument, func(ec *gommander.EventConfig) {
         args := ec.GetArgs()
-        fmt.Printf("You are missing the following required argument: %v", args[0])
+        fmt.Printf("\nError: You are missing the following required argument: %v\n", args[0])
         os.Exit(ec.GetExitCode())
     })
 }
@@ -503,4 +503,5 @@ There are a few things to note about the above example:
 
 - The `EventConfig.GetArgs()` method returns a slice of different strings depending on the error-event that was emitted, various events have been documented accordingly. In this case, there was only one string in the slice, which was the name of the missing argument
 - When defining custom-listeners, the `Command.On()` method does not remove the default listener, it only adds a new one, which will get invoked after the default ones. If you wish to override the default listener completely, use the `Command.Override()` method.
+- Different events have different exit codes that can be accessed via the `EventConfig.GetExitCode()` method.
 - You can add multiple listeners for a single event
