@@ -33,6 +33,7 @@ Features of this package include:
   - [App Settings and Events](#settings-and-events)
   - [App Themes and UI](#themes-and-ui)
   - [Command Callbacks](#command-callbacks)
+  - [Error Handling](#error-handling)
 
 ## Installation
 
@@ -477,3 +478,29 @@ The package only serves one purpose, to parse command line arguments. To define 
 These functions are defined by the `Command.Action()` method.
 
 See an example of this [here](./examples/demo/demo.go).
+
+## Error handling
+
+Errors are handled directly by the package. When an error is encountered, the program `emits` an event corresponding to this error which is then caught by the set event-listeners. The program has pre-defined error listeners out of the box, but they can be overriden if you so choose, and handle the error in a custom way. However, the error handling is sufficient by default.
+
+When you define a custom event-listener for an error-event, the function takes in an `EventConfig` corresponding to the specified event. You can get certain information from this config. The following is an example:
+
+```go
+// ...
+func main() {
+    app := gommander.App()
+
+    app.On(gommander.MissingRequiredArgument, func(ec *gommander.EventConfig) {
+        args := ec.GetArgs()
+        fmt.Printf("You are missing the following required argument: %v", args[0])
+        os.Exit(ec.GetExitCode())
+    })
+}
+// ...
+```
+
+There are a few things to note about the above example:
+
+- The `EventConfig.GetArgs()` method returns a slice of different strings depending on the error-event that was emitted, various events have been documented accordingly. In this case, there was only one string in the slice, which was the name of the missing argument
+- When defining custom-listeners, the `Command.On()` method does not remove the default listener, it only adds a new one, which will get invoked after the default ones. If you wish to override the default listener completely, use the `Command.Override()` method.
+- You can add multiple listeners for a single event
