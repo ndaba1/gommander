@@ -89,7 +89,7 @@ func new_option(val string, help string, required bool) Option {
 }
 
 func (o *Option) generate() (string, string) {
-	var leading strings.Builder
+	var leading, floating strings.Builder
 
 	if len(o.short) > 0 {
 		leading.WriteString(fmt.Sprintf("%v,", o.short))
@@ -107,5 +107,10 @@ func (o *Option) generate() (string, string) {
 		}
 	}
 
-	return leading.String(), o.help
+	floating.WriteString(o.help)
+	if len(o.args) == 1 && o.args[0].has_default_value() {
+		floating.WriteString(fmt.Sprintf(" (default: %v)", o.args[0].default_value))
+	}
+
+	return leading.String(), floating.String()
 }
