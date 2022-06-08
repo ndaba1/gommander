@@ -481,7 +481,9 @@ See an example of this [here](./examples/demo/demo.go).
 
 ## Error handling
 
-Errors are handled directly by the package. When an error is encountered, the program `emits` an event corresponding to this error which is then caught by the set event-listeners. The program has pre-defined error listeners out of the box, but they can be overriden if you so choose, and handle the error in a custom way. However, the error handling is sufficient by default.
+Errors are handled directly by the package. When an error is encountered, the program `emits` an event corresponding to this error which is then caught by the set event-listeners. The program has pre-defined error listeners out of the box, but they can be overriden if you so choose, and handle the error in a custom way. However, the error handling is sufficient by default. This is how errors are printed out by default:
+
+<img src="./assets/errors.png">
 
 When you define a custom event-listener for an error-event, the function takes in an `EventConfig` corresponding to the specified event. You can get certain information from this config. The following is an example:
 
