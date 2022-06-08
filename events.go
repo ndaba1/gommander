@@ -46,7 +46,7 @@ type EventEmitter struct {
 	events_to_override []Event
 }
 
-func (c *EventConfig) GetArgs() *[]string       { return &c.args }
+func (c *EventConfig) GetArgs() []string        { return c.args }
 func (c *EventConfig) GetEvent() Event          { return c.event }
 func (c *EventConfig) GetApp() *Command         { return c.app_ref }
 func (c *EventConfig) GetExitCode() int         { return c.exit_code }
