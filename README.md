@@ -485,6 +485,23 @@ Errors are handled directly by the package. When an error is encountered, the pr
 
 <img src="./assets/errors.png">
 
+You can configure the program to print out help information when an error is encountered by setting the said setting to true as shown:
+
+<img src="./assets/errors_help.png">
+
+```go
+// ...
+func main() {
+    app := gommander.App()
+
+    // ...
+
+    app.Set(gommander.ShowHelpOnAllErrors, true)
+}
+```
+
+This will in turn cause errors to be displayed as follows:
+
 When you define a custom event-listener for an error-event, the function takes in an `EventConfig` corresponding to the specified event. You can get certain information from this config. The following is an example:
 
 ```go
