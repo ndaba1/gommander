@@ -34,6 +34,7 @@ Features of this package include:
   - [App Themes and UI](#themes-and-ui)
   - [Command Callbacks](#command-callbacks)
   - [Error Handling](#error-handling)
+  - [Public Formatter Interface](#public-formatter-interface)
 
 ## Installation
 
@@ -335,7 +336,7 @@ func main() {
 ```
 
 When adding an argument, you can either use the `.Argument()` method or the `.AddArgument()` one.
-Support option syntaxes are:
+Supported option syntaxes are:
 
 - `-p 80`
 - `--port 80`
@@ -487,8 +488,6 @@ Errors are handled directly by the package. When an error is encountered, the pr
 
 You can configure the program to print out help information when an error is encountered by setting the said setting to true as shown:
 
-<img src="./assets/errors_help.png">
-
 ```go
 // ...
 func main() {
@@ -501,6 +500,8 @@ func main() {
 ```
 
 This will in turn cause errors to be displayed as follows:
+
+<img src="./assets/errors_help.png">
 
 When you define a custom event-listener for an error-event, the function takes in an `EventConfig` corresponding to the specified event. You can get certain information from this config. The following is an example:
 
@@ -524,3 +525,37 @@ There are a few things to note about the above example:
 - When defining custom-listeners, the `Command.On()` method does not remove the default listener, it only adds a new one, which will get invoked after the default ones. If you wish to override the default listener completely, use the `Command.Override()` method.
 - Different events have different exit codes that can be accessed via the `EventConfig.GetExitCode()` method.
 - You can add multiple listeners for a single event
+
+## Public Formatter Interface
+
+The formatter used by the package for color printing also has a public interface, which means you can use it to print out colored content if you wish to.
+By convention, the formatter functions on a basis of designations as explained in the [theme](#themes-and-ui) section. However, you can also pass a color directly to the formatter to use as shown below:
+
+```go
+package main
+
+import (
+    "fmt"
+
+    "github.com/ndaba1/gommander"
+    "github.com/fatih/color"
+)
+
+func main() {
+    app := gommander.App()
+
+    app.On(gommander.MissingRequiredArgument, func(pm *gommander.EventConfig) {
+        // Use default theme or create your own
+        fmter := gommander.NewFormatter(gommander.DefaultTheme())
+        fmter.ColorAndPrint(*color.New(color.FgRed), fmt.Sprintf("\nMissing a required argument: `%v`\n", pm.GetArgs()[0]))
+    })
+}
+```
+
+Other public formatter methods include:
+
+- `Formatter.Add()`
+- `Formatter.AddAndPrint()`
+- `Formatter.Print()`
+- `Formatter.Color()`
+- `Formatter.ColorAndPrint()`
