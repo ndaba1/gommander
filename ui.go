@@ -95,8 +95,6 @@ func DefaultTheme() Theme {
 }
 
 func (f *Formatter) section(val string) {
-	// lower := strings.ToLower(val)
-	// TODO: Remove use of deprecated functionality
 	f.Add(Headline, fmt.Sprintf("\n%v: \n", strings.ToUpper(val)))
 }
 
@@ -109,6 +107,21 @@ func (f *Formatter) Add(dsgn Designation, val string) {
 
 	colored_val := c.Sprintf(val)
 	f.buffer.WriteString(colored_val)
+}
+
+func (f *Formatter) AddAndPrint(dsgn Designation, val string) {
+	f.Add(dsgn, val)
+	f.Print()
+}
+
+func (f *Formatter) Color(color color.Color, val string) {
+	colored := color.Sprintf(val)
+	f.buffer.WriteString(colored)
+}
+
+func (f *Formatter) ColorAndPrint(color color.Color, val string) {
+	f.Color(color, val)
+	f.Print()
 }
 
 func (f *Formatter) Print() {
