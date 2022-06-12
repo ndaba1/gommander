@@ -60,7 +60,7 @@ func TestArgsCreation(t *testing.T) {
 	}
 
 	exp_l = "[optional]"
-	exp_f = "Optional value with default"
+	exp_f = "Optional value with default (default: DEFAULT)"
 
 	if l, f := arg.generate(); l != exp_l || f != exp_f {
 		t.Errorf("The arg generate function is problematic. Expected: (%v, %v) but found (%v, %v)", exp_l, exp_f, l, f)

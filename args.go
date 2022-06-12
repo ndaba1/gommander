@@ -160,6 +160,12 @@ func (a *Argument) get_raw_value() string {
 
 func (a *Argument) generate() (string, string) {
 	leading := a.get_raw_value()
+	var floating strings.Builder
+	floating.WriteString(a.help)
 
-	return leading, a.help
+	if a.has_default_value() {
+		floating.WriteString(fmt.Sprintf(" (default: %v)", a.default_value))
+	}
+
+	return leading, floating.String()
 }

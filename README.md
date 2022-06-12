@@ -33,6 +33,8 @@ Features of this package include:
   - [App Settings and Events](#settings-and-events)
   - [App Themes and UI](#themes-and-ui)
   - [Command Callbacks](#command-callbacks)
+  - [Error Handling](#error-handling)
+  - [Public Formatter Interface](#public-formatter-interface)
 
 ## Installation
 
@@ -334,7 +336,7 @@ func main() {
 ```
 
 When adding an argument, you can either use the `.Argument()` method or the `.AddArgument()` one.
-Support option syntaxes are:
+Supported option syntaxes are:
 
 - `-p 80`
 - `--port 80`
@@ -477,3 +479,83 @@ The package only serves one purpose, to parse command line arguments. To define 
 These functions are defined by the `Command.Action()` method.
 
 See an example of this [here](./examples/demo/demo.go).
+
+## Error handling
+
+Errors are handled directly by the package. When an error is encountered, the program `emits` an event corresponding to this error which is then caught by the set event-listeners. The program has pre-defined error listeners out of the box, but they can be overriden if you so choose, and handle the error in a custom way. However, the error handling is sufficient by default. This is how errors are printed out by default:
+
+<img src="./assets/errors.png">
+
+You can configure the program to print out help information when an error is encountered by setting the said setting to true as shown:
+
+```go
+// ...
+func main() {
+    app := gommander.App()
+
+    // ...
+
+    app.Set(gommander.ShowHelpOnAllErrors, true)
+}
+```
+
+This will in turn cause errors to be displayed as follows:
+
+<img src="./assets/errors_help.png">
+
+When you define a custom event-listener for an error-event, the function takes in an `EventConfig` corresponding to the specified event. You can get certain information from this config. The following is an example:
+
+```go
+// ...
+func main() {
+    app := gommander.App()
+
+    app.On(gommander.MissingRequiredArgument, func(ec *gommander.EventConfig) {
+        args := ec.GetArgs()
+        fmt.Printf("\nError: You are missing the following required argument: %v\n", args[0])
+        os.Exit(ec.GetExitCode())
+    })
+}
+// ...
+```
+
+There are a few things to note about the above example:
+
+- The `EventConfig.GetArgs()` method returns a slice of different strings depending on the error-event that was emitted, various events have been documented accordingly. In this case, there was only one string in the slice, which was the name of the missing argument
+- When defining custom-listeners, the `Command.On()` method does not remove the default listener, it only adds a new one, which will get invoked after the default ones. If you wish to override the default listener completely, use the `Command.Override()` method.
+- Different events have different exit codes that can be accessed via the `EventConfig.GetExitCode()` method.
+- You can add multiple listeners for a single event
+
+## Public Formatter Interface
+
+The formatter used by the package for color printing also has a public interface, which means you can use it to print out colored content if you wish to.
+By convention, the formatter functions on a basis of designations as explained in the [theme](#themes-and-ui) section. However, you can also pass a color directly to the formatter to use as shown below:
+
+```go
+package main
+
+import (
+    "fmt"
+
+    "github.com/ndaba1/gommander"
+    "github.com/fatih/color"
+)
+
+func main() {
+    app := gommander.App()
+
+    app.On(gommander.MissingRequiredArgument, func(pm *gommander.EventConfig) {
+        // Use default theme or create your own
+        fmter := gommander.NewFormatter(gommander.DefaultTheme())
+        fmter.ColorAndPrint(*color.New(color.FgRed), fmt.Sprintf("\nMissing a required argument: `%v`\n", pm.GetArgs()[0]))
+    })
+}
+```
+
+Other public formatter methods include:
+
+- `Formatter.Add()`
+- `Formatter.AddAndPrint()`
+- `Formatter.Print()`
+- `Formatter.Color()`
+- `Formatter.ColorAndPrint()`

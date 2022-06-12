@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2022-06-12
+
+### Fixed
+
+- Patched the parser error causing parsing of empty argument values
+- Updated argument tests to include the format with the arg-default value included
+
+### Added
+
+- Created formatter utility functions for: adding & printing directly, printing by color rather than by designation, coloring and printing directly
+- Set argument default values to be printed out if any are present
+- Added new error-handling section in the README along with screenshots corresponding to the errors
+- Documented the public formatter interface in the README in its own section
+
+### Changed
+
+- Removed the unused new variadic theme function
+- Removed all the resolved todos
+
 ## [0.1.3] - 2022-06-07
 
 ### Fixed
@@ -48,7 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Simple examples and indepth docs
 - Fair amount of tests and coverage
 
-[unreleased]: https://github.com/ndaba1/gommander/compare/v0.1.3...HEAD
+[unreleased]: https://github.com/ndaba1/gommander/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/ndaba1/gommander/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/ndaba1/gommander/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/ndaba1/gommander/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/ndaba1/gommander/compare/v0.1.0...v0.1.1
