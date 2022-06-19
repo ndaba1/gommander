@@ -16,7 +16,7 @@ const (
 	Keyword Designation = iota
 	Headline
 	Description
-	Error
+	ErrorMsg
 	Other
 )
 
@@ -29,7 +29,7 @@ var designationSlice = []Designation{
 	Keyword,
 	Headline,
 	Description,
-	Error,
+	ErrorMsg,
 	Other,
 }
 
@@ -84,7 +84,7 @@ func NewTheme(keyword, headline, description, errors, others color.Attribute) Th
 	theme[Keyword] = *kwColor
 	theme[Headline] = *hdColor
 	theme[Description] = *dsColor
-	theme[Error] = *erColor
+	theme[ErrorMsg] = *erColor
 	theme[Other] = *otColor
 
 	return theme
