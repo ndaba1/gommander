@@ -45,7 +45,7 @@ type EventConfig struct {
 	event      Event
 	appRef     *Command
 	exitCode   int
-	err        GommanderError
+	err        Error
 	matchedCmd *Command
 }
 
@@ -54,11 +54,11 @@ type EventEmitter struct {
 	eventsToOverride []Event
 }
 
-func (c *EventConfig) GetArgs() []string        { return c.args }
-func (c *EventConfig) GetEvent() Event          { return c.event }
-func (c *EventConfig) GetApp() *Command         { return c.appRef }
-func (c *EventConfig) GetExitCode() int         { return c.exitCode }
-func (c *EventConfig) GetError() GommanderError { return c.err }
+func (c *EventConfig) GetArgs() []string { return c.args }
+func (c *EventConfig) GetEvent() Event   { return c.event }
+func (c *EventConfig) GetApp() *Command  { return c.appRef }
+func (c *EventConfig) GetExitCode() int  { return c.exitCode }
+func (c *EventConfig) GetError() Error   { return c.err }
 
 func newEmitter() EventEmitter {
 	return EventEmitter{
