@@ -7,10 +7,10 @@ func TestArgsCreation(t *testing.T) {
 	/********************* Required arguments tests ********************/
 
 	arg := NewArgument("<test>").Help("Test argument").Variadic(true)
-	arg_b := new_argument("<test...>", "Test argument")
+	argB := newArgument("<test...>", "Test argument")
 
-	if !arg.compare(arg_b) {
-		t.Errorf("Arg creation methods out of sync: 1: %v 2: %v", arg, arg_b)
+	if !arg.compare(argB) {
+		t.Errorf("Arg creation methods out of sync: 1: %v 2: %v", arg, argB)
 	}
 
 	if !arg.isRequired {
@@ -40,11 +40,11 @@ func TestArgsCreation(t *testing.T) {
 	}
 
 	// Other tests
-	exp_l := "<test...>"
-	exp_f := "Test argument"
+	expL := "<test...>"
+	expF := "Test argument"
 
-	if l, f := arg.generate(); l != exp_l || f != exp_f {
-		t.Errorf("The arg generate function is problematic. Expected: (%v, %v) but found (%v, %v)", exp_l, exp_f, l, f)
+	if l, f := arg.generate(); l != expL || f != expF {
+		t.Errorf("The arg generate function is problematic. Expected: (%v, %v) but found (%v, %v)", expL, expF, l, f)
 	}
 
 	/********************* Optional arguments tests ********************/
@@ -59,11 +59,11 @@ func TestArgsCreation(t *testing.T) {
 		t.Error("Failed to set default value for argument")
 	}
 
-	exp_l = "[optional]"
-	exp_f = "Optional value with default (default: DEFAULT)"
+	expL = "[optional]"
+	expF = "Optional value with default (default: DEFAULT)"
 
-	if l, f := arg.generate(); l != exp_l || f != exp_f {
-		t.Errorf("The arg generate function is problematic. Expected: (%v, %v) but found (%v, %v)", exp_l, exp_f, l, f)
+	if l, f := arg.generate(); l != expL || f != expF {
+		t.Errorf("The arg generate function is problematic. Expected: (%v, %v) but found (%v, %v)", expL, expF, l, f)
 	}
 
 }
@@ -91,6 +91,6 @@ func BenchmarkComplexArgBuilder(b *testing.B) {
 
 func BenchmarkNewArgFn(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		new_argument("<test>", "A test argument")
+		newArgument("<test>", "A test argument")
 	}
 }

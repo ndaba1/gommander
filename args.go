@@ -126,7 +126,7 @@ func (a *Argument) compare(b *Argument) bool {
 	return a.help == b.help && a.name == b.name && a.getRawValue() == b.getRawValue()
 }
 
-func new_argument(val string, help string) *Argument {
+func newArgument(val string, help string) *Argument {
 	arg := NewArgument(val)
 	arg.Help(help)
 	return arg
