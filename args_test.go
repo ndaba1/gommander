@@ -13,11 +13,11 @@ func TestArgsCreation(t *testing.T) {
 		t.Errorf("Arg creation methods out of sync: 1: %v 2: %v", arg, arg_b)
 	}
 
-	if !arg.is_required {
+	if !arg.isRequired {
 		t.Errorf("Failed to make arg required")
 	}
 
-	if !arg.is_variadic {
+	if !arg.isVariadic {
 		t.Errorf("Failed to make arg variadic")
 	}
 
@@ -31,11 +31,11 @@ func TestArgsCreation(t *testing.T) {
 
 	arg.ValidateWith([]string{"ONE", "TWO"})
 
-	if !arg.test_value("one") && arg.test_value("TWO") {
+	if !arg.testValue("one") && arg.testValue("TWO") {
 		t.Errorf("Arg validation working incorrectly")
 	}
 
-	if arg.get_raw_value() != "<test...>" {
+	if arg.getRawValue() != "<test...>" {
 		t.Errorf("Raw value return function working incorrectly")
 	}
 
@@ -51,11 +51,11 @@ func TestArgsCreation(t *testing.T) {
 
 	arg = NewArgument("[optional]").Default("DEFAULT").Help("Optional value with default")
 
-	if arg.is_required {
+	if arg.isRequired {
 		t.Error("Failed to set argument as optional")
 	}
 
-	if !arg.has_default_value() || arg.default_value != "DEFAULT" {
+	if !arg.hasDefaultValue() || arg.defaultValue != "DEFAULT" {
 		t.Error("Failed to set default value for argument")
 	}
 
