@@ -42,7 +42,7 @@ func (o *Option) Required(val bool) *Option {
 
 // A method for adding a new argument to an option. Takes as input the name of the argument
 func (o *Option) Argument(val string) *Option {
-	o.args = append(o.args, new_argument(val, ""))
+	o.args = append(o.args, newArgument(val, ""))
 	return o
 }
 
@@ -56,11 +56,11 @@ func (o *Option) compare(p *Option) bool {
 	return o.name == p.name && o.help == p.help && o.long == p.long && o.short == p.short && o.required == p.required
 }
 
-func new_option(val string, help string, required bool) Option {
+func newOption(val string, help string, required bool) Option {
 	values := strings.Split(val, " ")
 
 	short, long := "", ""
-	raw_args := []string{}
+	rawArgs := []string{}
 	args := []*Argument{}
 
 	for _, v := range values {
@@ -69,12 +69,12 @@ func new_option(val string, help string, required bool) Option {
 		} else if strings.HasPrefix(v, "-") {
 			short = v
 		} else {
-			raw_args = append(raw_args, v)
+			rawArgs = append(rawArgs, v)
 		}
 	}
 
-	for _, a := range raw_args {
-		arg := new_argument(a, "")
+	for _, a := range rawArgs {
+		arg := newArgument(a, "")
 		args = append(args, arg)
 	}
 
@@ -103,13 +103,13 @@ func (o *Option) generate() (string, string) {
 
 	if len(o.args) > 0 {
 		for _, a := range o.args {
-			leading.WriteString(fmt.Sprintf("%v ", a.get_raw_value()))
+			leading.WriteString(fmt.Sprintf("%v ", a.getRawValue()))
 		}
 	}
 
 	floating.WriteString(o.help)
-	if len(o.args) == 1 && o.args[0].has_default_value() {
-		floating.WriteString(fmt.Sprintf(" (default: %v)", o.args[0].default_value))
+	if len(o.args) == 1 && o.args[0].hasDefaultValue() {
+		floating.WriteString(fmt.Sprintf(" (default: %v)", o.args[0].defaultValue))
 	}
 
 	return leading.String(), floating.String()
