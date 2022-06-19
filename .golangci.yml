@@ -19,16 +19,16 @@ linters:
     #- gocyclo
     #- gofmt
     - goimports
-    - golint
+    # - golint
     #- gomnd
     #- goprintffuncname
     #- gosec
     #- gosimple
     - govet
     - ineffassign
-    - interfacer
+    # - interfacer
     #- lll
-    - maligned
+    # - maligned
     - megacheck
     #- misspell
     #- nakedret
