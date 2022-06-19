@@ -151,9 +151,8 @@ func (a *Argument) getRawValue() string {
 			write('[', ']')
 		}
 		return value.String()
-	} else {
-		return a.raw
 	}
+	return a.raw
 }
 
 /****************************** Interface implementations ********************************/
