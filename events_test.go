@@ -3,7 +3,7 @@ package gommander
 import "testing"
 
 func TestBasicListener(t *testing.T) {
-	em := new_emitter()
+	em := newEmitter()
 
 	em.on(OutputHelp, func(ec *EventConfig) {}, 0)
 
@@ -13,9 +13,9 @@ func TestBasicListener(t *testing.T) {
 }
 
 func TestBeforeAllFn(t *testing.T) {
-	em := new_emitter()
+	em := newEmitter()
 
-	em.insert_before_all(func(ec *EventConfig) {})
+	em.insertBeforeAll(func(ec *EventConfig) {})
 
 	for _, v := range em.listeners {
 		if v[0].index != -5 {
@@ -25,9 +25,9 @@ func TestBeforeAllFn(t *testing.T) {
 }
 
 func TestAfterAllFn(t *testing.T) {
-	em := new_emitter()
+	em := newEmitter()
 
-	em.insert_after_all(func(ec *EventConfig) {})
+	em.insertAfterAll(func(ec *EventConfig) {})
 
 	for _, v := range em.listeners {
 		if v[0].index != 5 {
@@ -37,10 +37,10 @@ func TestAfterAllFn(t *testing.T) {
 }
 
 func TestEmitterFunctionality(t *testing.T) {
-	em := new_emitter()
+	em := newEmitter()
 
 	// Add some basic listeners
-	em.on_errors(func(ec *EventConfig) {})
+	em.onErrors(func(ec *EventConfig) {})
 
 	for _, v := range em.listeners {
 		if v[0].index != -4 {
@@ -51,14 +51,14 @@ func TestEmitterFunctionality(t *testing.T) {
 
 func BenchmarkLstnrCreation(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		em := new_emitter()
+		em := newEmitter()
 		em.on(OutputHelp, func(ec *EventConfig) {}, 0)
 	}
 }
 
 func BenchmarkBatchLstnrs(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		em := new_emitter()
-		em.insert_before_all(func(ec *EventConfig) {})
+		em := newEmitter()
+		em.insertBeforeAll(func(ec *EventConfig) {})
 	}
 }

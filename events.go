@@ -27,7 +27,7 @@ const (
 	MissingRequiredOption
 )
 
-var EVENTS_SLICE = []Event{
+var eventsSlice = []Event{
 	MissingRequiredArgument,
 	OutputHelp, OutputVersion,
 	UnknownCommand, UnknownOption,
@@ -41,26 +41,26 @@ type EventListener struct {
 }
 
 type EventConfig struct {
-	args        []string
-	event       Event
-	app_ref     *Command
-	exit_code   int
-	err         GommanderError
-	matched_cmd *Command
+	args       []string
+	event      Event
+	appRef     *Command
+	exitCode   int
+	err        GommanderError
+	matchedCmd *Command
 }
 
 type EventEmitter struct {
-	listeners          map[Event][]EventListener
-	events_to_override []Event
+	listeners        map[Event][]EventListener
+	eventsToOverride []Event
 }
 
 func (c *EventConfig) GetArgs() []string        { return c.args }
 func (c *EventConfig) GetEvent() Event          { return c.event }
-func (c *EventConfig) GetApp() *Command         { return c.app_ref }
-func (c *EventConfig) GetExitCode() int         { return c.exit_code }
+func (c *EventConfig) GetApp() *Command         { return c.appRef }
+func (c *EventConfig) GetExitCode() int         { return c.exitCode }
 func (c *EventConfig) GetError() GommanderError { return c.err }
 
-func new_emitter() EventEmitter {
+func newEmitter() EventEmitter {
 	return EventEmitter{
 		listeners: make(map[Event][]EventListener),
 	}
@@ -70,15 +70,15 @@ func (em *EventEmitter) on(event Event, cb EventCallback, pstn int) {
 	if len(em.listeners[event]) == 0 {
 		em.listeners[event] = []EventListener{{cb, pstn}}
 	} else {
-		new_v := em.listeners[event]
+		newLsntr := em.listeners[event]
 
 		for e := range em.listeners {
 			if e == event {
-				new_v = append(new_v, EventListener{cb, pstn})
+				newLsntr = append(newLsntr, EventListener{cb, pstn})
 			}
 		}
 
-		em.listeners[event] = new_v
+		em.listeners[event] = newLsntr
 	}
 
 }
@@ -96,43 +96,43 @@ func (em *EventEmitter) emit(cfg EventConfig) {
 				lstnr.cb(&cfg)
 			}
 
-			os.Exit(cfg.exit_code)
+			os.Exit(cfg.exitCode)
 		}
 	}
 }
 
 func (em *EventEmitter) override(e Event) {
-	em.events_to_override = append(em.events_to_override, e)
+	em.eventsToOverride = append(em.eventsToOverride, e)
 }
 
-func (em *EventEmitter) rm_default_lstnr(e Event) {
-	new_arr := []EventListener{}
+func (em *EventEmitter) rmDefaultLstnr(e Event) {
+	newArr := []EventListener{}
 	for k, v := range em.listeners {
 		if k == e {
 			for _, lstnr := range v {
 				if lstnr.index != -4 {
-					new_arr = append(new_arr, lstnr)
+					newArr = append(newArr, lstnr)
 				}
 			}
 		}
 	}
-	em.listeners[e] = new_arr
+	em.listeners[e] = newArr
 }
 
-func (em *EventEmitter) insert_before_all(cb EventCallback) {
-	for _, e := range EVENTS_SLICE {
+func (em *EventEmitter) insertBeforeAll(cb EventCallback) {
+	for _, e := range eventsSlice {
 		em.on(e, cb, -5)
 	}
 }
 
-func (em *EventEmitter) insert_after_all(cb EventCallback) {
-	for _, e := range EVENTS_SLICE {
+func (em *EventEmitter) insertAfterAll(cb EventCallback) {
+	for _, e := range eventsSlice {
 		em.on(e, cb, 5)
 	}
 }
 
-func (em *EventEmitter) on_errors(cb EventCallback) {
-	for _, e := range EVENTS_SLICE {
+func (em *EventEmitter) onErrors(cb EventCallback) {
+	for _, e := range eventsSlice {
 		if e == OutputHelp || e == OutputVersion {
 			continue
 		}
