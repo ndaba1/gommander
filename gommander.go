@@ -11,31 +11,31 @@ import (
 type CommandCallback = func(*ParserMatches)
 
 type Command struct {
-	aliases          []string
-	arguments        []*Argument
-	author           string
-	callback         CommandCallback
-	discussion       string
-	emitter          EventEmitter
-	flags            []*Flag
-	help             string
-	is_root          bool
-	name             string
-	options          []*Option
-	parent           *Command
-	sub_commands     []*Command
-	settings         AppSettings
-	global_settings  *AppSettings
-	theme            Theme
-	version          string
-	usage_str        string
-	custom_usage_str string
-	sub_cmd_groups   map[string][]*Command
-	app_ref          *Command
+	aliases        []string
+	arguments      []*Argument
+	author         string
+	callback       CommandCallback
+	discussion     string
+	emitter        EventEmitter
+	flags          []*Flag
+	help           string
+	isRoot         bool
+	name           string
+	options        []*Option
+	parent         *Command
+	subCommands    []*Command
+	settings       AppSettings
+	globalSettings *AppSettings
+	theme          Theme
+	version        string
+	usageStr       string
+	customUsageStr string
+	subCmdGroups   map[string][]*Command
+	appRef         *Command
 }
 
 func App() *Command {
-	return NewCommand("")._set_is_root().AddFlag(
+	return NewCommand("")._setIsRoot().AddFlag(
 		NewFlag("version").
 			Short('v').
 			Help("Print out version information"),
@@ -44,18 +44,18 @@ func App() *Command {
 
 func NewCommand(name string) *Command {
 	return &Command{
-		name:            name,
-		arguments:       []*Argument{},
-		flags:           []*Flag{NewFlag("help").Short('h').Help("Print out help information")},
-		options:         []*Option{},
-		sub_commands:    []*Command{},
-		parent:          nil,
-		settings:        AppSettings{},
-		is_root:         false,
-		emitter:         new_emitter(),
-		global_settings: &AppSettings{},
-		usage_str:       name,
-		sub_cmd_groups:  make(map[string][]*Command),
+		name:           name,
+		arguments:      []*Argument{},
+		flags:          []*Flag{NewFlag("help").Short('h').Help("Print out help information")},
+		options:        []*Option{},
+		subCommands:    []*Command{},
+		parent:         nil,
+		settings:       AppSettings{},
+		isRoot:         false,
+		emitter:        newEmitter(),
+		globalSettings: &AppSettings{},
+		usageStr:       name,
+		subCmdGroups:   make(map[string][]*Command),
 	}
 }
 
@@ -86,18 +86,17 @@ func (c *Command) GetOptions() []*Option { return c.options }
 func (c *Command) GetParent() *Command { return c.parent }
 
 // Returns a slice of subcommands chained to the command instance
-func (c *Command) GetSubCommands() []*Command { return c.sub_commands }
+func (c *Command) GetSubCommands() []*Command { return c.subCommands }
 
 // Returns the version of the program
 func (c *Command) GetVersion() string { return c.version }
 
 // Returns the default usage string or a custom_usage_str if one exists
 func (c *Command) GetUsageStr() string {
-	if len(c.custom_usage_str) > 0 {
-		return c.custom_usage_str
-	} else {
-		return c.usage_str
+	if len(c.customUsageStr) > 0 {
+		return c.customUsageStr
 	}
+	return c.usageStr
 }
 
 /****************************** Command Metadata Setters ****************************/
@@ -148,7 +147,7 @@ func (c *Command) AddArgument(arg *Argument) *Command {
 
 // A method for setting any expected arguments for a command, it takes in the value of the argument e.g. `<image-name>` and the help string for said argument
 func (c *Command) Argument(val string, help string) *Command {
-	argument := new_argument(val, help)
+	argument := newArgument(val, help)
 	c.AddArgument(argument)
 	return c
 }
@@ -163,7 +162,7 @@ func (c *Command) Author(val string) *Command {
 // ("-h --help", "A help flag")
 // You could also omit the short or long version of the flag
 func (c *Command) Flag(val string, help string) *Command {
-	flag := new_flag(val, help)
+	flag := newFlag(val, help)
 	return c.AddFlag(&flag)
 }
 
@@ -182,7 +181,7 @@ func (c *Command) Help(help string) *Command {
 // Sets the name of a command, and updates the usage str as well
 func (c *Command) Name(name string) *Command {
 	c.name = name
-	c.usage_str = name
+	c.usageStr = name
 	return c
 }
 
@@ -194,19 +193,19 @@ func (c *Command) Version(version string) *Command {
 
 // An identical method to the `.Flag()` method but for options. Expected syntax: "-p --port <port-number>"
 func (c *Command) Option(val string, help string) *Command {
-	option := new_option(val, help, false)
+	option := newOption(val, help, false)
 	return c.AddOption(&option)
 }
 
 // This method is used to mark an option as required for a given command. Another way of achieving this is using the `.AddOption()` method and using the `NewOption()` builder interface to define option parameters
 func (c *Command) RequiredOption(val string, help string) *Command {
-	opt := new_option(val, help, true)
+	opt := newOption(val, help, true)
 	return c.AddOption(&opt)
 }
 
 // Used to define a custom usage string. If one is present, it will be used instead of the default one
 func (c *Command) UsageStr(val string) *Command {
-	c.custom_usage_str = val
+	c.customUsageStr = val
 	return c
 }
 
@@ -214,32 +213,32 @@ func (c *Command) UsageStr(val string) *Command {
 
 // When chained on a command, this method adds said command to the provided sub_cmd group in the parent of the command.
 func (c *Command) AddToGroup(name string) *Command {
-	c.parent.sub_cmd_groups[name] = append(c.parent.sub_cmd_groups[name], c)
+	c.parent.subCmdGroups[name] = append(c.parent.subCmdGroups[name], c)
 	return c
 }
 
 // Receives a reference to a command, sets the command parent and usage string then adds its to the slice of subcommands. This method is called internally by the `.SubCommand()` method but users can also invoke it directly
-func (c *Command) AddSubCommand(sub_cmd *Command) *Command {
-	sub_cmd._set_parent(c)
-	c.sub_commands = append(c.sub_commands, sub_cmd)
+func (c *Command) AddSubCommand(subCmd *Command) *Command {
+	subCmd._setParent(c)
+	c.subCommands = append(c.subCommands, subCmd)
 
-	cmd_path := []string{c.usage_str, sub_cmd.usage_str}
-	sub_cmd.usage_str = strings.Join(cmd_path, " ")
+	cmdPath := []string{c.usageStr, subCmd.usageStr}
+	subCmd.usageStr = strings.Join(cmdPath, " ")
 
 	// Propagate global flags to children
 	for _, f := range c.GetFlags() {
-		if f.is_global {
-			sub_cmd.AddFlag(f)
+		if f.isGlobal {
+			subCmd.AddFlag(f)
 		}
 	}
 
 	// propagate theme
-	sub_cmd.theme = c.theme
+	subCmd.theme = c.theme
 
-	if c.is_root {
-		sub_cmd.app_ref = c
+	if c.isRoot {
+		subCmd.appRef = c
 	} else {
-		sub_cmd.app_ref = c.app_ref
+		subCmd.appRef = c.appRef
 	}
 
 	return c
@@ -247,28 +246,28 @@ func (c *Command) AddSubCommand(sub_cmd *Command) *Command {
 
 // An easier method for creating sub_cmds while avoiding too much function paramets nesting. It accepts the name of the new sub_cmd and returns the newly created sub_cmd
 func (c *Command) SubCommand(name string) *Command {
-	sub_cmd := NewCommand(name)
-	c.AddSubCommand(sub_cmd)
-	return sub_cmd
+	subCmd := NewCommand(name)
+	c.AddSubCommand(subCmd)
+	return subCmd
 }
 
 // A manual way of creating a new subcommand group and adding the desired commands to it
 func (c *Command) SubCommandGroup(name string, vals []*Command) {
-	c.sub_cmd_groups[name] = append(c.sub_cmd_groups[name], vals...)
+	c.subCmdGroups[name] = append(c.subCmdGroups[name], vals...)
 }
 
 /****************************** Settings ****************************/
 
 func (c *Command) _init() {
 	if c.settings[DisableVersionFlag] {
-		c.remove_flag("--version")
+		c.removeFlag("--version")
 	}
 
-	if c.settings[IncludeHelpSubcommand] && len(c.sub_commands) > 0 {
-		valid_subcmds := []string{}
+	if c.settings[IncludeHelpSubcommand] && len(c.subCommands) > 0 {
+		validSubcmds := []string{}
 
-		for _, c := range c.sub_commands {
-			valid_subcmds = append(valid_subcmds, c.name)
+		for _, c := range c.subCommands {
+			validSubcmds = append(validSubcmds, c.name)
 		}
 
 		c.SubCommand("help").
@@ -276,14 +275,14 @@ func (c *Command) _init() {
 			AddArgument(
 				NewArgument("<COMMAND>").
 					Help("The name of the command to output help for").
-					ValidateWith(valid_subcmds),
+					ValidateWith(validSubcmds),
 			).
 			Action(func(pm *ParserMatches) {
 				val, _ := pm.GetArgValue("<COMMAND>")
-				parent := pm.matched_cmd.parent
+				parent := pm.matchedCmd.parent
 
 				if parent != nil {
-					cmd, _ := parent.find_subcommand(val)
+					cmd, _ := parent.findSubcommand(val)
 					cmd.PrintHelp()
 				}
 			})
@@ -291,12 +290,12 @@ func (c *Command) _init() {
 
 	// Default help listener cannot be overridden
 	c.emitter.on(OutputHelp, func(ec *EventConfig) {
-		cmd := ec.matched_cmd
+		cmd := ec.matchedCmd
 		cmd.PrintHelp()
 	}, -4)
 
 	if !c.settings[OverrideAllDefaultListeners] {
-		c.emitter.on_errors(func(ec *EventConfig) {
+		c.emitter.onErrors(func(ec *EventConfig) {
 			err := ec.err
 			// TODO: Match theme in better way
 			err.Display(c)
@@ -304,15 +303,15 @@ func (c *Command) _init() {
 
 		c.emitter.on(OutputVersion, func(ec *EventConfig) {
 			// TODO: Print version in a better way
-			app := ec.app_ref
+			app := ec.appRef
 
 			fmt.Println(app.GetName(), app.GetVersion())
 			fmt.Println(app.GetAuthor())
 			fmt.Println(app.GetHelp())
 		}, -4)
 
-		for _, event := range c.emitter.events_to_override {
-			c.emitter.rm_default_lstnr(event)
+		for _, event := range c.emitter.eventsToOverride {
+			c.emitter.rmDefaultLstnr(event)
 		}
 	}
 }
@@ -338,9 +337,9 @@ func (c *Command) UsePredefinedTheme(value PredefinedTheme) *Command {
 /****************************** Parser Functionality ****************************/
 
 func (c *Command) _isExpectingValues() bool {
-	has_defaults := func(list []*Argument) bool {
+	hasDefaults := func(list []*Argument) bool {
 		for _, a := range c.arguments {
-			if a.has_default_value() {
+			if a.hasDefaultValue() {
 			} else {
 				return false
 			}
@@ -348,65 +347,64 @@ func (c *Command) _isExpectingValues() bool {
 		return true
 	}
 
-	return len(c.sub_commands) > 0 || (len(c.arguments) > 0 && !has_defaults(c.arguments))
+	return len(c.subCommands) > 0 || (len(c.arguments) > 0 && !hasDefaults(c.arguments))
 }
 
 func (c *Command) _parse(vals []string) {
 	// TODO: Init/build the commands- set default listeners, add help subcmd, sync settings
 	c._init()
-	c._set_bin_name(os.Args[0])
+	c._setBinName(os.Args[0])
 
-	raw_args := os.Args[1:]
+	rawArgs := os.Args[1:]
 	parser := NewParser(c)
-	matches, err := parser.parse(raw_args)
+	matches, err := parser.parse(rawArgs)
 
-	if !err.is_nil {
+	if !err.isNil {
 		event := EventConfig{
-			err:         err,
-			args:        err.args,
-			event:       err.kind,
-			exit_code:   err.exit_code,
-			app_ref:     c,
-			matched_cmd: matches.matched_cmd,
+			err:        err,
+			args:       err.args,
+			event:      err.kind,
+			exitCode:   err.exitCode,
+			appRef:     c,
+			matchedCmd: matches.matchedCmd,
 		}
 		c.emit(event)
 	}
 
 	// TODO: No errors, check special flags
-	matched_cmd := matches.GetMatchedCommand()
-	cmd_idx := matches.GetMatchedCommandIndex()
+	matchedCmd := matches.GetMatchedCommand()
+	cmdIdx := matches.GetMatchedCommandIndex()
 
 	// Check special flags
 	// TODO: Sync with program settings
 	if matches.ContainsFlag("help") {
 		event := EventConfig{
-			event:       OutputHelp,
-			exit_code:   0,
-			app_ref:     c,
-			matched_cmd: matched_cmd,
+			event:      OutputHelp,
+			exitCode:   0,
+			appRef:     c,
+			matchedCmd: matchedCmd,
 		}
 		c.emit(event)
 	} else if matches.ContainsFlag("version") {
 		event := EventConfig{
-			event:       OutputVersion,
-			exit_code:   0,
-			app_ref:     c,
-			matched_cmd: matched_cmd,
+			event:      OutputVersion,
+			exitCode:   0,
+			appRef:     c,
+			matchedCmd: matchedCmd,
 		}
 		c.emit(event)
 	}
 
-	if matched_cmd.callback != nil {
+	if matchedCmd.callback != nil {
 		// No args passed to the matched cmd
-		if (len(raw_args) == 0 || len(matches.raw_args[cmd_idx:]) == 0) && matched_cmd._isExpectingValues() {
-			matched_cmd.PrintHelp()
+		if (len(rawArgs) == 0 || len(matches.rawArgs[cmdIdx:]) == 0) && matchedCmd._isExpectingValues() {
+			matchedCmd.PrintHelp()
 			return
-		} else {
-			// Invoke callback
-			matched_cmd.callback(&matches)
 		}
+		// Invoke callback
+		matchedCmd.callback(&matches)
 	} else {
-		matched_cmd.PrintHelp()
+		matchedCmd.PrintHelp()
 	}
 }
 
@@ -439,7 +437,7 @@ func (c *Command) Override(event Event, cb EventCallback) {
 
 // A method for setting a listener that gets executed after all events encountered in the program
 func (c *Command) AfterAll(cb EventCallback) {
-	c.emitter.insert_after_all(cb)
+	c.emitter.insertAfterAll(cb)
 }
 
 // Set a callback to be executed only after the help event
@@ -449,7 +447,7 @@ func (c *Command) AfterHelp(cb EventCallback) {
 
 // Set a callback to be executed before all events encountered
 func (c *Command) BeforeAll(cb EventCallback) {
-	c.emitter.insert_before_all(cb)
+	c.emitter.insertBeforeAll(cb)
 }
 
 // Set a callback to be executed only before the help event
@@ -459,8 +457,8 @@ func (c *Command) BeforeHelp(cb EventCallback) {
 
 /****************************** Other Command Utilities ****************************/
 
-func (c *Command) find_subcommand(val string) (*Command, error) {
-	for _, sc := range c.sub_commands {
+func (c *Command) findSubcommand(val string) (*Command, error) {
+	for _, sc := range c.subCommands {
 		includes := func(val string) bool {
 			for _, v := range sc.aliases {
 				if v == val {
@@ -478,52 +476,52 @@ func (c *Command) find_subcommand(val string) (*Command, error) {
 	return NewCommand(""), errors.New("no such subcmd")
 }
 
-func (c *Command) remove_flag(val string) {
-	new_flags := []*Flag{}
+func (c *Command) removeFlag(val string) {
+	newFlags := []*Flag{}
 	for _, f := range c.flags {
 		if !(f.short == val || f.long == val) {
-			new_flags = append(new_flags, f)
+			newFlags = append(newFlags, f)
 		}
 	}
-	c.flags = new_flags
+	c.flags = newFlags
 }
 
-func (c *Command) _get_app_ref() *Command {
-	if c.is_root {
+func (c *Command) _getAppRef() *Command {
+	if c.isRoot {
 		return c
 	}
-	return c.app_ref
+	return c.appRef
 }
 
-func (c *Command) _set_parent(parent *Command) *Command {
+func (c *Command) _setParent(parent *Command) *Command {
 	c.parent = parent
 	return c
 }
 
-func (c *Command) _set_is_root() *Command {
-	c.is_root = true
+func (c *Command) _setIsRoot() *Command {
+	c.isRoot = true
 	return c
 }
 
-func (c *Command) _get_usage_str() string {
-	var new_usage strings.Builder
+func (c *Command) _getUsageStr() string {
+	var newUsage strings.Builder
 
-	if c.parent != nil && c.parent.is_root && !strings.Contains(c.usage_str, c.parent.usage_str) {
-		new_usage.WriteString(c.parent.usage_str)
-		new_usage.WriteString(c.usage_str)
+	if c.parent != nil && c.parent.isRoot && !strings.Contains(c.usageStr, c.parent.usageStr) {
+		newUsage.WriteString(c.parent.usageStr)
+		newUsage.WriteString(c.usageStr)
 	} else {
-		new_usage.WriteString(c.usage_str)
+		newUsage.WriteString(c.usageStr)
 	}
 
-	return new_usage.String()
+	return newUsage.String()
 }
 
-func (c *Command) _set_bin_name(val string) {
+func (c *Command) _setBinName(val string) {
 	if len(c.name) == 0 {
-		bin_name := filepath.Base(val)
+		binName := filepath.Base(val)
 
 		// TODO: Validation
-		c.Name(bin_name)
+		c.Name(binName)
 	}
 }
 
