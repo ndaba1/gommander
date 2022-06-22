@@ -16,7 +16,7 @@ const (
 	Keyword Designation = iota
 	Headline
 	Description
-	Error
+	ErrorMsg
 	Other
 )
 
@@ -25,18 +25,18 @@ const (
 	PlainTheme
 )
 
-var DESIGNATION_SLICE = []Designation{
+var designationSlice = []Designation{
 	Keyword,
 	Headline,
 	Description,
-	Error,
+	ErrorMsg,
 	Other,
 }
 
 type Formatter struct {
-	theme       Theme
-	buffer      bytes.Buffer
-	prev_offset int
+	theme      Theme
+	buffer     bytes.Buffer
+	prevOffset int
 }
 
 type Theme = map[Designation]color.Color
@@ -65,7 +65,7 @@ func GetPredefinedTheme(val PredefinedTheme) Theme {
 // Creates as many colors as there are designations
 func NewVariadicTheme(values ...color.Attribute) Theme {
 	theme := make(map[Designation]color.Color)
-	for i, v := range DESIGNATION_SLICE {
+	for i, v := range designationSlice {
 		theme[v] = *color.New(values[i])
 	}
 
@@ -75,17 +75,17 @@ func NewVariadicTheme(values ...color.Attribute) Theme {
 func NewTheme(keyword, headline, description, errors, others color.Attribute) Theme {
 	theme := make(map[Designation]color.Color)
 
-	kw_color := color.New(keyword)
-	hd_color := color.New(headline)
-	ds_color := color.New(description)
-	er_color := color.New(errors)
-	ot_color := color.New(others)
+	kwColor := color.New(keyword)
+	hdColor := color.New(headline)
+	dsColor := color.New(description)
+	erColor := color.New(errors)
+	otColor := color.New(others)
 
-	theme[Keyword] = *kw_color
-	theme[Headline] = *hd_color
-	theme[Description] = *ds_color
-	theme[Error] = *er_color
-	theme[Other] = *ot_color
+	theme[Keyword] = *kwColor
+	theme[Headline] = *hdColor
+	theme[Description] = *dsColor
+	theme[ErrorMsg] = *erColor
+	theme[Other] = *otColor
 
 	return theme
 }
@@ -105,8 +105,8 @@ func (f *Formatter) close() {
 func (f *Formatter) Add(dsgn Designation, val string) {
 	c := f.theme[dsgn]
 
-	colored_val := c.Sprintf(val)
-	f.buffer.WriteString(colored_val)
+	coloredVal := c.Sprintf(val)
+	f.buffer.WriteString(coloredVal)
 }
 
 func (f *Formatter) AddAndPrint(dsgn Designation, val string) {
@@ -145,51 +145,51 @@ func (f *Formatter) format(items []FormatGenerator) {
 		values = append(values, temp)
 	}
 
-	max_offset := 0
-	current_offset := 0
+	maxOffset := 0
+	currentOffset := 0
 
 	// Finds the longest value, adds some padding to it and sets it as the max offset
 	for _, v := range values {
 		capacity := len([]byte(v[0]))
-		if capacity > current_offset {
-			current_offset = capacity + 8 // Padding
+		if capacity > currentOffset {
+			currentOffset = capacity + 8 // Padding
 		}
-		if capacity > f.prev_offset {
-			f.prev_offset = current_offset
+		if capacity > f.prevOffset {
+			f.prevOffset = currentOffset
 		}
 	}
 
 	// If different sections have almost similar max_offsets, use equal values
-	diff := f.prev_offset - current_offset
+	diff := f.prevOffset - currentOffset
 	if diff < 8 && diff > -8 {
-		max_offset = f.prev_offset
+		maxOffset = f.prevOffset
 	} else {
-		max_offset = current_offset
+		maxOffset = currentOffset
 	}
 
 	for _, v := range values {
 		leading := v[0]
 		floating := v[1]
 
-		f.print_output(leading, floating, max_offset)
+		f.printOutput(leading, floating, maxOffset)
 	}
 
 }
 
-func (f *Formatter) print_output(leading string, floating string, offset int) {
+func (f *Formatter) printOutput(leading string, floating string, offset int) {
 	// TODO: Add support for sentence wrap
 	buffer := make([]byte, offset)
 	reader := strings.NewReader(leading)
-	var temp_str strings.Builder
+	var tempStr strings.Builder
 
 	numBytes, _ := reader.Read(buffer)
-	temp_str.Write(buffer[:numBytes])
+	tempStr.Write(buffer[:numBytes])
 	diff := len(buffer) - numBytes
 
 	for i := 0; i < diff; i++ {
-		temp_str.Write([]byte(" "))
+		tempStr.Write([]byte(" "))
 	}
 
-	f.Add(Keyword, fmt.Sprintf("    %v", temp_str.String()))
+	f.Add(Keyword, fmt.Sprintf("    %v", tempStr.String()))
 	f.Add(Description, fmt.Sprintf("%v\n", floating))
 }

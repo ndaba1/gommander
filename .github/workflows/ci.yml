@@ -25,3 +25,10 @@ jobs:
       - name: Unit Test
         run: go test 
 
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v3.1.0
+        with:
+          version: latest
+          args: --verbose
+
+

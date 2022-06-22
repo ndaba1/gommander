@@ -8,41 +8,41 @@ import (
 type HelpWriter struct{}
 
 func (HelpWriter) Write(c *Command) {
-	app := c._get_app_ref()
+	app := c._getAppRef()
 
 	// TODO: Check settings
 
 	fmter := NewFormatter(app.theme)
 
-	has_args := len(c.arguments) > 0
-	has_info := len(c.discussion) > 0
-	has_flags := len(c.flags) > 0
-	has_options := len(c.options) > 0
-	has_subcmds := len(c.sub_commands) > 0
-	has_custom_usage := len(c.custom_usage_str) > 0
-	has_subcmd_groups := len(c.sub_cmd_groups) > 0
+	hasArgs := len(c.arguments) > 0
+	hasInfo := len(c.discussion) > 0
+	hasFlags := len(c.flags) > 0
+	hasOptions := len(c.options) > 0
+	hasSubcmds := len(c.subCommands) > 0
+	hasCustomUsage := len(c.customUsageStr) > 0
+	hasSubcmdGroups := len(c.subCmdGroups) > 0
 
 	fmter.Add(Description, fmt.Sprintf("\n%v\n", c.help))
 	fmter.section("USAGE")
 
-	if has_custom_usage {
-		fmter.Add(Keyword, fmt.Sprintf("    %v", c.custom_usage_str))
+	if hasCustomUsage {
+		fmter.Add(Keyword, fmt.Sprintf("    %v", c.customUsageStr))
 	} else {
-		fmter.Add(Keyword, fmt.Sprintf("    %v", c._get_usage_str()))
+		fmter.Add(Keyword, fmt.Sprintf("    %v", c._getUsageStr()))
 
-		if has_flags {
+		if hasFlags {
 			fmter.Add(Other, " [FLAGS]")
 		}
 
-		if has_options {
+		if hasOptions {
 			fmter.Add(Other, " [OPTIONS]")
 		}
 
-		if has_args {
+		if hasArgs {
 			fmter.Add(Other, " <ARGS>")
 		}
 
-		if has_subcmds {
+		if hasSubcmds {
 			fmter.Add(Other, " <SUBCOMMAND>")
 		}
 	}
@@ -53,63 +53,59 @@ func (HelpWriter) Write(c *Command) {
 		fmter.Add(Description, fmt.Sprintf("    [%v]\n", strings.Join(c.aliases, ", ")))
 	}
 
-	if has_args {
+	if hasArgs {
 		fmter.section("ARGS")
 		fmter.format(standardize(c.arguments))
 	}
 
-	if has_flags {
+	if hasFlags {
 		fmter.section("FLAGS")
 		fmter.format(standardize(c.flags))
 	}
 
-	if has_options {
+	if hasOptions {
 		fmter.section("OPTIONS")
 		fmter.format(standardize(c.options))
 	}
 
-	if has_subcmds && !has_subcmd_groups {
+	if hasSubcmds && !hasSubcmdGroups {
 		fmter.section("SUBCOMMANDS")
-		fmter.format(standardize(c.sub_commands))
+		fmter.format(standardize(c.subCommands))
 	}
 
-	if has_subcmds && has_subcmd_groups {
-		for k, v := range c.sub_cmd_groups {
+	if hasSubcmds && hasSubcmdGroups {
+		for k, v := range c.subCmdGroups {
 			fmter.section(k)
 			fmter.format(standardize(v))
 		}
 		// TODO: Simplify this logic
-		group_contains := func(val *Command) bool {
+		groupContains := func(val *Command) bool {
 			included, total := 0, 0
-			for _, g := range c.sub_cmd_groups {
-				total += 1
-				if slice_contains(g, val) {
-					included -= 1
+			for _, g := range c.subCmdGroups {
+				total++
+				if sliceContains(g, val) {
+					included--
 				} else {
-					included += 1
+					included++
 				}
 			}
-			if included != total {
-				return true
-			} else {
-				return false
+			return included != total
+		}
+
+		otherCmds := []*Command{}
+		for _, sc := range c.subCommands {
+			if !groupContains(sc) {
+				otherCmds = append(otherCmds, sc)
 			}
 		}
 
-		other_cmds := []*Command{}
-		for _, sc := range c.sub_commands {
-			if !group_contains(sc) {
-				other_cmds = append(other_cmds, sc)
-			}
-		}
-
-		if len(other_cmds) > 0 {
+		if len(otherCmds) > 0 {
 			fmter.section("Other Commands")
-			fmter.format(standardize(other_cmds))
+			fmter.format(standardize(otherCmds))
 		}
 	}
 
-	if has_info {
+	if hasInfo {
 		// TODO: Format discussion here
 		fmter.section(strings.ToUpper("discussion"))
 		// fmter.discussion(app.discussion, 80)
@@ -118,7 +114,7 @@ func (HelpWriter) Write(c *Command) {
 	fmter.Print()
 }
 
-func slice_contains(slice []*Command, val *Command) bool {
+func sliceContains(slice []*Command, val *Command) bool {
 	for _, v := range slice {
 		if v == val {
 			return true
@@ -141,26 +137,26 @@ func standardize[T FormatterType](vals []T) []FormatGenerator {
 	return values
 }
 
-func suggest_sub_cmd(c *Command, val string) []string {
-	var MIN_MATCH_SIZE = 3
+func suggestSubCmd(c *Command, val string) []string {
+	var minMatchSize = 3
 	var matches []string
 
-	cmd_map := make(map[string]int, 0)
+	cmdMap := make(map[string]int, 0)
 
-	for _, v := range c.sub_commands {
-		cmd_map[v.name] = 0
+	for _, v := range c.subCommands {
+		cmdMap[v.name] = 0
 	}
 
 	for i, v := range strings.Split(val, "") {
-		for _, sc := range c.sub_commands {
+		for _, sc := range c.subCommands {
 			if len(sc.name) > i && string(sc.name[i]) == v {
-				cmd_map[sc.name] = cmd_map[sc.name] + 1
+				cmdMap[sc.name] = cmdMap[sc.name] + 1
 			}
 		}
 	}
 
-	for k, v := range cmd_map {
-		if v >= MIN_MATCH_SIZE {
+	for k, v := range cmdMap {
+		if v >= minMatchSize {
 			matches = append(matches, k)
 		}
 	}

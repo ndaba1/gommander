@@ -18,17 +18,17 @@ linters:
     #- gocritic
     #- gocyclo
     #- gofmt
-    - goimports
-    - golint
+    # - goimports
+    # - golint
     #- gomnd
     #- goprintffuncname
     #- gosec
     #- gosimple
     - govet
     - ineffassign
-    - interfacer
+    # - interfacer
     #- lll
-    - maligned
+    # - maligned
     - megacheck
     #- misspell
     #- nakedret

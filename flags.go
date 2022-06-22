@@ -6,11 +6,11 @@ import (
 )
 
 type Flag struct {
-	name      string
-	long      string
-	short     string
-	help      string
-	is_global bool
+	name     string
+	long     string
+	short    string
+	help     string
+	isGlobal bool
 }
 
 // A Builder method for creating a new flag. It sets the name of the flag and the long version of the flag by appending `--` to the name then returns the flag for further manipulation.
@@ -35,7 +35,7 @@ func (f *Flag) Help(val string) *Flag {
 
 // A method for setting a flag as global. Global flags are propagated to all the subcommands of a given command
 func (f *Flag) Global(val bool) *Flag {
-	f.is_global = val
+	f.isGlobal = val
 	return f
 }
 
@@ -43,7 +43,7 @@ func (f *Flag) compare(b *Flag) bool {
 	return f.name == b.name && f.short == b.short && f.long == b.long && f.help == b.help
 }
 
-func new_flag(val string, help string) Flag {
+func newFlag(val string, help string) Flag {
 	values := strings.Split(val, " ")
 
 	short, long := "", ""

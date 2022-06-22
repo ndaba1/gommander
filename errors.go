@@ -6,62 +6,62 @@ import (
 	"strings"
 )
 
-type GommanderError struct {
-	kind      Event
-	message   string
-	args      []string
-	context   string
-	exit_code int
-	is_nil    bool
+type Error struct {
+	kind     Event
+	message  string
+	args     []string
+	context  string
+	exitCode int
+	isNil    bool
 }
 
-func nil_error() GommanderError {
-	return GommanderError{is_nil: true}
+func nilError() Error {
+	return Error{isNil: true}
 }
 
-func throw_error(kind Event, msg string, ctx string) GommanderError {
-	var exit_code int
+func throwError(kind Event, msg string, ctx string) Error {
+	var exitCode int
 	switch kind {
 	case InvalidArgumentValue:
-		exit_code = 10
+		exitCode = 10
 	case MissingRequiredArgument:
-		exit_code = 20
+		exitCode = 20
 	case MissingRequiredOption:
-		exit_code = 30
+		exitCode = 30
 	case UnknownCommand:
-		exit_code = 40
+		exitCode = 40
 	case UnknownOption:
-		exit_code = 50
+		exitCode = 50
 	default:
-		exit_code = 1
+		exitCode = 1
 	}
-	return GommanderError{
-		kind:      kind,
-		message:   msg,
-		context:   ctx,
-		exit_code: exit_code,
+	return Error{
+		kind:     kind,
+		message:  msg,
+		context:  ctx,
+		exitCode: exitCode,
 	}
 }
 
-func (e GommanderError) set_args(vals []string) GommanderError {
+func (e Error) setArgs(vals []string) Error {
 	e.args = vals
 	return e
 }
 
-func (e *GommanderError) compare(err *GommanderError) bool {
+func (e *Error) compare(err *Error) bool {
 	// TODO: Validate all fields
 	return e.message == err.message && e.context == err.context && e.kind == err.kind
 }
 
-func (e *GommanderError) Error() string {
+func (e *Error) ErrorMsg() string {
 	return e.message
 }
 
-func (e *GommanderError) Display(c *Command) {
-	app := c._get_app_ref()
+func (e *Error) Display(c *Command) {
+	app := c._getAppRef()
 	fmter := NewFormatter(app.theme)
 
-	fmter.Add(Error, "error:  ")
+	fmter.Add(ErrorMsg, "error:  ")
 	fmter.Add(Other, strings.ToLower(e.message))
 	fmter.close()
 	fmter.close()

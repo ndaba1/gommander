@@ -84,8 +84,8 @@ func TestComplexParsing(t *testing.T) {
 		t.Error("Option arg parsing not working correctly")
 	}
 
-	pstnl_args := matches.GetPositionalArgs()
-	if pstnl_args[0] != "ng" || pstnl_args[1] != "serve" {
+	pstnlArgs := matches.GetPositionalArgs()
+	if pstnlArgs[0] != "ng" || pstnlArgs[1] != "serve" {
 		t.Error("Positional args parsing failed")
 	}
 
@@ -95,19 +95,19 @@ func TestOptionSyntaxParsing(t *testing.T) {
 	app := NewCommand("basic").Option("-p --port <port-number>", "Port option")
 	parser := NewParser(app)
 
-	m_1, _ := parser.parse([]string{"-p", "9000"})
-	m_2, _ := parser.parse([]string{"--port", "9000"})
-	m_3, _ := parser.parse([]string{"--port=9000"})
+	m1, _ := parser.parse([]string{"-p", "9000"})
+	m2, _ := parser.parse([]string{"--port", "9000"})
+	m3, _ := parser.parse([]string{"--port=9000"})
 
-	a_1, _ := m_1.GetOptionValue("port")
-	a_2, _ := m_2.GetOptionValue("port")
-	a_3, _ := m_3.GetOptionValue("port")
+	a1, _ := m1.GetOptionValue("port")
+	a2, _ := m2.GetOptionValue("port")
+	a3, _ := m3.GetOptionValue("port")
 
-	if a_1 != a_2 {
+	if a1 != a2 {
 		t.Error("Short option parsing and long option parsing out of sync")
 	}
 
-	if a_2 != a_3 {
+	if a2 != a3 {
 		t.Error("Long option syntax with `=` parsing failed")
 	}
 
@@ -134,11 +134,11 @@ func TestParserErrors(t *testing.T) {
 	ctx := "Expected a required value corresponding to: `<image-name>` but none was provided"
 
 	// Test missing required argument
-	exp_err := throw_error(MissingRequiredArgument, msg, ctx)
-	if !exp_err.compare(&err) {
+	expErr := throwError(MissingRequiredArgument, msg, ctx)
+	if !expErr.compare(&err) {
 		t.Error("Missing require argument error thrown incorrectly")
-		t.Errorf("Expected error was: %v", exp_err.Error())
-		t.Errorf("Found error was: %v", err.Error())
+		t.Errorf("Expected error was: %v", expErr.ErrorMsg())
+		t.Errorf("Found error was: %v", err.ErrorMsg())
 	}
 }
 

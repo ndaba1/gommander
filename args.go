@@ -7,14 +7,14 @@ import (
 )
 
 type Argument struct {
-	name          string
-	help          string
-	raw           string
-	is_variadic   bool
-	is_required   bool
-	valid_values  []string
-	default_value string
-	validator_fn  func(string) error
+	name         string
+	help         string
+	raw          string
+	isVariadic   bool
+	isRequired   bool
+	validValues  []string
+	defaultValue string
+	validatorFn  func(string) error
 }
 
 // A Builder method for creating a new argument. Valid values include <arg>, [arg] or simply the name of the arg
@@ -42,31 +42,31 @@ func NewArgument(name string) *Argument {
 	}
 
 	return &Argument{
-		name:        strings.ReplaceAll(name, "-", "_"),
-		is_required: required,
-		is_variadic: variadic,
+		name:       strings.ReplaceAll(name, "-", "_"),
+		isRequired: required,
+		isVariadic: variadic,
 	}
 }
 
 // A method for setting the default value on an argument to be used when no value is provided but the argument value is required
 func (a *Argument) Default(val string) *Argument {
 	// Check if value valid
-	if len(a.valid_values) > 0 {
-		if !a.test_value(val) {
-			fmt.Printf("error occurred when setting default value for argument: %v \n.  the passed value %v does not match the valid values: %v", a.name, val, a.valid_values)
+	if len(a.validValues) > 0 {
+		if !a.testValue(val) {
+			fmt.Printf("error occurred when setting default value for argument: %v \n.  the passed value %v does not match the valid values: %v", a.name, val, a.validValues)
 			os.Exit(10)
 		}
 	}
 	// verify value against validator fn if any
-	if a.validator_fn != nil {
-		err := a.validator_fn(val)
+	if a.validatorFn != nil {
+		err := a.validatorFn(val)
 		if err != nil {
 			fmt.Printf("you tried to set a default value for argument: %v, but the validator function returned an error for values: %v", a.name, val)
 			os.Exit(10)
 		}
 	}
 
-	a.default_value = val
+	a.defaultValue = val
 	return a
 }
 
@@ -78,25 +78,25 @@ func (a *Argument) Help(val string) *Argument {
 
 // Sets whether an argument is variadic or not
 func (a *Argument) Variadic(val bool) *Argument {
-	a.is_variadic = val
+	a.isVariadic = val
 	return a
 }
 
 // Sets whether an argument is required or not
 func (a *Argument) Required(val bool) *Argument {
-	a.is_required = val
+	a.isRequired = val
 	return a
 }
 
 // Configures the valid values for an argument
 func (a *Argument) ValidateWith(vals []string) *Argument {
-	a.valid_values = vals
+	a.validValues = vals
 	return a
 }
 
 // A method to pass a custom validator function for arguments passed
 func (a *Argument) ValidatorFunc(fn func(string) error) *Argument {
-	a.validator_fn = fn
+	a.validatorFn = fn
 	return a
 }
 
@@ -108,8 +108,8 @@ func (a *Argument) DisplayAs(val string) *Argument {
 
 /****************************** Package utilities ********************************/
 
-func (a *Argument) test_value(val string) bool {
-	for _, v := range a.valid_values {
+func (a *Argument) testValue(val string) bool {
+	for _, v := range a.validValues {
 		if strings.EqualFold(v, val) {
 			return true
 		}
@@ -118,53 +118,52 @@ func (a *Argument) test_value(val string) bool {
 	return false
 }
 
-func (a *Argument) has_default_value() bool {
-	return len(a.default_value) > 0
+func (a *Argument) hasDefaultValue() bool {
+	return len(a.defaultValue) > 0
 }
 
 func (a *Argument) compare(b *Argument) bool {
-	return a.help == b.help && a.name == b.name && a.get_raw_value() == b.get_raw_value()
+	return a.help == b.help && a.name == b.name && a.getRawValue() == b.getRawValue()
 }
 
-func new_argument(val string, help string) *Argument {
+func newArgument(val string, help string) *Argument {
 	arg := NewArgument(val)
 	arg.Help(help)
 	return arg
 }
 
-func (a *Argument) get_raw_value() string {
+func (a *Argument) getRawValue() string {
 	if len(a.raw) == 0 {
 		var value strings.Builder
 
 		write := func(first rune, last rune) {
 			value.WriteRune(first)
 			value.WriteString(strings.ReplaceAll(a.name, "_", "-"))
-			if a.is_variadic {
+			if a.isVariadic {
 				value.WriteString("...")
 			}
 			value.WriteRune(last)
 		}
 
-		if a.is_required {
+		if a.isRequired {
 			write('<', '>')
 		} else {
 			write('[', ']')
 		}
 		return value.String()
-	} else {
-		return a.raw
 	}
+	return a.raw
 }
 
 /****************************** Interface implementations ********************************/
 
 func (a *Argument) generate() (string, string) {
-	leading := a.get_raw_value()
+	leading := a.getRawValue()
 	var floating strings.Builder
 	floating.WriteString(a.help)
 
-	if a.has_default_value() {
-		floating.WriteString(fmt.Sprintf(" (default: %v)", a.default_value))
+	if a.hasDefaultValue() {
+		floating.WriteString(fmt.Sprintf(" (default: %v)", a.defaultValue))
 	}
 
 	return leading, floating.String()
