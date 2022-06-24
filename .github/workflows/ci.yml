@@ -31,4 +31,8 @@ jobs:
           version: latest
           args: --verbose
 
+      - name: Generate coverage report
+        run: go test -race -coverprofile=coverage.out -covermode=atomic
 
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
