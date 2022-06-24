@@ -443,7 +443,7 @@ func (p *Parser) getArgMatches(list []*Argument, args []string) ([]argMatches, E
 						return matches, throwError(MissingRequiredArgument, msg, ctx).setArgs(args)
 					}
 					builder.WriteString(argVal.defaultValue)
-				} else {
+				} else if i < len(args) {
 					v := args[i]
 					if p.isSpecialValue(v) {
 						break
