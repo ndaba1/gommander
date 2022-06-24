@@ -2,8 +2,9 @@
 
 <p align="center">
 <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/ndaba1/gommander/gommander-ci-workflow?label=CI&logo=github%20actions&logoColor=fff">
-<img alt="Go report card" src="https://goreportcard.com/badge/github.com/ndaba1/gommander">
-<img alt="Go reference" src="https://pkg.go.dev/badge/github.com/ndaba1/gommander.svg">
+<img alt="Codecov" src="https://img.shields.io/codecov/c/gh/ndaba1/gommander?color=orange&logo=codecov">
+<img alt="Go report card", src="https://goreportcard.com/badge/github.com/ndaba1/gommander">
+<img alt="Go reference", src="https://pkg.go.dev/badge/github.com/ndaba1/gommander.svg">
 </p>
 
 A commander package for creating CLIs in Go. This package aims to be a complete solution for command-line argument parsing by providing you with an easy-to-use and extensible api but without compromising speed.
