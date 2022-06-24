@@ -7,7 +7,7 @@
 <img alt="Go reference", src="https://pkg.go.dev/badge/github.com/ndaba1/gommander.svg">
 </p>
 
-A commander package for creating CLIs in Go. This package aims to be a complete solution for command line argument parsing by providing you with an easy-to-use and extensible api, but without compromising speed.
+A commander package for creating CLIs in Go. This package aims to be a complete solution for command-line argument parsing by providing you with an easy-to-use and extensible api but without compromising speed.
 
 Features of this package include:
 
@@ -20,7 +20,7 @@ Features of this package include:
 
 ## API Overview
 
-<img src="./assets/overview.png">
+<img src="./assets/overview.png" alt="Overview">
 
 ## Index
 
@@ -59,7 +59,7 @@ import (
 )
 
 func main() {
-  app := gommander.App();
+  app := gommander.App()
 
   app.Author("vndaba").
       Version("0.1.0").
@@ -96,7 +96,7 @@ Subcommands:
 
 ## Subcommands
 
-Commands and subcommands are the gist of the package. The entrypoint of the program is itself a command to which more subcommands may be nested. A new command can be created by the `gommander.NewCommand()` method but you will rarely have to work with this method directly. The convention is to first create an app via the `gommander.App()` method which itself is also a command that has been marked as the entrypoint of the program(the root cmd) then chain further subcommands to it.
+Commands and subcommands are the gist of the package. The program's entry point is itself a command to which more subcommands may be nested. A new command can be created by the `gommander.NewCommand()` method, but you will rarely have to work with this method directly. Instead, the convention is first to create an app via the `gommander.App()` method, which is also a command marked as the program's entry point (the root cmd), then chain further subcommands to it.
 
 ```go
 //...package declaration and imports
@@ -110,7 +110,7 @@ func main() {
 
 The `.SubCommand()` method returns the newly created subcommand for further manipulation and customization such as adding [arguments](#arguments), [flags](#flags), [options](#options) or updating command metadata such as it description, etc.
 
-You can also manipulate the fields of the root command, such the author of the program, the version and even set the name of the program to be different from the name of its binary.(This doesn't change the name of the actual binary, only changes the name display to users when printing out help information).
+You can also manipulate the fields of the root command, such as the program's author and the version, and even set the program's name to be different from the name of its binary. (This doesn't change the name of the actual binary, it only changes the name displayed to users when printing out help information).
 
 ```go
 // ...
@@ -124,7 +124,7 @@ func main() {
 // ...
 ```
 
-Subcommands can have multiple aliases which are hidden by default but you can this behavior can be modified easily as shown:
+Subcommands can have multiple aliases which are hidden by default, but you can this behavior can be modified easily, as shown:
 
 ```go
 // ...
@@ -142,7 +142,7 @@ func main() {
 // ...
 ```
 
-Subcommand Nesting is also supported by the package. You can chain as many subcommands as you would like. The following is an example:
+The package also supports Subcommand Nesting. You can chain as many subcommands as you would like. The following is an example:
 
 ```go
 // ...
@@ -159,7 +159,7 @@ func main() {
 // ...
 ```
 
-The `.SubCommand()` method is very ergonomic to use and reduces function parameters nesting in your program. However, you could also use the `.AddSubCommand()` method to add a new subcommand. It is similar to the subcommand method, but instead of taking the name of the new command as input, it takes it an instance of an already created command and instead of returning the newly created subcommand, it returns the command to which it is chained as so:
+The `.SubCommand()` method is ergonomic and reduces function parameters nesting in your program. However, you could also use the `.AddSubCommand()` method to add a new subcommand. It is similar to the subcommand method, but instead of taking the name of the new command as input, it makes it an instance of an already created command, and instead of returning the newly created subcommand, it returns the command to which it is chained as so:
 
 ```go
 // ...
@@ -177,15 +177,15 @@ func main() {
 
 You could keep chaining subcommands using this method as shown. The `.SubCommand()` method invokes this one internally.
 
-Throughout the package, you will notice a similar pattern to other methods as well. For instance, flags can be created via the `.Flag()` method but there also exists a `.AddFlag()` method which follows the same rules as the subcommand method counterpart. The same also applies for [options](#options) and [arguments](#arguments).
+Throughout the package, you will also notice a similar pattern to other methods. For instance, you can create flags via the `.Flag()` method, but there also exists a `.AddFlag()` method which follows the same rules as the subcommand method counterpart. The same also applies for [options](#options) and [arguments](#arguments).
 
 ### Subcommand Groups
 
-Subcommands can also be added to groups. This may be done to change how they are printed when showing help. For this, the `.AddToGroup()` method may be used. An example of this is shown in the [subcommands](./examples/subcommands/subcommands.go) example.
+You can also add subcommands to groups. This may be done to change how they are printed when showing help. For this, the `.AddToGroup()` method may be used. An example of this is shown in the [subcommands](./examples/subcommands/subcommands.go) example.
 
 ## Arguments
 
-Arguments are values passed to a command as input. They can also be passed to an option. For instance, in the demo example in the [quick start section](#quick-start), the greet subcommand takes in a name as input. The program is therefore expected to be run as follows:
+Arguments are values passed to a command as input. You can also pass them to an option. For instance, in the demo example in the [quick start section](#quick-start), the greet subcommand takes in a name as input. The program is therefore expected to be run as follows:
 
 ```bash
 ./demo.exe greet John
@@ -205,7 +205,7 @@ func main() {
 // ...
 ```
 
-Here, we see the value of the argument enclosed between angle brackets. **This means that the argument is required** and therefore, an error will be thrown if one is not passed to the program. Optional arguments are represented by square brackets: `[arg]`. If neither the square or angle brackets are provided, the argument is marked as optional.
+Here, we see the value of the argument enclosed between angle brackets. **This means that the argument is required** and therefore, an error will be thrown if one is not passed to the program. Optional arguments are represented by square brackets: `[arg]`. The argument is marked as optional if neither the square or angle brackets are provided.
 The `.Argument()` method takes in the value of the argument and its help string/description. Here are the acceptable forms for the argument value:
 | Value | Semantics|
 |:-----|:--------|
@@ -233,12 +233,12 @@ func main() {
 // ...
 ```
 
-The `.AddArgument()` method, while more verbose, provides more flexibility in defining arguments. It ought to be used when defining more complex arguments. The `gommander.NewArgument()` returns an instance of an Argument to which more methods can be chained. Most of the methods are axiomatic and their functionality can be deduced from their names.
+The `.AddArgument()` method, while more verbose, provides more flexibility in defining arguments. It ought to be used when defining more complex arguments. The `gommander.NewArgument()` returns an instance of an Argument to which you can chain more methods. Most of the methods are axiomatic and you can deduce their functionality from their names.
 The `.ValidateWith()` method sets valid_values for an argument. If the value passed is not one of those values, a well-described error is thrown by the program and printed out.
-The `.ValidatorFunc()` method is similar to the `ValidateWith()` method but instead takes in a function that accepts a string as input, to perform custom validation on and return an error instance or nil depending on the value.
-The `.Default()` method sets a default value for an argument. If the argument is required but no value was passed, the default value is used.
+The `.ValidatorFunc()` method is similar to the `ValidateWith()` method but instead takes in a function that accepts a string as the input to perform custom validation on and returns an error instance or nil depending on the value.
+The `.Default()` method sets a default value for an argument. The default value is used if the argument is required, but the user passed no value.
 
-An example of the above discussed methods is shown below:
+An example of the above-discussed methods is shown below:
 
 ```go
 // ...
@@ -261,13 +261,13 @@ func main() {
 // ...
 ```
 
-Note: it is uncoventional for the `ValidateWith()` and `ValidatorFunc()` method to both be set on a single argument, one of them will take precedence over the other.
+Note: it is unconventional for the `ValidateWith()` and `ValidatorFunc()` method to be set on a single argument. **One of them will take precedence over the other.**
 
 Arguments can also be passed to options. This is discussed in depth in the [options](#options) section
 
 ## Flags
 
-Flags are values, prefixed with either a `-` in their short form, or `--` in their long form. Adding a flag to an instance of a command is simple. It can be achieved in one of two ways:
+Flags are values prefixed with either a `-` in their short form or `--` in their long form. Adding a flag to an instance of command is simple. You can achieve it in one of two ways:
 
 - The `.Flag()` method:
 
@@ -298,12 +298,12 @@ func main() {
 // ...
 ```
 
-When a flag is set as global, it will be propagated to all the subcommands in the app.
-The parser also supports posix flag syntax, therefore, if a command contains flags, say `-i`, `-t`, `-d`, instead of passing the flags individually to the program, users can combine the flags as `itd`.
+When a flag is set as global, it will propagate to all the app subcommands.
+The parser also supports POSIX flag syntax; therefore, if a command contains flags, say `-i`, `-t`, `-d`, instead of passing the flags individually to the program, users can combine the flags as `itd`.
 
 ## Options
 
-Options are simply flags that take in a value as input. There are also two ways for declaring options:
+Options are simply flags that take in a value as input. There are also two ways to declare options:
 
 - The `.Option()` method
 
@@ -345,8 +345,8 @@ Supported option syntaxes are:
 
 ## Settings and Events
 
-The default behavior of the program can be easily modified or even overriden. This can be achieved through settings and events.
-The program settings are very straight-forward and can be accessed via the `Command.Set()` method. Settings configured via this method are simple boolean values and include:
+The default behavior of the program can be easily modified or even overridden. You can achieve this through settings and events.
+The program settings are straightforward and can be accessed via the `Command.Set()` method. Settings configured via this method are simple boolean values and include:
 
 ```go
 // ...
@@ -367,7 +367,7 @@ func main() {
 // ...
 ```
 
-The package also has the concept of events which are emitted by the app and can be reacted to by adding new listeners or even overriding the default listeners.
+The package also has the concept of events that are emitted by the app and can be reacted to by adding new listeners or even overriding the default listeners.
 
 ```go
 // ...
@@ -397,7 +397,7 @@ Other event-related methods include:
 ## Themes and UI
 
 Themes control the color palette used by the program. You can define your own theme or use predefined ones. The package uses `github.com/fatih/color` as a dependency for color functionality.
-The package uses the concept of designations for theme functionality, i.e. `Keywords` are assigned one color, `Descriptions` another, `Errors` another and so on and so forth.
+The package uses the concept of designations for theme functionality, i.e. `Keywords` are assigned one color, `Descriptions` another, `Errors` another and so forth.
 
 Using a predefined theme is as shown below:
 
@@ -413,7 +413,7 @@ func main() {
 // ...
 ```
 
-You can also create your own theme. You will need to import the `github.com/fatih/color` package
+You can also create your theme. You will need to import the `github.com/fatih/color` package.
 
 ```go
 app.Theme(
@@ -421,7 +421,7 @@ app.Theme(
 )
 ```
 
-The NewTheme method takes in values of type `ColorAttribute` defined in the `fatih/color` package. Here are examples of the said themes:
+The `NewTheme` method takes in values of type `ColorAttribute` defined in the `fatih/color` package. Here are examples of the said themes:
 
 ### The default app theme:
 
@@ -451,7 +451,7 @@ You can configure the app to use the plain theme as follows:
 
 ### Custom-defined themes:
 
-You can easily define your own custom theme as shown below:
+You can easily define your custom theme as shown below:
 
 ```go
 package main
@@ -476,14 +476,14 @@ func main() {
 
 ## Command Callbacks
 
-The package only serves one purpose, to parse command line arguments. To define what to do with the parsed arguments, command callbacks are defined. There are simply functions of the type: `func(*gommander.ParserMatches)` that get invoked when a command is matched. If a callback is not defined for a subcommand and the subcommand gets matched, help information gets printed out as the fallback behavior.
-These functions are defined by the `Command.Action()` method.
+The package only serves one purpose, to parse command-line arguments. Command callbacks are defined to define what to do with the parsed arguments. There are simply functions of the type: `func(*gommander.ParserMatches)` that get invoked when a command is matched. If a callback is not defined for a subcommand and the subcommand gets checked, help information gets printed out as the fallback behavior.
+The `Command.Action()` function defines these functions.
 
 See an example of this [here](./examples/demo/demo.go).
 
 ## Error handling
 
-Errors are handled directly by the package. When an error is encountered, the program `emits` an event corresponding to this error which is then caught by the set event-listeners. The program has pre-defined error listeners out of the box, but they can be overriden if you so choose, and handle the error in a custom way. However, the error handling is sufficient by default. This is how errors are printed out by default:
+Errors are handled directly by the package. When an error is encountered, the program `emits` an event corresponding to this error which the set event listeners then catch. The program has pre-defined error listeners out of the box, but they can be overriden if you so choose and handle the error in a custom way. However, the error handling is sufficient by default. This is how errors are printed out by default:
 
 <img src="./assets/errors.png">
 
@@ -504,7 +504,7 @@ This will in turn cause errors to be displayed as follows:
 
 <img src="./assets/errors_help.png">
 
-When you define a custom event-listener for an error-event, the function takes in an `EventConfig` corresponding to the specified event. You can get certain information from this config. The following is an example:
+When you define a custom event-listener for an error-event, the function takes in an `EventConfig` corresponding to the specified event. You can get specific information from this config. The following is an example:
 
 ```go
 // ...
@@ -522,7 +522,7 @@ func main() {
 
 There are a few things to note about the above example:
 
-- The `EventConfig.GetArgs()` method returns a slice of different strings depending on the error-event that was emitted, various events have been documented accordingly. In this case, there was only one string in the slice, which was the name of the missing argument
+- The `EventConfig.GetArgs()` method returns a slice of different strings depending on the error event that was emitted, various events have been documented accordingly. In this case, there was only one string in the slice, which was the name of the missing argument
 - When defining custom-listeners, the `Command.On()` method does not remove the default listener, it only adds a new one, which will get invoked after the default ones. If you wish to override the default listener completely, use the `Command.Override()` method.
 - Different events have different exit codes that can be accessed via the `EventConfig.GetExitCode()` method.
 - You can add multiple listeners for a single event
@@ -536,20 +536,20 @@ By convention, the formatter functions on a basis of designations as explained i
 package main
 
 import (
-    "fmt"
+  "fmt"
 
-    "github.com/ndaba1/gommander"
-    "github.com/fatih/color"
+  "github.com/ndaba1/gommander"
+  "github.com/fatih/color"
 )
 
 func main() {
-    app := gommander.App()
+  app := gommander.App()
 
-    app.On(gommander.MissingRequiredArgument, func(pm *gommander.EventConfig) {
-        // Use default theme or create your own
-        fmter := gommander.NewFormatter(gommander.DefaultTheme())
-        fmter.ColorAndPrint(*color.New(color.FgRed), fmt.Sprintf("\nMissing a required argument: `%v`\n", pm.GetArgs()[0]))
-    })
+  app.On(gommander.MissingRequiredArgument, func(pm *gommander.EventConfig) {
+    // Use default theme or create your own
+    fmter := gommander.NewFormatter(gommander.DefaultTheme())
+    fmter.ColorAndPrint(*color.New(color.FgRed), fmt.Sprintf("\nMissing a required argument: `%v`\n", pm.GetArgs()[0]))
+  })
 }
 ```
 
