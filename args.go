@@ -113,6 +113,13 @@ func (a *Argument) testValue(val string) bool {
 		}
 	}
 
+	if a.validatorFn != nil {
+		err := a.validatorFn(val)
+		if err == nil {
+			return true
+		}
+	}
+
 	return false
 }
 
