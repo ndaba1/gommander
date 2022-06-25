@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added more tests for package components, significantly improved the coverage
+
+### Fixed
+
+- Corrected the package inner parse method to use the args passed as input, rather than reading directly from os.Args
+
 ## [0.1.7] - 2022-06-25
 
 ### Added
