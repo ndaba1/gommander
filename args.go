@@ -2,6 +2,7 @@ package gommander
 
 import (
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -54,6 +55,9 @@ func (a *Argument) Default(val string) *Argument {
 		if !a.testValue(val) {
 			// TODO: consider writing to stderr
 			fmt.Printf("error occurred when setting default value for argument: %v \n.  the passed value %v does not match the valid values: %v", a.name, val, a.validValues)
+			if !isTestMode() {
+				os.Exit(1)
+			}
 		}
 	}
 	// verify value against validator fn if any
@@ -61,6 +65,9 @@ func (a *Argument) Default(val string) *Argument {
 		err := a.validatorFn(val)
 		if err != nil {
 			fmt.Printf("you tried to set a default value for argument: %v, but the validator function returned an error for values: %v", a.name, val)
+			if !isTestMode() {
+				os.Exit(1)
+			}
 		}
 	}
 
