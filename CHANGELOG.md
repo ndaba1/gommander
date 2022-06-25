@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.7] - 2022-06-25
+
 ### Added
 
 - Integrated codecov into the CI workflow and added a coverage badge in the README
@@ -21,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Patched the parser error causing the uncaught unknown-command error
+- Fixed the parser issue #21 causing parsing of multiple positional args to fail
 
 ## [0.1.6] - 2022-06-24
 
@@ -101,7 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Simple examples and indepth docs
 - Fair amount of tests and coverage
 
-[unreleased]: https://github.com/ndaba1/gommander/compare/v0.1.6...HEAD
+[unreleased]: https://github.com/ndaba1/gommander/compare/v0.1.7...HEAD
+[0.1.7]: https://github.com/ndaba1/gommander/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/ndaba1/gommander/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/ndaba1/gommander/compare/v0.1.3...v0.1.5
 [0.1.4]: https://github.com/ndaba1/gommander/compare/v0.1.3...v0.1.4
