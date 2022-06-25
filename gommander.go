@@ -359,9 +359,9 @@ func (c *Command) _parse(vals []string) {
 	parser := NewParser(c)
 	matches, err := parser.parse(rawArgs)
 
-	if !err.isNil {
+	if err != nil {
 		event := EventConfig{
-			err:        err,
+			err:        *err,
 			args:       err.args,
 			event:      err.kind,
 			exitCode:   err.exitCode,
@@ -402,7 +402,7 @@ func (c *Command) _parse(vals []string) {
 			return
 		}
 		// Invoke callback
-		matchedCmd.callback(&matches)
+		matchedCmd.callback(matches)
 	} else {
 		matchedCmd.PrintHelp()
 	}
