@@ -53,8 +53,11 @@ func (a *Argument) Default(val string) *Argument {
 	// Check if value valid
 	if len(a.validValues) > 0 {
 		if !a.testValue(val) {
+			// TODO: consider writing to stderr
 			fmt.Printf("error occurred when setting default value for argument: %v \n.  the passed value %v does not match the valid values: %v", a.name, val, a.validValues)
-			os.Exit(10)
+			if !isTestMode() {
+				os.Exit(1)
+			}
 		}
 	}
 	// verify value against validator fn if any
@@ -62,7 +65,9 @@ func (a *Argument) Default(val string) *Argument {
 		err := a.validatorFn(val)
 		if err != nil {
 			fmt.Printf("you tried to set a default value for argument: %v, but the validator function returned an error for values: %v", a.name, val)
-			os.Exit(10)
+			if !isTestMode() {
+				os.Exit(1)
+			}
 		}
 	}
 
@@ -111,6 +116,13 @@ func (a *Argument) DisplayAs(val string) *Argument {
 func (a *Argument) testValue(val string) bool {
 	for _, v := range a.validValues {
 		if strings.EqualFold(v, val) {
+			return true
+		}
+	}
+
+	if a.validatorFn != nil {
+		err := a.validatorFn(val)
+		if err == nil {
 			return true
 		}
 	}

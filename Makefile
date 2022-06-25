@@ -13,8 +13,11 @@ bench:
 release:
 	$(GOPROXY) go list -m $(URI)@$(VERSION)
 
-cover:
-	go test -cover
+coverage:
+	go test -coverprofile=coverage.out
+
+reports: coverage
+	go tool cover -html=coverage.out
 
 examples: $(EXAMPLES)
 	go build -o $(BIN) $(EXAMPLES)

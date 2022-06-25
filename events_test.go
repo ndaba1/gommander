@@ -2,12 +2,13 @@ package gommander
 
 import "testing"
 
-func TestBasicListener(t *testing.T) {
+func TestListenerCreation(t *testing.T) {
 	em := newEmitter()
 
 	em.on(OutputHelp, func(ec *EventConfig) {}, 0)
+	em.on(OutputVersion, func(ec *EventConfig) {}, 0)
 
-	if len(em.listeners) == 0 {
+	if len(em.listeners) != 2 {
 		t.Error("Failed to add listener")
 	}
 }

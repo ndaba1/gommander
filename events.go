@@ -9,21 +9,21 @@ type Event byte
 type EventCallback = func(*EventConfig)
 
 const (
-	// Only one argument passed along, the name of the argument in the form <arg>
+	// An event emitted when an argument that is marked as required, either on a command or on an option is not provided. Only one argument is passed along for this event when emitted, the name of the argument in the form <arg>
 	MissingRequiredArgument Event = iota
-	// No arguments passed for this event
+	// Emitted when the help flag is invoked. No arguments passed for this event
 	OutputHelp
-	// No arguments passed for this event
+	// Emitted when the version flag is invoked. No arguments passed for this event
 	OutputVersion
-	// A single argument is passed for this event, the value of the unknown command
+	// This event is emitted when a value is passed as a subcommand, but no such subcommand could be resolved. A single argument is passed for this event, the value of the unknown command
 	UnknownCommand
-	// A single argument is passed, the value of the unknown option
+	// Emitted when an option-like value is provided, i.e. begins with `-` but no such option or flag was found. A single argument is passed, the value of the unknown option
 	UnknownOption
-	// Single argument passed, the value of the unresolved argument
+	// A general event emitted when an argument was not expected. Single argument passed, the value of the unresolved argument
 	UnresolvedArgument
-	// Single argument: the value of the invalid argument
+	// This event occurs when an argument has a set of valid values or a validator function and the value provided does not match either. A Single value is passed along for this event: the value of the invalid argument
 	InvalidArgumentValue
-	// Single argument: the name of the missing option
+	// An event emitted when a required option is not provided. Single argument: the name of the missing option
 	MissingRequiredOption
 )
 
@@ -96,7 +96,9 @@ func (em *EventEmitter) emit(cfg EventConfig) {
 				lstnr.cb(&cfg)
 			}
 
-			os.Exit(cfg.exitCode)
+			if !isTestMode() {
+				os.Exit(cfg.exitCode)
+			}
 		}
 	}
 }
