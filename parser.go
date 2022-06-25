@@ -258,8 +258,8 @@ func (p *Parser) generateError(e Event, args []string) Error {
 				msg = fmt.Sprintf("failed to resolve option: %v in value: %v", args[0], args[1])
 				ctx = fmt.Sprintf("Found value: %v, with long option syntax but the option: %v is not valid in this context", args[1], args[0])
 			} else {
-				msg = fmt.Sprintf("unknown shorthand flag: `%v` in: `%v`", args[0], p.currentToken)
-				ctx = fmt.Sprintf("Expected to find valid flags values in: `%v`, but instead found: `-%v` , which could not be resolved as a flag", p.currentToken, args[0])
+				msg = fmt.Sprintf("unknown shorthand flag: `%v` in: `%v`", args[0], args[1])
+				ctx = fmt.Sprintf("Expected to find valid flags values in: `%v`, but instead found: `-%v` , which could not be resolved as a flag", args[1], args[0])
 			}
 		}
 	case UnresolvedArgument:
@@ -271,8 +271,8 @@ func (p *Parser) generateError(e Event, args []string) Error {
 	case UnknownCommand:
 		{
 			code = 40
-			msg = fmt.Sprintf("no such subcommand found: `%v`", p.currentToken)
-			suggestions := suggestSubCmd(p.currentCmd, p.currentToken)
+			msg = fmt.Sprintf("no such subcommand found: `%v`", args[0])
+			suggestions := suggestSubCmd(p.currentCmd, args[0])
 
 			var context strings.Builder
 			context.WriteString(fmt.Sprintf("The value: `%v`, could not be resolved as a subcommand. ", p.currentToken))
@@ -367,7 +367,7 @@ func (p *Parser) parse(rawArgs []string) (*ParserMatches, *Error) {
 						flag, err := p.getFlag(fmt.Sprintf("-%v", v))
 
 						if err != nil {
-							err := p.generateError(UnknownOption, []string{v, p.currentToken})
+							err := p.generateError(UnknownOption, []string{v, p.currentToken, ""})
 							return &p.matches, &err
 						}
 
