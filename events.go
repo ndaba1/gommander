@@ -96,7 +96,9 @@ func (em *EventEmitter) emit(cfg EventConfig) {
 				lstnr.cb(&cfg)
 			}
 
-			os.Exit(cfg.exitCode)
+			if !isTestMode() {
+				os.Exit(cfg.exitCode)
+			}
 		}
 	}
 }
