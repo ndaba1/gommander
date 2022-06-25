@@ -210,6 +210,7 @@ func (p *Parser) _isEaten(val string) bool {
 func (p *Parser) reset() {
 	p.eaten = []string{}
 	p.cursor = 0
+	p.cmdIdx = -1
 }
 
 func (p *Parser) generateError(e Event, args []string) Error {
@@ -275,7 +276,7 @@ func (p *Parser) generateError(e Event, args []string) Error {
 			suggestions := suggestSubCmd(p.currentCmd, args[0])
 
 			var context strings.Builder
-			context.WriteString(fmt.Sprintf("The value: `%v`, could not be resolved as a subcommand. ", p.currentToken))
+			context.WriteString(fmt.Sprintf("The value: `%v`, could not be resolved as a subcommand. ", args[0]))
 			if len(suggestions) > 0 {
 				context.WriteString("Did you mean ")
 
@@ -307,6 +308,7 @@ func (p *Parser) parse(rawArgs []string) (*ParserMatches, *Error) {
 
 	p.matches.rawArgs = rawArgs
 	p.matches.argCount = len(rawArgs)
+	p.cmdIdx = -1
 
 	allowPositionalArgs := false
 
@@ -402,7 +404,10 @@ func (p *Parser) parse(rawArgs []string) (*ParserMatches, *Error) {
 	p.matches.matchedCmdIdx = p.cmdIdx
 
 	cmdArgs := []string{}
-	if len(rawArgs) > p.cmdIdx+1 {
+	if p.cmdIdx == -1 {
+		// No subcommands matched
+		cmdArgs = rawArgs
+	} else if len(rawArgs) > p.cmdIdx+1 {
 		cmdArgs = append(cmdArgs, rawArgs[p.cmdIdx+1:]...)
 	}
 
@@ -474,11 +479,11 @@ func (p *Parser) parseCmd(rawArgs []string) *Error {
 	if len(argCfgVals) > 0 {
 		p.matches.argMatches = append(p.matches.argMatches, argCfgVals...)
 	} else if len(rawArgs) > 0 {
-		if len(p.currentCmd.subCommands) > 0 && !p._isEaten(p.currentToken) {
-			err := p.generateError(UnknownCommand, []string{p.currentToken})
+		if len(p.currentCmd.subCommands) > 0 && !p._isEaten(rawArgs[0]) {
+			err := p.generateError(UnknownCommand, []string{rawArgs[0]})
 			return &err
-		} else if !p._isEaten(p.currentToken) {
-			err := p.generateError(UnresolvedArgument, []string{p.currentToken})
+		} else if !p._isEaten(rawArgs[0]) {
+			err := p.generateError(UnresolvedArgument, []string{rawArgs[0]})
 			return &err
 		}
 	}
