@@ -12,11 +12,6 @@ type Error struct {
 	args     []string
 	context  string
 	exitCode int
-	isNil    bool
-}
-
-func nilError() Error {
-	return Error{isNil: true}
 }
 
 func throwError(kind Event, msg string, ctx string) Error {
@@ -41,11 +36,6 @@ func throwError(kind Event, msg string, ctx string) Error {
 		context:  ctx,
 		exitCode: exitCode,
 	}
-}
-
-func (e Error) setArgs(vals []string) Error {
-	e.args = vals
-	return e
 }
 
 func (e *Error) compare(err *Error) bool {
