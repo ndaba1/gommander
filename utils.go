@@ -2,6 +2,7 @@ package gommander
 
 import (
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -171,4 +172,14 @@ func suggestSubCmd(c *Command, val string) []string {
 	}
 
 	return matches
+}
+
+func isTestMode() bool {
+	val, exists := os.LookupEnv("GOMMANDER_TEST_MODE")
+
+	return exists && val == "true"
+}
+
+func setGommanderTestMode() {
+	os.Setenv("GOMMANDER_TEST_MODE", "true")
 }
