@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Integrated codecov into the CI workflow and added a coverage badge in the README
+- Created an issue template for the project and added the CODEOWNERS file
+
+### Changed
+
+- Moved all the parser error handling functionality into a single method rather than spread out all over the parser code.
+- Edited the fields of the Error struct to make errors more simplified
+- Refactored the suggest cmds functionality to make it more "suggestive"
+
+### Fixed
+
+- Patched the parser error causing the uncaught unknown-command error
+
 ## [0.1.6] - 2022-06-24
 
 ### Fixed

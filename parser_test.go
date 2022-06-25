@@ -135,7 +135,7 @@ func TestParserErrors(t *testing.T) {
 
 	// Test missing required argument
 	expErr := throwError(MissingRequiredArgument, msg, ctx)
-	if !expErr.compare(&err) {
+	if !expErr.compare(err) {
 		t.Error("Missing require argument error thrown incorrectly")
 		t.Errorf("Expected error was: %v", expErr.ErrorMsg())
 		t.Errorf("Found error was: %v", err.ErrorMsg())

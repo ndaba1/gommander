@@ -147,10 +147,19 @@ func suggestSubCmd(c *Command, val string) []string {
 		cmdMap[v.name] = 0
 	}
 
-	for i, v := range strings.Split(val, "") {
-		for _, sc := range c.subCommands {
-			if len(sc.name) > i && string(sc.name[i]) == v {
-				cmdMap[sc.name] = cmdMap[sc.name] + 1
+	for _, sc := range c.subCommands {
+		for i, v := range strings.Split(val, "") {
+			if len(sc.name) > i {
+				var next string
+				current := string(sc.name[i])
+
+				if len(sc.name) > i+1 {
+					next = string(sc.name[i+1])
+				}
+
+				if next == v || current == v {
+					cmdMap[sc.name] += 1
+				}
 			}
 		}
 	}
