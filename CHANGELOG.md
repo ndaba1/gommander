@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Moved all the parser error handling functionality into a single method rather than spread out all over the parser code.
+- Edited the fields of the Error struct to make errors more simplified
+
 ## [0.1.6] - 2022-06-24
 
 ### Fixed
