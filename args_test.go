@@ -8,6 +8,12 @@ import (
 	"testing"
 )
 
+func TestXxx(t *testing.T) {
+	// dummy function to set test_mode env vars
+	// Workaround to set test mode once for all other tests
+	setGommanderTestMode()
+}
+
 func TestArgsCreation(t *testing.T) {
 	arg := NewArgument("<test>").Help("Test argument").Variadic(true)
 	argB := newArgument("<test...>", "Test argument")
@@ -122,7 +128,6 @@ func TestArgValidatorFunc(t *testing.T) {
 }
 
 func assertStdOut(expected string, exec func()) bool {
-	setGommanderTestMode()
 	stdOut := os.Stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
