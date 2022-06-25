@@ -122,6 +122,7 @@ func TestArgValidatorFunc(t *testing.T) {
 }
 
 func assertStdOut(expected string, exec func()) bool {
+	setGommanderTestMode()
 	stdOut := os.Stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
