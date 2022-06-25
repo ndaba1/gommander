@@ -476,23 +476,27 @@ func (p *Parser) parseCmd(rawArgs []string) *Error {
 		return err
 	}
 
-	if len(argCfgVals) > 0 {
-		p.matches.argMatches = append(p.matches.argMatches, argCfgVals...)
-	} else if len(rawArgs) > 0 {
+	if len(rawArgs) > 0 && len(argCfgVals) == 0 {
 		if len(p.currentCmd.subCommands) > 0 && !p._isEaten(rawArgs[0]) {
 			err := p.generateError(UnknownCommand, []string{rawArgs[0]})
-			return &err
-		} else if !p._isEaten(rawArgs[0]) {
-			err := p.generateError(UnresolvedArgument, []string{rawArgs[0]})
 			return &err
 		}
 	}
 
+	// any unresolved arguments
+	for _, a := range rawArgs {
+		if !p._isEaten(a) {
+			err := p.generateError(UnresolvedArgument, []string{a})
+			return &err
+		}
+	}
+
+	p.matches.argMatches = append(p.matches.argMatches, argCfgVals...)
 	return nil
 }
 
 func (p *Parser) getArgMatches(list []*Argument, args []string) ([]argMatches, *Error) {
-	maxLen := len(list)
+	// maxLen := len(list)
 	matches := []argMatches{}
 
 	for argIdx, argVal := range list {
@@ -506,35 +510,38 @@ func (p *Parser) getArgMatches(list []*Argument, args []string) ([]argMatches, *
 					builder.WriteRune(' ')
 				}
 			}
-		} else {
-			for i := argIdx; i < maxLen; i++ {
-				if len(args) == 0 && argVal.isRequired {
-					if !argVal.hasDefaultValue() {
-						args := []string{argVal.getRawValue()}
-						err := p.generateError(MissingRequiredArgument, args)
+		} else if len(args) == 0 && argVal.isRequired {
+			// no value provided and is required
+			if !argVal.hasDefaultValue() {
+				args := []string{argVal.getRawValue()}
+				err := p.generateError(MissingRequiredArgument, args)
 
-						return matches, &err
-					}
-					builder.WriteString(argVal.defaultValue)
-				} else if i < len(args) {
-					v := args[i]
-					if p.isSpecialValue(v) {
-						break
-					} else if !p.isFlagLike(v) && !p._isEaten(v) {
-						p._eat(v)
-						builder.WriteString(v)
-					} else if argVal.hasDefaultValue() {
-						builder.WriteString(argVal.defaultValue)
-					} else if argVal.isRequired {
-						args := []string{argVal.getRawValue(), v}
-						err := p.generateError(MissingRequiredArgument, args)
-
-						return matches, &err
-					} else {
-						continue
-					}
-				}
+				return matches, &err
 			}
+			builder.WriteString(argVal.defaultValue)
+		} else if argIdx < len(args) {
+			v := args[argIdx]
+
+			if p.isSpecialValue(v) {
+				break
+			} else if !p.isFlagLike(v) && !p._isEaten(v) {
+				p._eat(v)
+				builder.WriteString(v)
+			} else if argVal.hasDefaultValue() {
+				builder.WriteString(argVal.defaultValue)
+			} else if argVal.isRequired {
+				args := []string{argVal.getRawValue(), v}
+				err := p.generateError(MissingRequiredArgument, args)
+
+				return matches, &err
+			} else {
+				continue
+			}
+		} else if argVal.isRequired {
+			args := []string{argVal.getRawValue()}
+			err := p.generateError(MissingRequiredArgument, args)
+
+			return matches, &err
 		}
 
 		// test the value against default values if any
