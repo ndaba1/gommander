@@ -476,6 +476,7 @@ func (p *Parser) parseCmd(rawArgs []string) *Error {
 		return err
 	}
 
+	// expected no args, probably a subcommand
 	if len(rawArgs) > 0 && len(argCfgVals) == 0 {
 		if len(p.currentCmd.subCommands) > 0 && !p._isEaten(rawArgs[0]) {
 			err := p.generateError(UnknownCommand, []string{rawArgs[0]})
