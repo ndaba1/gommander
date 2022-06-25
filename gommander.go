@@ -353,9 +353,9 @@ func (c *Command) _isExpectingValues() bool {
 func (c *Command) _parse(vals []string) {
 	// TODO: Init/build the commands- set default listeners, add help subcmd, sync settings
 	c._init()
-	c._setBinName(os.Args[0])
+	c._setBinName(vals[0])
 
-	rawArgs := os.Args[1:]
+	rawArgs := vals[1:]
 	parser := NewParser(c)
 	matches, err := parser.parse(rawArgs)
 
@@ -395,16 +395,22 @@ func (c *Command) _parse(vals []string) {
 		c.emit(event)
 	}
 
+	showHelp := func() {
+		if !isTestMode() {
+			matchedCmd.PrintHelp()
+		}
+	}
+
 	if matchedCmd.callback != nil {
 		// No args passed to the matched cmd
 		if (len(rawArgs) == 0 || len(matches.rawArgs[cmdIdx:]) == 0) && matchedCmd._isExpectingValues() {
-			matchedCmd.PrintHelp()
+			showHelp()
 			return
 		}
 		// Invoke callback
 		matchedCmd.callback(matches)
 	} else {
-		matchedCmd.PrintHelp()
+		showHelp()
 	}
 }
 
