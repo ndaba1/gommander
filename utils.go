@@ -48,7 +48,7 @@ func suggestSubCmd(c *Command, val string) []string {
 	return matches
 }
 
-func Dedent(text string) string {
+func dedent(text string) string {
 	var margin string
 
 	text = leadingNewline.ReplaceAllString(text, "")
@@ -74,7 +74,7 @@ func Dedent(text string) string {
 	return text
 }
 
-func Indent(text, prefix string) string {
+func indent(text, prefix string) string {
 	lines := strings.Split(text, "\n")
 	prefixed := []string{}
 
@@ -109,8 +109,8 @@ func wrapContent(text string, width int) []string {
 	return buff
 }
 
-func fillContent(text string) string {
-	return strings.Join(wrapContent(text, 50), "\n")
+func fillContent(text string, width int) string {
+	return strings.Join(wrapContent(text, width), "\n")
 }
 
 func isTestMode() bool {
