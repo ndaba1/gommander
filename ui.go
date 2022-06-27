@@ -100,6 +100,17 @@ func (f *Formatter) section(val string) {
 	f.Add(Headline, fmt.Sprintf("\n%v: \n", strings.ToUpper(val)))
 }
 
+func (f *Formatter) discussion(val string) {
+	// Dedent, indent then word-wrap
+	text := dedent(val)
+	// text = fillContent(text, 80)
+	text = dedent(text)
+	text = indent(text, "    ")
+
+	f.Add(Description, text)
+	f.close()
+}
+
 func (f *Formatter) close() {
 	f.Add(Other, "\n")
 }
