@@ -31,6 +31,16 @@ jobs:
           version: latest
           args: --verbose
 
+      - name: Open Automated Issue on failure
+        if: failure()
+        uses: alialaa/issue-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: Automated issue for commit ${{github.sha}}
+          body: This issue was automatically created by the gha workflow ${{github.workflow}} for commit ${{gihthub.sha}}
+          assignees: |
+            ndaba1
+
   coverage:
     runs-on: ubuntu-latest
 
