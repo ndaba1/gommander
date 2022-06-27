@@ -2,12 +2,12 @@ name: gommander-ci-workflow
 
 on:
   push:
-    branches: 
+    branches:
       - main
   pull_request:
     branches:
       - main
-  
+
 jobs:
   test:
     strategy:
@@ -23,7 +23,7 @@ jobs:
           go-version: 1.18
 
       - name: Unit Test
-        run: go test 
+        run: go test
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v3.1.0
@@ -37,7 +37,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           title: Automated issue for commit ${{github.sha}}
-          body: This issue was automatically created by the gha workflow ${{github.workflow}} for commit ${{gihthub.sha}}
+          body: This issue was automatically created by the gha workflow ${{github.workflow}} for commit ${{github.sha}}
           assignees: |
             ndaba1
 
