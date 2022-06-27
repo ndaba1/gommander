@@ -88,7 +88,7 @@ func Indent(text, prefix string) string {
 	return strings.Join(prefixed, "\n")
 }
 
-func Wrap(text string, width int) []string {
+func wrapContent(text string, width int) []string {
 	buff := make([]string, 0)
 	line := ""
 	for _, word := range regexp.MustCompile(" ").Split(text, -1) {
@@ -109,8 +109,8 @@ func Wrap(text string, width int) []string {
 	return buff
 }
 
-func Fill(text string) string {
-	return strings.Join(Wrap(text, 50), "\n")
+func fillContent(text string) string {
+	return strings.Join(wrapContent(text, 50), "\n")
 }
 
 func isTestMode() bool {
