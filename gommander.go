@@ -168,7 +168,7 @@ func (c *Command) Flag(val string, help string) *Command {
 }
 
 // Used to set more information or the command discussion which gets printed out when help is invoked, at the bottom most section
-func (c *Command) Info(info string) *Command {
+func (c *Command) Discussion(info string) *Command {
 	c.discussion = info
 	return c
 }
