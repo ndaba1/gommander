@@ -157,6 +157,10 @@ func (p *Parser) isSpecialValue(val string) bool {
 	return val == "-h" || val == "--help"
 }
 
+func (p *Parser) isPosixFlagSyntax(vals []string) bool {
+	return len(vals) > 2 && vals[0] == "-" && vals[1] != "-"
+}
+
 func (p *Parser) getFlag(val string) (*Flag, error) {
 	for _, f := range p.currentCmd.flags {
 		if f.short == val || f.long == val {
@@ -245,7 +249,7 @@ func (p *Parser) generateError(e Event, args []string) Error {
 			if len(args) == 2 {
 				ctx = fmt.Sprintf("The validator function threw the following error: \"%v\" when checking the value: `%v`", args[1], args[0])
 			} else {
-				ctx = fmt.Sprintf("Expected one of: `%v`, but instead found: `%v`, which is not a valid value", args[1:], args[0])
+				ctx = fmt.Sprintf("Expected one of: `[%v]`, but instead found: `%v`, which is not a valid value", strings.Join(args[1:], ", "), args[0])
 			}
 		}
 	case UnknownOption:
@@ -363,7 +367,7 @@ func (p *Parser) parse(rawArgs []string) (*ParserMatches, *Error) {
 				values := strings.Split(arg, "")
 
 				// TODO: More validation
-				if len(values) > 2 && values[0] == "-" {
+				if p.isPosixFlagSyntax(values) {
 					p._eat(arg)
 					for _, v := range values[1:] {
 						flag, err := p.getFlag(fmt.Sprintf("-%v", v))
