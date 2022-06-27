@@ -10,6 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added more tests for package components, significantly improved the coverage
+- Created functions for indent and dedent functionality in the utils file
+- Introduced a new and better word wrap function
+- Command disuccion printing now functions correctly
+
+### Changed
+
+- Moved helpwriter functionality into a separate file
+- Removed the doc.go file and moved package docstring to gommander.go file
+- Renamed the app.Info() method to app.Discussion()
 
 ### Fixed
 
