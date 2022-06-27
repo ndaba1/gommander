@@ -15,14 +15,16 @@ func (HelpWriter) Write(c *Command) {
 	fmter := NewFormatter(app.theme)
 
 	hasArgs := len(c.arguments) > 0
-	hasInfo := len(c.discussion) > 0
+	hasDiscussion := len(c.discussion) > 0
 	hasFlags := len(c.flags) > 0
 	hasOptions := len(c.options) > 0
 	hasSubcmds := len(c.subCommands) > 0
 	hasCustomUsage := len(c.customUsageStr) > 0
 	hasSubcmdGroups := len(c.subCmdGroups) > 0
 
-	fmter.Add(Description, fmt.Sprintf("\n%v\n", c.help))
+	if len(c.help) > 0 {
+		fmter.Add(Description, fmt.Sprintf("\n%v\n", c.help))
+	}
 
 	fmter.section("USAGE")
 	fmter.Add(Keyword, fmt.Sprintf("    %v", c._getUsageStr()))
@@ -102,10 +104,9 @@ func (HelpWriter) Write(c *Command) {
 		}
 	}
 
-	if hasInfo {
-		// TODO: Format discussion here
-		fmter.section(strings.ToUpper("discussion"))
-		// fmter.discussion(app.discussion, 80)
+	if hasDiscussion {
+		fmter.section("discussion")
+		fmter.discussion(app.discussion)
 	}
 
 	fmter.Print()
