@@ -512,10 +512,16 @@ func (c *Command) _setIsRoot() *Command {
 func (c *Command) _getUsageStr() string {
 	var newUsage strings.Builder
 
-	if c.parent != nil && c.parent.isRoot && !strings.Contains(c.usageStr, c.parent.usageStr) {
-		newUsage.WriteString(c.parent.usageStr)
-		newUsage.WriteString(c.usageStr)
+	if len(c.customUsageStr) > 0 {
+		if !strings.Contains(c.customUsageStr, c.parent.usageStr) {
+			newUsage.WriteString(c.parent.usageStr)
+			newUsage.WriteRune(' ')
+		}
+		newUsage.WriteString(c.customUsageStr)
 	} else {
+		if c.parent != nil && c.parent.isRoot && !strings.Contains(c.usageStr, c.parent.usageStr) {
+			newUsage.WriteString(c.parent.usageStr)
+		}
 		newUsage.WriteString(c.usageStr)
 	}
 
