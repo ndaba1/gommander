@@ -1,4 +1,5 @@
-// Package gommander(go-commander) is a tool for easily creating Command Line Interfaces. View the README for getting started documentation:
+// Package gommander is an easily-extensible commander package for easily creating Command Line Interfaces.
+// View the README for getting started documentation:
 package gommander
 
 import (
