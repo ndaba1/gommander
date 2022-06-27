@@ -72,6 +72,7 @@ func NewVariadicTheme(values ...color.Attribute) Theme {
 	return theme
 }
 
+// A constructor function that takes in color attributes in a specific order and creates a new theme from the provided color attributes from the `fatih/color` package
 func NewTheme(keyword, headline, description, errors, others color.Attribute) Theme {
 	theme := make(map[Designation]color.Color)
 
@@ -90,6 +91,7 @@ func NewTheme(keyword, headline, description, errors, others color.Attribute) Th
 	return theme
 }
 
+// A simple function that returns the default package-defined theme
 func DefaultTheme() Theme {
 	return NewTheme(color.FgCyan, color.FgGreen, color.FgWhite, color.FgRed, color.FgWhite)
 }
