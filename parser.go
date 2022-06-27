@@ -530,15 +530,6 @@ func (p *Parser) getArgMatches(list []*Argument, args []string) ([]argMatches, *
 					builder.WriteRune(' ')
 				}
 			}
-		} else if len(args) == 0 && argVal.isRequired {
-			// no value provided and is required
-			if !argVal.hasDefaultValue() {
-				args := []string{argVal.getRawValue()}
-				err := p.generateError(MissingRequiredArgument, args)
-
-				return matches, &err
-			}
-			builder.WriteString(argVal.defaultValue)
 		} else if argIdx < len(args) {
 			v := args[argIdx]
 
