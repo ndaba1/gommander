@@ -2,7 +2,6 @@ package gommander
 
 import (
 	"fmt"
-	"io"
 	"strings"
 )
 
@@ -53,23 +52,11 @@ func (e *Error) Display(c *Command) {
 
 	fmter.Add(ErrorMsg, "error:  ")
 	fmter.Add(Other, strings.ToLower(e.message))
-	fmter.close()
-	fmter.close()
+	fmter.Add(Other, "\n\n")
 
-	reader := strings.NewReader(e.context)
-	// values := strings.Split(e.context, " ")
-	buffer := make([]byte, 50)
-
-	// TODO: Find a better way to word wrap
-	for {
-		bytes, err := reader.Read(buffer)
-		chunk := buffer[:bytes]
-
-		fmter.Add(Description, fmt.Sprintf("   %v\n", string(chunk)))
-		if err == io.EOF {
-			break
-		}
-	}
+	ctx := fillContent(e.context, 50)
+	fmter.Add(Description, indent(ctx, "    "))
+	fmter.Add(Other, "\n\n")
 
 	if app.settings[ShowHelpOnAllErrors] {
 		c.PrintHelp()

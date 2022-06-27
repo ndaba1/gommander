@@ -1,3 +1,5 @@
+// Package gommander is an easily-extensible commander package for easily creating Command Line Interfaces.
+// View the README for getting started documentation:
 package gommander
 
 import (
@@ -167,7 +169,7 @@ func (c *Command) Flag(val string, help string) *Command {
 }
 
 // Used to set more information or the command discussion which gets printed out when help is invoked, at the bottom most section
-func (c *Command) Info(info string) *Command {
+func (c *Command) Discussion(info string) *Command {
 	c.discussion = info
 	return c
 }
@@ -512,10 +514,16 @@ func (c *Command) _setIsRoot() *Command {
 func (c *Command) _getUsageStr() string {
 	var newUsage strings.Builder
 
-	if c.parent != nil && c.parent.isRoot && !strings.Contains(c.usageStr, c.parent.usageStr) {
-		newUsage.WriteString(c.parent.usageStr)
-		newUsage.WriteString(c.usageStr)
+	if len(c.customUsageStr) > 0 {
+		if !strings.Contains(c.customUsageStr, c.parent.usageStr) {
+			newUsage.WriteString(c.parent.usageStr)
+			newUsage.WriteRune(' ')
+		}
+		newUsage.WriteString(c.customUsageStr)
 	} else {
+		if c.parent != nil && c.parent.isRoot && !strings.Contains(c.usageStr, c.parent.usageStr) {
+			newUsage.WriteString(c.parent.usageStr)
+		}
 		newUsage.WriteString(c.usageStr)
 	}
 
