@@ -24,13 +24,10 @@ func (HelpWriter) Write(c *Command) {
 	hasSubcmdGroups := len(c.subCmdGroups) > 0
 
 	fmter.Add(Description, fmt.Sprintf("\n%v\n", c.help))
+
 	fmter.section("USAGE")
-
-	if hasCustomUsage {
-		fmter.Add(Keyword, fmt.Sprintf("    %v", c.customUsageStr))
-	} else {
-		fmter.Add(Keyword, fmt.Sprintf("    %v", c._getUsageStr()))
-
+	fmter.Add(Keyword, fmt.Sprintf("    %v", c._getUsageStr()))
+	if !hasCustomUsage {
 		if hasFlags {
 			fmter.Add(Other, " [FLAGS]")
 		}
