@@ -8,9 +8,7 @@ func TestListenerCreation(t *testing.T) {
 	em.on(OutputHelp, func(ec *EventConfig) {}, 0)
 	em.on(OutputVersion, func(ec *EventConfig) {}, 0)
 
-	if len(em.listeners) != 2 {
-		t.Error("Failed to add listener")
-	}
+	assert(t, len(em.listeners) == 2, "Failed to add listeners correctly")
 }
 
 func TestBeforeAllFn(t *testing.T) {
@@ -19,9 +17,7 @@ func TestBeforeAllFn(t *testing.T) {
 	em.insertBeforeAll(func(ec *EventConfig) {})
 
 	for _, v := range em.listeners {
-		if v[0].index != -5 {
-			t.Errorf("Failed to add before all listener")
-		}
+		assert(t, v[0].index == -5, "Failed to add before all listener")
 	}
 }
 
@@ -31,9 +27,7 @@ func TestAfterAllFn(t *testing.T) {
 	em.insertAfterAll(func(ec *EventConfig) {})
 
 	for _, v := range em.listeners {
-		if v[0].index != 5 {
-			t.Errorf("Failed to add after all listener")
-		}
+		assert(t, v[0].index == 5, "Failed to add after all listener")
 	}
 }
 

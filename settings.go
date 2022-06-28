@@ -11,7 +11,7 @@ const (
 	ShowHelpOnAllErrors
 	// Configures whether to include the help subcommand, false by default
 	IncludeHelpSubcommand
-	// Removed all default event-listeners except the help event listener, cannot be overriden
+	// Removed all default event-listeners except the help event listener, cannot be overridden
 	OverrideAllDefaultListeners
 	// Removes the version flag when set to true
 	DisableVersionFlag

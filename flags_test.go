@@ -3,26 +3,19 @@ package gommander
 import "testing"
 
 func TestFlagsCreation(t *testing.T) {
-	flag := NewFlag("help").Short('h').Help("The help flag")
+	flag := NewFlag("help").Short('h').Help("The help flag").Global(true)
 	flagB := newFlag("-h --help", "The help flag")
 
-	if !flag.compare(&flagB) {
-		t.Errorf("Flag creation functions out of sync: 1. %v  2. %v",
-			flag, flagB,
-		)
-	}
-
-	flag.Global(true)
-	if !flag.isGlobal {
-		t.Error("Failed to set flag as global")
-	}
+	assertStructEq[*Flag](t, flag, &flagB, "Flag creation functions are out of sync")
+	assert(t, flag.compare(&flagB)) // linter workaround
+	assert(t, flag.isGlobal, "Failed to set flag as global")
 
 	expL := "-h, --help"
 	expF := "The help flag"
+	gotL, gotF := flag.generate()
 
-	if l, f := flag.generate(); l != expL || f != expF {
-		t.Errorf("Flag generate functioning incorrectly. Expected (%v, %v), but found (%v, %v)", expL, expF, l, f)
-	}
+	assertEq(t, expL, gotL, "Flag generate method functioning incorrectly")
+	assertEq(t, expF, gotF, "Flag generate method functioning incorrectly")
 }
 
 func BenchmarkFlagsBuilder(b *testing.B) {

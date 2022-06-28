@@ -79,7 +79,7 @@ func newOption(val string, help string, required bool) Option {
 	}
 
 	return Option{
-		name:     strings.Replace(long, "-", "", -1),
+		name:     strings.ReplaceAll(long, "-", ""),
 		help:     help,
 		long:     long,
 		short:    short,

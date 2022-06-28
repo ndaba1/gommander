@@ -271,16 +271,24 @@ func (p *Parser) generateError(e Event, args []string) Error {
 		{
 			code = 50
 
-			if len(args) == 1 {
-				msg = fmt.Sprintf("found unknown flag or option: `%v`", args[0])
-				ctx = fmt.Sprintf("The value: `%v`, could not be resolved as a flag or option.", args[0])
-			} else if len(args) == 2 {
-				msg = fmt.Sprintf("failed to resolve option: %v in value: %v", args[0], args[1])
-				ctx = fmt.Sprintf("Found value: %v, with long option syntax but the option: %v is not valid in this context", args[1], args[0])
-			} else {
-				msg = fmt.Sprintf("unknown shorthand flag: `%v` in: `%v`", args[0], args[1])
-				ctx = fmt.Sprintf("Expected to find valid flags values in: `%v`, but instead found: `-%v` , which could not be resolved as a flag", args[1], args[0])
+			switch len(args) {
+			case 1:
+				{
+					msg = fmt.Sprintf("found unknown flag or option: `%v`", args[0])
+					ctx = fmt.Sprintf("The value: `%v`, could not be resolved as a flag or option.", args[0])
+				}
+			case 2:
+				{
+					msg = fmt.Sprintf("failed to resolve option: %v in value: %v", args[0], args[1])
+					ctx = fmt.Sprintf("Found value: %v, with long option syntax but the option: %v is not valid in this context", args[1], args[0])
+				}
+			default:
+				{
+					msg = fmt.Sprintf("unknown shorthand flag: `%v` in: `%v`", args[0], args[1])
+					ctx = fmt.Sprintf("Expected to find valid flags values in: `%v`, but instead found: `-%v` , which could not be resolved as a flag", args[1], args[0])
+				}
 			}
+
 		}
 	case UnresolvedArgument:
 		{

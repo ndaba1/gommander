@@ -1,9 +1,11 @@
 package gommander
 
 import (
+	"io"
 	"os"
 	"regexp"
 	"strings"
+	"testing"
 )
 
 var (
@@ -47,6 +49,8 @@ func suggestSubCmd(c *Command, val string) []string {
 
 	return matches
 }
+
+/********************************** Text wrap and formatting **************************************/
 
 func dedent(text string) string {
 	var margin string
@@ -113,6 +117,8 @@ func fillContent(text string, width int) string {
 	return strings.Join(wrapContent(text, width), "\n")
 }
 
+/********************************** Testing and Debug utilities **************************************/
+
 func isTestMode() bool {
 	val, exists := os.LookupEnv("GOMMANDER_TEST_MODE")
 
@@ -121,4 +127,82 @@ func isTestMode() bool {
 
 func setGommanderTestMode() {
 	os.Setenv("GOMMANDER_TEST_MODE", "true")
+}
+
+func assert(t *testing.T, val interface{}, msg ...interface{}) {
+	if val != true {
+		if len(msg) > 0 {
+			t.Error(msg...)
+		} else {
+			t.Error("Assertion failed. Value is not truthy. ")
+		}
+		t.Errorf("Expected: `%v` to be truthy", val)
+	}
+}
+
+func assertEq(t *testing.T, first interface{}, second interface{}, msg ...interface{}) {
+	if first != second {
+		if len(msg) > 0 {
+			t.Error(msg...)
+		} else {
+			t.Error("Assertion failed. Expected values to be equal. ")
+		}
+		t.Errorf("Left hand side is: `%v`", first)
+		t.Errorf("Right hand side is: `%v`", second)
+	}
+}
+
+func assertNe(t *testing.T, first interface{}, second interface{}, msg ...interface{}) {
+	if first == second {
+		if len(msg) > 0 {
+			t.Error(msg...)
+		} else {
+			t.Error("Assertion failed. Did not expect values to be equal. ")
+		}
+		t.Errorf("Left hand side is: `%v`", first)
+		t.Errorf("Right hand side is: `%v`", second)
+	}
+}
+
+type structComp[model structTypes] interface {
+	compare(model) bool
+}
+
+type structTypes interface {
+	*Flag | *Command | *Option | *Argument
+}
+
+func assertStructEq[model structTypes](t *testing.T, first structComp[model], second model, msg ...interface{}) {
+	if !first.compare(second) {
+		if len(msg) > 0 {
+			t.Error(msg...)
+		} else {
+			t.Error("Assertion failed. Struct values not equal. ")
+		}
+		t.Errorf("Left hand side is: `%+v`", first)
+		t.Errorf("Right hand side is: `%+v`", second)
+	}
+}
+
+func assertStdOut(t *testing.T, expected string, exec func(), msg ...interface{}) {
+	stdOut := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	exec()
+	_ = w.Close()
+	res, _ := io.ReadAll(r)
+	output := string(res)
+
+	os.Stdout = stdOut
+
+	if output != expected {
+		if len(msg) > 0 {
+			t.Error(msg...)
+		} else {
+			t.Error("Assertion failed. Expected output was different from actual output")
+		}
+		t.Errorf("Expected to find: `%+v`", expected)
+		t.Errorf("But instead found: `%+v`", output)
+	}
 }

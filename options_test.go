@@ -6,25 +6,19 @@ func TestOptionsCreation(t *testing.T) {
 	opt := NewOption("port").Short('p').Help("The port option").Argument("<port-number>").Required(true)
 	optB := newOption("-p --port <port-number>", "The port option", true)
 
-	if !opt.compare(&optB) {
-		t.Errorf("Option creation methods out of sync: 1: %v  2: %v", opt, optB)
-	}
-
-	if !opt.required {
-		t.Error("Failed to set required value on options")
-	}
+	assertStructEq[*Option](t, opt, &optB, "Option creation methods out of sync")
+	assert(t, opt.compare(&optB)) // linter workaround
+	assert(t, opt.required, "Failed to set required value on options")
 
 	expL := "-p, --port <port-number> "
 	expF := "The port option"
+	gotL, gotF := opt.generate()
 
-	if l, f := opt.generate(); expF != f || expL != l {
-		t.Errorf("The option generate func is faulty. Expected (%v, %v), but found (%v, %v)", expL, expF, l, f)
-	}
+	assertEq(t, expL, gotL, "The option generate func is faulty")
+	assertEq(t, expF, gotF, "The option generate func is faulty")
 
 	expectedArg := NewArgument("<port-number>")
-	if opt.args[0].name != expectedArg.name {
-		t.Error("Option args created incorrectly")
-	}
+	assertStructEq[*Argument](t, expectedArg, opt.args[0], "Option args created incorrectly")
 }
 
 func BenchmarkOptBuilder(b *testing.B) {
