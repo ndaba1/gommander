@@ -15,9 +15,9 @@ linters:
     - gas
     #- gochecknoinits
     - goconst
-    #- gocritic
-    #- gocyclo
-    #- gofmt
+    # - gocritic
+    # - gocyclo
+    # - gofmt
     # - goimports
     # - golint
     #- gomnd
@@ -30,7 +30,7 @@ linters:
     #- lll
     # - maligned
     - megacheck
-    #- misspell
+    - misspell
     #- nakedret
     #- noctx
     #- nolintlint
@@ -38,11 +38,11 @@ linters:
     #- scopelint
     #- staticcheck
     # - structcheck
-    #- stylecheck
+    - stylecheck
     #- typecheck
     - unconvert
     #- unparam
-    #- unused
+    - unused
     - varcheck
     #- whitespace
   fast: false
