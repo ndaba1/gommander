@@ -13,12 +13,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Created functions for indent and dedent functionality in the utils file
 - Introduced a new and better word wrap function
 - Command disuccion printing now functions correctly
+- Created custom assertion utilities for easier and better testing
+- Created a shell script for use in comparing benchmarks along with a make target for running benchstat
 
 ### Changed
 
 - Moved helpwriter functionality into a separate file
 - Removed the doc.go file and moved package docstring to gommander.go file
 - Renamed the app.Info() method to app.Discussion()
+- Refactored the tests to use the newly created assertion utilities
+- Enabled some more linters in the golangci-lint config
 
 ### Fixed
 
