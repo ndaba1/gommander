@@ -57,7 +57,7 @@ func newFlag(val string, help string) Flag {
 	}
 
 	return Flag{
-		name:  strings.Replace(long, "-", "", -1),
+		name:  strings.ReplaceAll(long, "-", ""),
 		long:  long,
 		short: short,
 		help:  help,
