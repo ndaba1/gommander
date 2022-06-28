@@ -3,12 +3,19 @@ EXAMPLES=./examples/**/
 BIN=bin/
 PROXY=GOPROXY=proxy.golang.org
 URI=github.com/ndaba1/gommander
+ARTIFACTS=*.prof *.out *.bench *.exe
+BENCH=.bench/
+
+all: test lint bench
 
 test:
 	go test
 
 bench:
 	go test --bench=.
+
+lint:
+	golangci-lint run
 
 release:
 	$(GOPROXY) go list -m $(URI)@$(VERSION)
@@ -19,12 +26,12 @@ coverage:
 reports: coverage
 	go tool cover -html=coverage.out
 
-profiles: 
-	go test -bench=. -run=^# -benchmem -cpuprofile cpu.prof -memprofile mem.prof -benchtime=5s > 0.bench
+benchcmp: 
+	benchstat $(BENCH)old.bench $(BENCH)latest.bench
 
 examples: $(EXAMPLES)
 	go build -o $(BIN) $(EXAMPLES)
 
 clean: 
-	$(RM) -r $(BIN)
+	$(RM) -r $(BIN) $(ARTIFACTS) $(BENCH)
 
