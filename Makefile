@@ -6,6 +6,14 @@ URI=github.com/ndaba1/gommander
 ARTIFACTS=*.prof *.out *.bench *.exe
 BENCH=.bench/
 
+ifeq (, $(shell which golangci-lint))
+$(warning "could not find golangci-lint in your PATH, run: curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh")
+endif
+
+ifeq (, $(shell which benchstat))
+$(warning "could not find benchstat in your PATH. Is benchstat installed?")
+endif
+
 all: test lint bench
 
 test:
