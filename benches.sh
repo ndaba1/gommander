@@ -35,5 +35,13 @@ fi
 
 # The newly created bench file becomes the latest one
 ln $CURRENT latest.bench
+
+# If no old.bench, latest and old are the same
+if [ -f "old.bench" ]
+then
+    # do nothing
+else
+    ln latest.bench old.bench
+fi
 echo "✔ All Done. You can now compare the new and previous benches by running 'make benchcmp'. "
 
