@@ -138,7 +138,15 @@ func (f *Formatter) ColorAndPrint(color color.Color, val string) {
 }
 
 func (f *Formatter) Print() {
-	color.New().Printf(f.buffer.String())
+	if isTestMode() {
+		fmt.Print(color.New().Sprintf(f.buffer.String()))
+	} else {
+		color.New().Printf(f.buffer.String())
+	}
+}
+
+func (f *Formatter) GetString() string {
+	return color.New().Sprintf(f.buffer.String())
 }
 
 func (f *Formatter) format(items []FormatGenerator) {
