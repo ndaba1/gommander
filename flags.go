@@ -43,6 +43,14 @@ func (f *Flag) compare(b *Flag) bool {
 	return f.name == b.name && f.short == b.short && f.long == b.long && f.help == b.help
 }
 
+func helpFlag() *Flag {
+	return NewFlag("help").Short('h').Help("Print out help information")
+}
+
+func versionFlag() *Flag {
+	return NewFlag("version").Short('v').Help("Print out version information")
+}
+
 func newFlag(val string, help string) Flag {
 	values := strings.Split(val, " ")
 
