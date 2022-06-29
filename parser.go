@@ -476,8 +476,8 @@ func (p *Parser) getArgMatches(list []*Argument, args []string) ([]argMatches, *
 		}
 
 		// test the value against the validator func if any
-		if argVal.validatorFn != nil {
-			if err := argVal.validatorFn(input); err != nil {
+		for _, fn := range argVal.validatorFns {
+			if err := fn(input); err != nil {
 				args := []string{input, err.Error()}
 				err := generateError(p.currentCmd, InvalidArgumentValue, args)
 
