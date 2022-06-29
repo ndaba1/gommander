@@ -129,6 +129,16 @@ func setGommanderTestMode() {
 	os.Setenv("GOMMANDER_TEST_MODE", "true")
 }
 
+func _throwAssertionError(t *testing.T, errMsg string, first interface{}, second interface{}, msg ...interface{}) {
+	if len(msg) > 0 {
+		t.Error(msg...)
+	} else {
+		t.Errorf("Assertion failed. %s", errMsg)
+	}
+	t.Errorf("Left hand side is: `%v`", first)
+	t.Errorf("Right hand side is: `%v`", second)
+}
+
 func assert(t *testing.T, val interface{}, msg ...interface{}) {
 	if val != true {
 		if len(msg) > 0 {
@@ -142,32 +152,22 @@ func assert(t *testing.T, val interface{}, msg ...interface{}) {
 
 func assertEq(t *testing.T, first interface{}, second interface{}, msg ...interface{}) {
 	if first != second {
-		_baseCompAssert(t, "Expected values to be equal. ", first, second, msg...)
+		_throwAssertionError(t, "Expected values to be equal. ", first, second, msg...)
 	}
 }
 
 func assertArrEq[model int | string](t *testing.T, first []model, second []model, msg ...interface{}) {
 	for idx, item := range first {
 		if second[idx] != item {
-			_baseCompAssert(t, "Arrays are not equal", first, second, msg...)
+			_throwAssertionError(t, "Arrays are not equal", first, second, msg...)
 		}
 	}
 }
 
 func assertNe(t *testing.T, first interface{}, second interface{}, msg ...interface{}) {
 	if first == second {
-		_baseCompAssert(t, "Did not expect values to be equal.", first, second, msg...)
+		_throwAssertionError(t, "Did not expect values to be equal.", first, second, msg...)
 	}
-}
-
-func _baseCompAssert(t *testing.T, errMsg string, first interface{}, second interface{}, msg ...interface{}) {
-	if len(msg) > 0 {
-		t.Error(msg...)
-	} else {
-		t.Errorf("Assertion failed. %s", errMsg)
-	}
-	t.Errorf("Left hand side is: `%v`", first)
-	t.Errorf("Right hand side is: `%v`", second)
 }
 
 type structComp[model structTypes] interface {
@@ -180,7 +180,7 @@ type structTypes interface {
 
 func assertStructEq[model structTypes](t *testing.T, first structComp[model], second model, msg ...interface{}) {
 	if !first.compare(second) {
-		_baseCompAssert(t, "Struct values not equal. ", first, second, msg...)
+		_throwAssertionError(t, "Struct values not equal. ", first, second, msg...)
 	}
 }
 
@@ -197,12 +197,6 @@ func assertStdOut(t *testing.T, expected string, exec func(), msg ...interface{}
 	os.Stdout = stdOut
 
 	if output != expected {
-		if len(msg) > 0 {
-			t.Error(msg...)
-		} else {
-			t.Error("Assertion failed. Expected output was different from actual output")
-		}
-		t.Errorf("Expected to find: `%+v`", expected)
-		t.Errorf("But instead found: `%+v`", output)
+		_throwAssertionError(t, "Expected output was different from actual output", expected, output, msg...)
 	}
 }
