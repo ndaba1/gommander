@@ -14,7 +14,7 @@ type Argument struct {
 	isRequired   bool
 	validValues  []string
 	defaultValue string
-	validatorFn  func(string) error
+	validatorFns [](func(string) error)
 }
 
 // A Builder method for creating a new argument. Valid values include <arg>, [arg] or simply the name of the arg
@@ -61,8 +61,8 @@ func (a *Argument) Default(val string) *Argument {
 		}
 	}
 	// verify value against validator fn if any
-	if a.validatorFn != nil {
-		err := a.validatorFn(val)
+	for _, fn := range a.validatorFns {
+		err := fn(val)
 		if err != nil {
 			fmt.Printf("you tried to set a default value for argument: %v, but the validator function returned an error for values: %v", a.name, val)
 			if !isTestMode() {
@@ -101,7 +101,7 @@ func (a *Argument) ValidateWith(vals []string) *Argument {
 
 // A method to pass a custom validator function for arguments passed
 func (a *Argument) ValidatorFunc(fn func(string) error) *Argument {
-	a.validatorFn = fn
+	a.validatorFns = append(a.validatorFns, fn)
 	return a
 }
 
@@ -120,8 +120,8 @@ func (a *Argument) testValue(val string) bool {
 		}
 	}
 
-	if a.validatorFn != nil {
-		err := a.validatorFn(val)
+	for _, fn := range a.validatorFns {
+		err := fn(val)
 		if err == nil {
 			return true
 		}
