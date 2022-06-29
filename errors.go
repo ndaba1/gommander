@@ -144,7 +144,17 @@ func (e *Error) ErrorMsg() string {
 	return e.message
 }
 
+func (e *Error) GetErrorString(c *Command) string {
+	fmter := e._writeError(c)
+	return fmter.GetString()
+}
+
 func (e *Error) Display(c *Command) {
+	fmter := e._writeError(c)
+	fmter.Print()
+}
+
+func (e *Error) _writeError(c *Command) *Formatter {
 	app := c._getAppRef()
 	fmter := NewFormatter(app.theme)
 
@@ -163,5 +173,6 @@ func (e *Error) Display(c *Command) {
 
 	fmter.Add(Other, "Run a COMMAND with --help for detailed usage information")
 	fmter.close()
-	fmter.Print()
+
+	return &fmter
 }
