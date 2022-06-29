@@ -1,7 +1,6 @@
 package gommander
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"regexp"
@@ -165,7 +164,7 @@ func _baseCompAssert(t *testing.T, errMsg string, first interface{}, second inte
 	if len(msg) > 0 {
 		t.Error(msg...)
 	} else {
-		t.Error(fmt.Sprintf("Assertion failed. %s", errMsg))
+		t.Errorf("Assertion failed. %s", errMsg)
 	}
 	t.Errorf("Left hand side is: `%v`", first)
 	t.Errorf("Right hand side is: `%v`", second)
@@ -181,13 +180,7 @@ type structTypes interface {
 
 func assertStructEq[model structTypes](t *testing.T, first structComp[model], second model, msg ...interface{}) {
 	if !first.compare(second) {
-		if len(msg) > 0 {
-			t.Error(msg...)
-		} else {
-			t.Error("Assertion failed. Struct values not equal. ")
-		}
-		t.Errorf("Left hand side is: `%+v`", first)
-		t.Errorf("Right hand side is: `%+v`", second)
+		_baseCompAssert(t, "Struct values not equal. ", first, second, msg...)
 	}
 }
 
