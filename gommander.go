@@ -405,6 +405,9 @@ func (c *Command) _parse(vals []string) {
 
 	if matchedCmd.callback != nil {
 		// No args passed to the matched cmd
+		if cmdIdx == -1 {
+			cmdIdx++
+		}
 		if (len(rawArgs) == 0 || len(matches.rawArgs[cmdIdx:]) == 0) && matchedCmd._isExpectingValues() {
 			showHelp()
 			return
