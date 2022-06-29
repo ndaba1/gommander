@@ -232,104 +232,6 @@ func (p *Parser) reset() {
 	p.cmdIdx = -1
 }
 
-func (p *Parser) generateError(e Event, args []string) Error {
-	var msg string
-	var ctx string
-	var code int
-
-	switch e {
-	case MissingRequiredArgument:
-		{
-			code = 20
-			msg = fmt.Sprintf("missing required argument: `%v`", args[0])
-
-			if len(args) == 1 {
-				ctx = fmt.Sprintf("Expected a required value corresponding to: `%v` but none was provided", args[0])
-			} else {
-				ctx = fmt.Sprintf("Expected a value for argument: `%v`, but instead found: `%v`", args[0], args[1])
-			}
-
-		}
-	case MissingRequiredOption:
-		{
-			code = 30
-			msg = fmt.Sprintf("missing required option: `%v`", args[0])
-			ctx = fmt.Sprintf("The option: `%v` is marked as required but no value was provided and it is not configured with a default value", args[0])
-		}
-	case InvalidArgumentValue:
-		{
-			code = 10
-			msg = fmt.Sprintf("the passed value: `%v`, is not a valid argument", args[0])
-
-			if len(args) == 2 {
-				ctx = fmt.Sprintf("The validator function threw the following error: \"%v\" when checking the value: `%v`", args[1], args[0])
-			} else {
-				ctx = fmt.Sprintf("Expected one of: `[%v]`, but instead found: `%v`, which is not a valid value", strings.Join(args[1:], ", "), args[0])
-			}
-		}
-	case UnknownOption:
-		{
-			code = 50
-
-			switch len(args) {
-			case 1:
-				{
-					msg = fmt.Sprintf("found unknown flag or option: `%v`", args[0])
-					ctx = fmt.Sprintf("The value: `%v`, could not be resolved as a flag or option.", args[0])
-				}
-			case 2:
-				{
-					msg = fmt.Sprintf("failed to resolve option: %v in value: %v", args[0], args[1])
-					ctx = fmt.Sprintf("Found value: %v, with long option syntax but the option: %v is not valid in this context", args[1], args[0])
-				}
-			default:
-				{
-					msg = fmt.Sprintf("unknown shorthand flag: `%v` in: `%v`", args[0], args[1])
-					ctx = fmt.Sprintf("Expected to find valid flags values in: `%v`, but instead found: `-%v` , which could not be resolved as a flag", args[1], args[0])
-				}
-			}
-
-		}
-	case UnresolvedArgument:
-		{
-			code = 60
-			msg = fmt.Sprintf("failed to resolve argument: `%v`", args[0])
-			ctx = fmt.Sprintf("Found value: `%v`, which was unexpected or is invalid in this context", args[0])
-		}
-	case UnknownCommand:
-		{
-			code = 40
-			msg = fmt.Sprintf("no such subcommand found: `%v`", args[0])
-			suggestions := suggestSubCmd(p.currentCmd, args[0])
-
-			var context strings.Builder
-			context.WriteString(fmt.Sprintf("The value: `%v`, could not be resolved as a subcommand. ", args[0]))
-			if len(suggestions) > 0 {
-				context.WriteString("Did you mean ")
-
-				for i, s := range suggestions {
-					if i > 0 {
-						context.WriteString("or ")
-					}
-					context.WriteString(fmt.Sprintf("`%v` ", s))
-				}
-
-				context.WriteString("?")
-			}
-			ctx = context.String()
-		}
-
-	}
-
-	return Error{
-		kind:     e,
-		message:  msg,
-		context:  ctx,
-		args:     args,
-		exitCode: code,
-	}
-}
-
 func (p *Parser) parse(rawArgs []string) (*ParserMatches, *Error) {
 	defer p.reset()
 
@@ -372,7 +274,7 @@ func (p *Parser) parse(rawArgs []string) (*ParserMatches, *Error) {
 
 				opt, err := p.getOption(parts[0])
 				if err != nil {
-					err := p.generateError(UnknownOption, []string{parts[0], arg})
+					err := generateError(p.currentCmd, UnknownOption, []string{parts[0], arg})
 					return &p.matches, &err
 				}
 
@@ -396,7 +298,7 @@ func (p *Parser) parse(rawArgs []string) (*ParserMatches, *Error) {
 						flag, err := p.getFlag(fmt.Sprintf("-%v", v))
 
 						if err != nil {
-							err := p.generateError(UnknownOption, []string{v, p.currentToken, ""})
+							err := generateError(p.currentCmd, UnknownOption, []string{v, p.currentToken, ""})
 							return &p.matches, &err
 						}
 
@@ -410,7 +312,7 @@ func (p *Parser) parse(rawArgs []string) (*ParserMatches, *Error) {
 					continue
 				}
 
-				err := p.generateError(UnknownOption, []string{p.currentToken})
+				err := generateError(p.currentCmd, UnknownOption, []string{p.currentToken})
 				return &p.matches, &err
 			}
 		} else if sc, err := p.getSubCommand(arg); err == nil {
@@ -450,7 +352,7 @@ func (p *Parser) parse(rawArgs []string) (*ParserMatches, *Error) {
 				for _, a := range o.args {
 					if len(a.defaultValue) == 0 {
 						// No default value and value is required
-						err := p.generateError(MissingRequiredOption, []string{o.long})
+						err := generateError(p.currentCmd, MissingRequiredOption, []string{o.long})
 						return &p.matches, &err
 					}
 					// Generate opt match with default value
@@ -506,7 +408,7 @@ func (p *Parser) parseCmd(rawArgs []string) *Error {
 	// expected no args, probably a subcommand
 	if len(rawArgs) > 0 && len(argCfgVals) == 0 {
 		if len(p.currentCmd.subCommands) > 0 && !p._isEaten(rawArgs[0]) {
-			err := p.generateError(UnknownCommand, []string{rawArgs[0]})
+			err := generateError(p.currentCmd, UnknownCommand, []string{rawArgs[0]})
 			return &err
 		}
 	}
@@ -514,7 +416,7 @@ func (p *Parser) parseCmd(rawArgs []string) *Error {
 	// any unresolved arguments
 	for _, a := range rawArgs {
 		if !p._isEaten(a) {
-			err := p.generateError(UnresolvedArgument, []string{a})
+			err := generateError(p.currentCmd, UnresolvedArgument, []string{a})
 			return &err
 		}
 	}
@@ -550,7 +452,7 @@ func (p *Parser) getArgMatches(list []*Argument, args []string) ([]argMatches, *
 				builder.WriteString(argVal.defaultValue)
 			} else if argVal.isRequired {
 				args := []string{argVal.getRawValue(), v}
-				err := p.generateError(MissingRequiredArgument, args)
+				err := generateError(p.currentCmd, MissingRequiredArgument, args)
 
 				return matches, &err
 			} else {
@@ -558,7 +460,7 @@ func (p *Parser) getArgMatches(list []*Argument, args []string) ([]argMatches, *
 			}
 		} else if argVal.isRequired {
 			args := []string{argVal.getRawValue()}
-			err := p.generateError(MissingRequiredArgument, args)
+			err := generateError(p.currentCmd, MissingRequiredArgument, args)
 
 			return matches, &err
 		}
@@ -568,7 +470,7 @@ func (p *Parser) getArgMatches(list []*Argument, args []string) ([]argMatches, *
 		if len(input) > 0 && len(argVal.validValues) > 0 && !argVal.testValue(input) {
 			args := []string{input}
 			args = append(args, argVal.validValues...)
-			err := p.generateError(InvalidArgumentValue, args)
+			err := generateError(p.currentCmd, InvalidArgumentValue, args)
 
 			return matches, &err
 		}
@@ -577,7 +479,7 @@ func (p *Parser) getArgMatches(list []*Argument, args []string) ([]argMatches, *
 		if argVal.validatorFn != nil {
 			if err := argVal.validatorFn(input); err != nil {
 				args := []string{input, err.Error()}
-				err := p.generateError(InvalidArgumentValue, args)
+				err := generateError(p.currentCmd, InvalidArgumentValue, args)
 
 				return matches, &err
 			}
