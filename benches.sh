@@ -40,7 +40,9 @@ ln $CURRENT latest.bench
 if [ -f "old.bench" ]
 then
     # do nothing
+    echo "Existing old.bench file found, continuing..."
 else
+    echo "No old.bench file found. Linking latest.bench to old.bench..."
     ln latest.bench old.bench
 fi
 echo "✔ All Done. You can now compare the new and previous benches by running 'make benchcmp'. "
