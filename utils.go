@@ -1,6 +1,7 @@
 package gommander
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"regexp"
@@ -142,26 +143,32 @@ func assert(t *testing.T, val interface{}, msg ...interface{}) {
 
 func assertEq(t *testing.T, first interface{}, second interface{}, msg ...interface{}) {
 	if first != second {
-		if len(msg) > 0 {
-			t.Error(msg...)
-		} else {
-			t.Error("Assertion failed. Expected values to be equal. ")
+		_baseCompAssert(t, "Expected values to be equal. ", first, second, msg...)
+	}
+}
+
+func assertArrEq[model int | string](t *testing.T, first []model, second []model, msg ...interface{}) {
+	for idx, item := range first {
+		if second[idx] != item {
+			_baseCompAssert(t, "Arrays are not equal", first, second, msg...)
 		}
-		t.Errorf("Left hand side is: `%v`", first)
-		t.Errorf("Right hand side is: `%v`", second)
 	}
 }
 
 func assertNe(t *testing.T, first interface{}, second interface{}, msg ...interface{}) {
 	if first == second {
-		if len(msg) > 0 {
-			t.Error(msg...)
-		} else {
-			t.Error("Assertion failed. Did not expect values to be equal. ")
-		}
-		t.Errorf("Left hand side is: `%v`", first)
-		t.Errorf("Right hand side is: `%v`", second)
+		_baseCompAssert(t, "Did not expect values to be equal.", first, second, msg...)
 	}
+}
+
+func _baseCompAssert(t *testing.T, errMsg string, first interface{}, second interface{}, msg ...interface{}) {
+	if len(msg) > 0 {
+		t.Error(msg...)
+	} else {
+		t.Error(fmt.Sprintf("Assertion failed. %s", errMsg))
+	}
+	t.Errorf("Left hand side is: `%v`", first)
+	t.Errorf("Right hand side is: `%v`", second)
 }
 
 type structComp[model structTypes] interface {
