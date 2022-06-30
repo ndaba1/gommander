@@ -39,8 +39,8 @@ func (f *Flag) Global(val bool) *Flag {
 	return f
 }
 
-func (f *Flag) compare(b *Flag) bool {
-	return f.Name == b.Name && f.ShortVal == b.ShortVal && f.LongVal == b.LongVal && f.HelpStr == b.HelpStr
+func (f *Flag) compare(f2 *Flag) bool {
+	return f.Name == f2.Name && f.ShortVal == f2.ShortVal && f.LongVal == f2.LongVal && f.HelpStr == f2.HelpStr
 }
 
 func helpFlag() *Flag {
@@ -63,24 +63,18 @@ func versionFlag() *Flag {
 }
 
 func newFlag(val string, help string) Flag {
+	flag := Flag{HelpStr: help}
 	values := strings.Split(val, " ")
-
-	short, long := "", ""
 
 	for _, v := range values {
 		if strings.HasPrefix(v, "--") {
-			long = v
+			flag.LongVal = v
 		} else if strings.HasPrefix(v, "-") {
-			short = v
+			flag.ShortVal = v
 		}
 	}
-
-	return Flag{
-		Name:     strings.ReplaceAll(long, "-", ""),
-		LongVal:  long,
-		ShortVal: short,
-		HelpStr:  help,
-	}
+	flag.Name = strings.TrimPrefix(flag.LongVal, "--")
+	return flag
 }
 
 func (f *Flag) generate() (string, string) {
