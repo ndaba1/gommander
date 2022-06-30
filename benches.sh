@@ -12,8 +12,8 @@ else
     echo "✔ Done"
 fi
 
-echo "Running benchmarks..."
-go test -bench=. -run=^@ -benchmem  -cpuprofile cpu.prof  -memprofile mem.prof -benchtime=5s > .bench/$CURRENT
+echo "Running benchmarks. This may take a while..."
+go test -bench=. -count=5 -run=^@ -benchmem  -cpuprofile cpu.prof  -memprofile mem.prof -benchtime=5s > .bench/$CURRENT
 echo "✔ Done"
 
 cd .bench/

@@ -9,12 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added support for multiple validator functions for a single argument
+- Added loose support for argument types i.e `<int:arg1>` will ensure only integer values are accepted. Others "types" include `float` and `bool` with `str` being the default.
 - Added more tests for package components, significantly improved the coverage
 - Created functions for indent and dedent functionality in the utils file
 - Introduced a new and better word wrap function
 - Command disuccion printing now functions correctly
 - Created custom assertion utilities for easier and better testing
 - Created a shell script for use in comparing benchmarks along with a make target for running benchstat
+- Configured CI test workflow to create an automated issue on w/f failure
 
 ### Changed
 
@@ -23,10 +26,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed the app.Info() method to app.Discussion()
 - Refactored the tests to use the newly created assertion utilities
 - Enabled some more linters in the golangci-lint config
+- Modified program to check for test mode before exiting when performing runtime checks
+- Updated issue template to include assignee and added feature_request template
 
 ### Fixed
 
 - Corrected the package inner parse method to use the args passed as input, rather than reading directly from os.Args
+- Patched issue #31 causing arg parsing for the root cmd to fail
 
 ## [0.1.7] - 2022-06-25
 
