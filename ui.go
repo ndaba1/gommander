@@ -25,21 +25,13 @@ const (
 	PlainTheme
 )
 
-var designationSlice = []Designation{
-	Keyword,
-	Headline,
-	Description,
-	ErrorMsg,
-	Other,
-}
-
 type Formatter struct {
 	theme      Theme
 	buffer     bytes.Buffer
 	prevOffset int
 }
 
-type Theme = map[Designation]color.Color
+type Theme = map[Designation]color.Attribute
 
 type FormatGenerator interface {
 	generate() (string, string)
@@ -62,31 +54,15 @@ func GetPredefinedTheme(val PredefinedTheme) Theme {
 	}
 }
 
-// Creates as many colors as there are designations
-func NewVariadicTheme(values ...color.Attribute) Theme {
-	theme := make(map[Designation]color.Color)
-	for i, v := range designationSlice {
-		theme[v] = *color.New(values[i])
-	}
-
-	return theme
-}
-
 // A constructor function that takes in color attributes in a specific order and creates a new theme from the provided color attributes from the `fatih/color` package
 func NewTheme(keyword, headline, description, errors, others color.Attribute) Theme {
-	theme := make(map[Designation]color.Color)
+	theme := make(map[Designation]color.Attribute)
 
-	kwColor := color.New(keyword)
-	hdColor := color.New(headline)
-	dsColor := color.New(description)
-	erColor := color.New(errors)
-	otColor := color.New(others)
-
-	theme[Keyword] = *kwColor
-	theme[Headline] = *hdColor
-	theme[Description] = *dsColor
-	theme[ErrorMsg] = *erColor
-	theme[Other] = *otColor
+	theme[Keyword] = keyword
+	theme[Headline] = headline
+	theme[Description] = description
+	theme[ErrorMsg] = errors
+	theme[Other] = others
 
 	return theme
 }
@@ -116,7 +92,7 @@ func (f *Formatter) close() {
 }
 
 func (f *Formatter) Add(dsgn Designation, val string) {
-	c := f.theme[dsgn]
+	c := color.New(f.theme[dsgn])
 
 	coloredVal := c.Sprintf(val)
 	f.buffer.WriteString(coloredVal)
