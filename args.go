@@ -3,13 +3,24 @@ package gommander
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
+)
+
+type argumentType string
+
+const (
+	integer = "int"
+	float   = "float"
+	boolean = "bool"
+	str     = "str"
 )
 
 type Argument struct {
 	name         string
 	help         string
 	raw          string
+	argType      argumentType
 	isVariadic   bool
 	isRequired   bool
 	validValues  []string
@@ -21,6 +32,7 @@ type Argument struct {
 func NewArgument(name string) *Argument {
 	required := false
 	variadic := false
+	_type := str
 	var delimiters []string
 
 	if strings.HasPrefix(name, "<") {
@@ -36,16 +48,26 @@ func NewArgument(name string) *Argument {
 		name = strings.ReplaceAll(name, delimiters[1], "")
 	}
 
+	if strings.ContainsRune(name, ':') {
+		values := strings.Split(name, ":")
+
+		_type = values[0]
+		name = values[1]
+	}
+
 	if strings.HasSuffix(name, "...") {
 		variadic = true
 		name = strings.ReplaceAll(name, "...", "")
 	}
 
-	return &Argument{
+	arg := Argument{
 		name:       strings.ReplaceAll(name, "-", "_"),
 		isRequired: required,
 		isVariadic: variadic,
+		argType:    argumentType(_type),
 	}
+	arg.addValidatorFns() // add default validator funcs
+	return &arg
 }
 
 // A method for setting the default value on an argument to be used when no value is provided but the argument value is required
@@ -112,6 +134,54 @@ func (a *Argument) DisplayAs(val string) *Argument {
 }
 
 /****************************** Package utilities ********************************/
+
+func (a *Argument) addValidatorFns() {
+	switch a.argType {
+	case integer:
+		{
+			a.ValidatorFunc(func(s string) error {
+				_, err := strconv.Atoi(s)
+				if err != nil {
+					return fmt.Errorf("%v is not a valid integer", s)
+				}
+				return nil
+			})
+		}
+	case float:
+		{
+			a.ValidatorFunc(func(s string) error {
+				_, err := strconv.ParseFloat(s, 64)
+				if err != nil {
+					return fmt.Errorf("%v is not a valid float", s)
+				}
+				return nil
+			})
+
+		}
+	case boolean:
+		{
+			a.ValidatorFunc(func(s string) error {
+				if s != "true" && s != "false" {
+					return fmt.Errorf("%v is not a valid boolean", s)
+				}
+				return nil
+			})
+		}
+	case str:
+		{
+			a.ValidatorFunc(func(s string) error {
+				return nil
+			})
+		}
+	default:
+		{
+			fmt.Println(fmt.Errorf("found unknown argument type: `%v` for argument: `%v`", a.argType, a.getRawValue()))
+			if !isTestMode() {
+				os.Exit(1)
+			}
+		}
+	}
+}
 
 func (a *Argument) testValue(val string) bool {
 	for _, v := range a.validValues {
