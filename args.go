@@ -115,6 +115,11 @@ func (a *Argument) Required(val bool) *Argument {
 	return a
 }
 
+func (a *Argument) Type(val argumentType) *Argument {
+	a.argType = val
+	return a
+}
+
 // Configures the valid values for an argument
 func (a *Argument) ValidateWith(vals []string) *Argument {
 	a.validValues = vals
@@ -184,20 +189,28 @@ func (a *Argument) addValidatorFns() {
 }
 
 func (a *Argument) testValue(val string) bool {
+	valueMatch := false
+	matchCount := 0
+
+	if len(a.validValues) == 0 {
+		valueMatch = true
+	}
+
 	for _, v := range a.validValues {
 		if strings.EqualFold(v, val) {
-			return true
+			valueMatch = true
+			break
 		}
 	}
 
 	for _, fn := range a.validatorFns {
 		err := fn(val)
 		if err == nil {
-			return true
+			matchCount++
 		}
 	}
 
-	return false
+	return valueMatch && matchCount == len(a.validatorFns)
 }
 
 func (a *Argument) hasDefaultValue() bool {
