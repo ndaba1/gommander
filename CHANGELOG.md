@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2022-06-30
+
 ### Added
 
 - Added support for multiple validator functions for a single argument
@@ -131,7 +133,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Simple examples and indepth docs
 - Fair amount of tests and coverage
 
-[unreleased]: https://github.com/ndaba1/gommander/compare/v0.1.7...HEAD
+[unreleased]: https://github.com/ndaba1/gommander/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/ndaba1/gommander/compare/v0.1.7...v0.2.0
 [0.1.7]: https://github.com/ndaba1/gommander/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/ndaba1/gommander/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/ndaba1/gommander/compare/v0.1.3...v0.1.5
