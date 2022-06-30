@@ -71,7 +71,7 @@ func (pm *ParserMatches) GetMatchedCommandIndex() int {
 func (pm *ParserMatches) ContainsFlag(val string) bool {
 	for _, v := range pm.flagMatches {
 		flag := v.matchedFlag
-		if flag.short == val || flag.long == val || flag.name == val {
+		if flag.ShortVal == val || flag.LongVal == val || flag.Name == val {
 			return true
 		}
 	}
@@ -83,7 +83,7 @@ func (pm *ParserMatches) ContainsFlag(val string) bool {
 func (pm *ParserMatches) ContainsOption(val string) bool {
 	for _, v := range pm.optionMatches {
 		opt := v.matchedOpt
-		if opt.short == val || opt.long == val || opt.name == val {
+		if opt.ShortVal == val || opt.LongVal == val || opt.Name == val {
 			return true
 		}
 	}
@@ -97,7 +97,7 @@ func (pm *ParserMatches) ContainsOption(val string) bool {
 func (pm *ParserMatches) GetArgValue(val string) (string, error) {
 	for _, v := range pm.argMatches {
 		arg := v.instanceOf
-		if arg.name == val || arg.getRawValue() == val {
+		if arg.Name == val || arg.getRawValue() == val {
 			return v.rawValue, nil
 		}
 	}
@@ -111,7 +111,7 @@ func (pm *ParserMatches) GetArgValue(val string) (string, error) {
 func (pm *ParserMatches) GetOptionValue(val string) (string, error) {
 	for _, v := range pm.optionMatches {
 		opt := v.matchedOpt
-		if opt.short == val || opt.long == val || opt.name == val {
+		if opt.ShortVal == val || opt.LongVal == val || opt.Name == val {
 			// TODO: Probably check if slice is empty
 			return v.passedArgs[0].rawValue, nil
 		}
@@ -125,7 +125,7 @@ func (pm *ParserMatches) GetAllOptionInstances(val string) []string {
 	instances := []string{}
 	for _, v := range pm.optionMatches {
 		opt := v.matchedOpt
-		if opt.short == val || opt.long == val || opt.name == val {
+		if opt.ShortVal == val || opt.LongVal == val || opt.Name == val {
 			for _, a := range v.passedArgs {
 				instances = append(instances, a.rawValue)
 			}
@@ -178,7 +178,7 @@ func (p *Parser) isPosixFlagSyntax(vals []string) bool {
 
 func (p *Parser) getFlag(val string) (*Flag, error) {
 	for _, f := range p.currentCmd.flags {
-		if f.short == val || f.long == val {
+		if f.ShortVal == val || f.LongVal == val {
 			return f, nil
 		}
 	}
@@ -187,7 +187,7 @@ func (p *Parser) getFlag(val string) (*Flag, error) {
 
 func (p *Parser) getOption(val string) (*Option, error) {
 	for _, o := range p.currentCmd.options {
-		if o.short == val || o.long == val {
+		if o.ShortVal == val || o.LongVal == val {
 			return o, nil
 		}
 	}
@@ -253,7 +253,7 @@ func (p *Parser) parse(rawArgs []string) (*ParserMatches, *Error) {
 					flagCfg := flagMatches{
 						matchedFlag: *flag,
 					}
-					if !p.matches.ContainsFlag(flag.long) {
+					if !p.matches.ContainsFlag(flag.LongVal) {
 						p.matches.flagMatches = append(p.matches.flagMatches, flagCfg)
 					}
 				}
@@ -305,7 +305,7 @@ func (p *Parser) parse(rawArgs []string) (*ParserMatches, *Error) {
 						flagCfg := flagMatches{
 							matchedFlag: *flag,
 						}
-						if !p.matches.ContainsFlag(flag.long) {
+						if !p.matches.ContainsFlag(flag.LongVal) {
 							p.matches.flagMatches = append(p.matches.flagMatches, flagCfg)
 						}
 					}
@@ -347,16 +347,17 @@ func (p *Parser) parse(rawArgs []string) (*ParserMatches, *Error) {
 
 	if !p.matches.ContainsFlag("help") {
 		for _, o := range p.currentCmd.options {
-			if o.required && !p.matches.ContainsOption(o.long) {
+			if o.IsRequired && !p.matches.ContainsOption(o.LongVal) {
 				var argVals []string
-				for _, a := range o.args {
-					if len(a.defaultValue) == 0 {
+				if o.Arg != nil {
+					a := o.Arg
+					if len(a.DefaultValue) == 0 {
 						// No default value and value is required
-						err := generateError(p.currentCmd, MissingRequiredOption, []string{o.long})
+						err := generateError(p.currentCmd, MissingRequiredOption, []string{o.LongVal})
 						return &p.matches, &err
 					}
 					// Generate opt match with default value
-					argVals = append(argVals, a.defaultValue)
+					argVals = append(argVals, a.DefaultValue)
 				}
 
 				err := p.parseOption(o, argVals)
@@ -372,14 +373,19 @@ func (p *Parser) parse(rawArgs []string) (*ParserMatches, *Error) {
 }
 
 func (p *Parser) parseOption(opt *Option, rawArgs []string) *Error {
-	args, err := p.getArgMatches(opt.args, rawArgs)
+	argList := []*Argument{}
+	if opt.Arg != nil {
+		argList = append(argList, opt.Arg)
+	}
+
+	args, err := p.getArgMatches(argList, rawArgs)
 	if err != nil {
 		return err
 	}
 
-	if p.matches.ContainsOption(opt.long) {
+	if p.matches.ContainsOption(opt.LongVal) {
 		for i, cfg := range p.matches.optionMatches {
-			if cfg.matchedOpt.long == opt.long {
+			if cfg.matchedOpt.LongVal == opt.LongVal {
 				cfg.passedArgs = append(cfg.passedArgs, args...)
 				cfg.instanceCount++
 
@@ -432,7 +438,7 @@ func (p *Parser) getArgMatches(list []*Argument, args []string) ([]argMatches, *
 	for argIdx, argVal := range list {
 		var builder strings.Builder
 
-		if argVal.isVariadic {
+		if argVal.IsVariadic {
 			for _, v := range args {
 				if !p.isFlagLike(v) && !p._isEaten(v) {
 					p._eat(v)
@@ -449,8 +455,8 @@ func (p *Parser) getArgMatches(list []*Argument, args []string) ([]argMatches, *
 				p._eat(v)
 				builder.WriteString(v)
 			} else if argVal.hasDefaultValue() {
-				builder.WriteString(argVal.defaultValue)
-			} else if argVal.isRequired {
+				builder.WriteString(argVal.DefaultValue)
+			} else if argVal.IsRequired {
 				args := []string{argVal.getRawValue(), v}
 				err := generateError(p.currentCmd, MissingRequiredArgument, args)
 
@@ -458,7 +464,7 @@ func (p *Parser) getArgMatches(list []*Argument, args []string) ([]argMatches, *
 			} else {
 				continue
 			}
-		} else if argVal.isRequired {
+		} else if argVal.IsRequired {
 			args := []string{argVal.getRawValue()}
 			err := generateError(p.currentCmd, MissingRequiredArgument, args)
 
@@ -467,16 +473,16 @@ func (p *Parser) getArgMatches(list []*Argument, args []string) ([]argMatches, *
 
 		// test the value against default values if any
 		input := builder.String()
-		if len(input) > 0 && len(argVal.validValues) > 0 && !argVal.testValue(input) {
+		if len(input) > 0 && len(argVal.ValidValues) > 0 && !argVal.testValue(input) {
 			args := []string{input}
-			args = append(args, argVal.validValues...)
+			args = append(args, argVal.ValidValues...)
 			err := generateError(p.currentCmd, InvalidArgumentValue, args)
 
 			return matches, &err
 		}
 
 		// test the value against the validator func if any
-		for _, fn := range argVal.validatorFns {
+		for _, fn := range argVal.ValidatorFns {
 			if err := fn(input); err != nil {
 				args := []string{input, err.Error()}
 				err := generateError(p.currentCmd, InvalidArgumentValue, args)
