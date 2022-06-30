@@ -10,6 +10,14 @@ import (
 	"strings"
 )
 
+var cache = make(map[string]bool, 0)
+
+func clearCache() {
+	for k := range cache {
+		delete(cache, k)
+	}
+}
+
 type CommandCallback = func(*ParserMatches)
 
 type Command struct {
@@ -112,23 +120,21 @@ func (c *Command) Action(cb CommandCallback) *Command {
 
 // A method for adding a flag to a command. It is similar to the `.Flag()` method except this method receives an instance of an already created flag while `.Flag()` receives a string, creates a flag from it and call this method internally
 func (c *Command) AddFlag(flag *Flag) *Command {
-	for _, f := range c.flags {
-		if f.short == flag.short {
-			return c
-		}
+	id := fmt.Sprintf("flag-%s", flag.Name)
+	if !cache[id] {
+		cache[id] = true
+		c.flags = append(c.flags, flag)
 	}
-	c.flags = append(c.flags, flag)
 	return c
 }
 
 // A method for adding a new option to a command. The `.Option()` method invokes this one internally. Identical to the `.AddFlag()` method except this one is for options instead of flags
 func (c *Command) AddOption(opt *Option) *Command {
-	for _, o := range c.options {
-		if o.short == opt.short {
-			return c
-		}
+	id := fmt.Sprintf("option-%s", opt.Name)
+	if !cache[id] {
+		cache[id] = true
+		c.options = append(c.options, opt)
 	}
-	c.options = append(c.options, opt)
 	return c
 }
 
@@ -139,12 +145,11 @@ func (c *Command) Alias(alias string) *Command {
 }
 
 func (c *Command) AddArgument(arg *Argument) *Command {
-	for _, a := range c.arguments {
-		if a.name == arg.name {
-			return c
-		}
+	id := fmt.Sprintf("arg-%s", arg.Name)
+	if !cache[id] {
+		cache[id] = true
+		c.arguments = append(c.arguments, arg)
 	}
-	c.arguments = append(c.arguments, arg)
 	return c
 }
 
@@ -222,26 +227,30 @@ func (c *Command) AddToGroup(name string) *Command {
 
 // Receives a reference to a command, sets the command parent and usage string then adds its to the slice of subcommands. This method is called internally by the `.SubCommand()` method but users can also invoke it directly
 func (c *Command) AddSubCommand(subCmd *Command) *Command {
-	subCmd.parent = c
-	c.subCommands = append(c.subCommands, subCmd)
+	id := fmt.Sprintf("subcmd-%s", subCmd.name)
+	if !cache[id] {
+		cache[id] = true
+		subCmd.parent = c
+		c.subCommands = append(c.subCommands, subCmd)
 
-	cmdPath := []string{c.usageStr, subCmd.usageStr}
-	subCmd.usageStr = strings.Join(cmdPath, " ")
+		cmdPath := []string{c.usageStr, subCmd.usageStr}
+		subCmd.usageStr = strings.Join(cmdPath, " ")
 
-	// Propagate global flags to children
-	for _, f := range c.GetFlags() {
-		if f.isGlobal {
-			subCmd.AddFlag(f)
+		// Propagate global flags to children
+		for _, f := range c.GetFlags() {
+			if f.IsGlobal {
+				subCmd.AddFlag(f)
+			}
 		}
-	}
 
-	// propagate theme
-	subCmd.theme = c.theme
+		// propagate theme
+		subCmd.theme = c.theme
 
-	if c.isRoot {
-		subCmd.appRef = c
-	} else {
-		subCmd.appRef = c.appRef
+		if c.isRoot {
+			subCmd.appRef = c
+		} else {
+			subCmd.appRef = c.appRef
+		}
 	}
 
 	return c
@@ -491,7 +500,7 @@ func (c *Command) findSubcommand(val string) (*Command, error) {
 func (c *Command) removeFlag(val string) {
 	newFlags := []*Flag{}
 	for _, f := range c.flags {
-		if !(f.short == val || f.long == val) {
+		if !(f.ShortVal == val || f.LongVal == val) {
 			newFlags = append(newFlags, f)
 		}
 	}
