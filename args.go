@@ -17,131 +17,121 @@ const (
 )
 
 type Argument struct {
-	name         string
-	help         string
-	raw          string
-	argType      argumentType
-	isVariadic   bool
-	isRequired   bool
-	validValues  []string
-	defaultValue string
-	validatorFns [](func(string) error)
+	Name         string
+	HelpStr      string
+	RawValue     string
+	ArgType      argumentType
+	IsVariadic   bool
+	IsRequired   bool
+	ValidValues  []string
+	DefaultValue string
+	ValidatorFns [](func(string) error)
 }
 
 // A Builder method for creating a new argument. Valid values include <arg>, [arg] or simply the name of the arg
 func NewArgument(name string) *Argument {
-	required := false
-	variadic := false
-	_type := str
+	arg := Argument{Name: name, ArgType: str}
 	var delimiters []string
 
 	if strings.HasPrefix(name, "<") {
-		required = true
+		arg.IsRequired = true
 		delimiters = []string{"<", ">"}
 	} else if strings.HasPrefix(name, "[") {
-		required = false
 		delimiters = []string{"[", "]"}
 	}
 
 	if len(delimiters) > 0 {
-		name = strings.ReplaceAll(name, delimiters[0], "")
-		name = strings.ReplaceAll(name, delimiters[1], "")
+		arg.Name = strings.TrimPrefix(arg.Name, delimiters[0])
+		arg.Name = strings.TrimSuffix(arg.Name, delimiters[1])
 	}
 
-	if strings.ContainsRune(name, ':') {
-		values := strings.Split(name, ":")
-
-		_type = values[0]
-		name = values[1]
+	if strings.ContainsRune(arg.Name, ':') {
+		values := strings.Split(arg.Name, ":")
+		arg.Name = values[1]
+		arg.ArgType = argumentType(values[0])
+		arg.addValidatorFns() // add default validator funcs
 	}
 
-	if strings.HasSuffix(name, "...") {
-		variadic = true
-		name = strings.ReplaceAll(name, "...", "")
+	if strings.HasSuffix(arg.Name, "...") {
+		arg.IsVariadic = true
+		arg.Name = strings.ReplaceAll(arg.Name, "...", "")
 	}
 
-	arg := Argument{
-		name:       strings.ReplaceAll(name, "-", "_"),
-		isRequired: required,
-		isVariadic: variadic,
-		argType:    argumentType(_type),
-	}
-	arg.addValidatorFns() // add default validator funcs
 	return &arg
 }
 
 // A method for setting the default value on an argument to be used when no value is provided but the argument value is required
 func (a *Argument) Default(val string) *Argument {
 	// Check if value valid
-	if len(a.validValues) > 0 {
+	if len(a.ValidValues) > 0 {
 		if !a.testValue(val) {
 			// TODO: consider writing to stderr
-			fmt.Printf("error occurred when setting default value for argument: %v \n.  the passed value %v does not match the valid values: %v", a.name, val, a.validValues)
+			fmt.Printf("error occurred when setting default value for argument: %v \n.  the passed value %v does not match the valid values: %v", a.Name, val, a.ValidValues)
 			if !isTestMode() {
 				os.Exit(1)
 			}
 		}
 	}
 	// verify value against validator fn if any
-	for _, fn := range a.validatorFns {
+	for _, fn := range a.ValidatorFns {
 		err := fn(val)
 		if err != nil {
-			fmt.Printf("you tried to set a default value for argument: %v, but the validator function returned an error for values: %v", a.name, val)
+			fmt.Printf("you tried to set a default value for argument: %v, but the validator function returned an error for values: %v", a.Name, val)
 			if !isTestMode() {
 				os.Exit(1)
 			}
 		}
 	}
 
-	a.defaultValue = val
+	a.DefaultValue = val
 	return a
 }
 
 // Simply sets the description or help string of the given argument
 func (a *Argument) Help(val string) *Argument {
-	a.help = val
+	a.HelpStr = val
 	return a
 }
 
 // Sets whether an argument is variadic or not
 func (a *Argument) Variadic(val bool) *Argument {
-	a.isVariadic = val
+	a.IsVariadic = val
 	return a
 }
 
 // Sets whether an argument is required or not
 func (a *Argument) Required(val bool) *Argument {
-	a.isRequired = val
+	a.IsRequired = val
 	return a
 }
 
 func (a *Argument) Type(val argumentType) *Argument {
-	a.argType = val
+	a.ArgType = val
 	return a
 }
 
 // Configures the valid values for an argument
 func (a *Argument) ValidateWith(vals []string) *Argument {
-	a.validValues = vals
+	a.ValidValues = vals
 	return a
 }
 
 // A method to pass a custom validator function for arguments passed
 func (a *Argument) ValidatorFunc(fn func(string) error) *Argument {
-	a.validatorFns = append(a.validatorFns, fn)
+	a.ValidatorFns = append(a.ValidatorFns, fn)
 	return a
 }
 
 // A method for setting what the argument should be displayed as when printing help
 func (a *Argument) DisplayAs(val string) *Argument {
-	a.raw = val
+	a.RawValue = val
 	return a
 }
 
 /****************************** Package utilities ********************************/
 
 func (a *Argument) addValidatorFns() {
-	switch a.argType {
+	switch a.ArgType {
 	case integer:
 		{
 			a.ValidatorFunc(func(s string) error {
@@ -180,7 +170,7 @@ func (a *Argument) addValidatorFns() {
 		}
 	default:
 		{
-			fmt.Println(fmt.Errorf("found unknown argument type: `%v` for argument: `%v`", a.argType, a.getRawValue()))
+			fmt.Println(fmt.Errorf("found unknown argument type: `%v` for argument: `%v`", a.ArgType, a.getRawValue()))
 			if !isTestMode() {
 				os.Exit(1)
 			}
@@ -192,33 +182,33 @@ func (a *Argument) testValue(val string) bool {
 	valueMatch := false
 	matchCount := 0
 
-	if len(a.validValues) == 0 {
+	if len(a.ValidValues) == 0 {
 		valueMatch = true
 	}
 
-	for _, v := range a.validValues {
+	for _, v := range a.ValidValues {
 		if strings.EqualFold(v, val) {
 			valueMatch = true
 			break
 		}
 	}
 
-	for _, fn := range a.validatorFns {
+	for _, fn := range a.ValidatorFns {
 		err := fn(val)
 		if err == nil {
 			matchCount++
 		}
 	}
 
-	return valueMatch && matchCount == len(a.validatorFns)
+	return valueMatch && matchCount == len(a.ValidatorFns)
 }
 
 func (a *Argument) hasDefaultValue() bool {
-	return len(a.defaultValue) > 0
+	return len(a.DefaultValue) > 0
 }
 
 func (a *Argument) compare(b *Argument) bool {
-	return a.help == b.help && a.name == b.name && a.getRawValue() == b.getRawValue()
+	return a.HelpStr == b.HelpStr && a.Name == b.Name && a.getRawValue() == b.getRawValue()
 }
 
 func newArgument(val string, help string) *Argument {
@@ -228,26 +218,26 @@ func newArgument(val string, help string) *Argument {
 }
 
 func (a *Argument) getRawValue() string {
-	if len(a.raw) == 0 {
+	if len(a.RawValue) == 0 {
 		var value strings.Builder
 
 		write := func(first rune, last rune) {
 			value.WriteRune(first)
-			value.WriteString(strings.ReplaceAll(a.name, "_", "-"))
-			if a.isVariadic {
+			value.WriteString(strings.ReplaceAll(a.Name, "_", "-"))
+			if a.IsVariadic {
 				value.WriteString("...")
 			}
 			value.WriteRune(last)
 		}
 
-		if a.isRequired {
+		if a.IsRequired {
 			write('<', '>')
 		} else {
 			write('[', ']')
 		}
 		return value.String()
 	}
-	return a.raw
+	return a.RawValue
 }
 
 /****************************** Interface implementations ********************************/
@@ -255,10 +245,10 @@ func (a *Argument) getRawValue() string {
 func (a *Argument) generate() (string, string) {
 	leading := a.getRawValue()
 	var floating strings.Builder
-	floating.WriteString(a.help)
+	floating.WriteString(a.HelpStr)
 
 	if a.hasDefaultValue() {
-		floating.WriteString(fmt.Sprintf(" (default: %v)", a.defaultValue))
+		floating.WriteString(fmt.Sprintf(" (default: %v)", a.DefaultValue))
 	}
 
 	return leading, floating.String()
