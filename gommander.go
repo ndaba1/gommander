@@ -37,21 +37,22 @@ type Command struct {
 }
 
 func App() *Command {
-	return NewCommand("")._setIsRoot().AddFlag(
-		NewFlag("version").
-			Short('v').
-			Help("Print out version information"),
-	).Theme(DefaultTheme())
+	// return NewCommand("")._setRoot().AddFlag(versionFlag()).Theme(DefaultTheme())
+	return &Command{
+		isRoot:       true,
+		flags:        []*Flag{helpFlag(), versionFlag()},
+		parent:       nil,
+		settings:     AppSettings{},
+		emitter:      newEmitter(),
+		subCmdGroups: make(map[string][]*Command),
+		theme:        DefaultTheme(),
+	}
 }
 
 func NewCommand(name string) *Command {
 	return &Command{
 		name:           name,
-		arguments:      []*Argument{},
-		flags:          []*Flag{NewFlag("help").Short('h').Help("Print out help information")},
-		options:        []*Option{},
-		subCommands:    []*Command{},
-		parent:         nil,
+		flags:          []*Flag{helpFlag()},
 		settings:       AppSettings{},
 		isRoot:         false,
 		emitter:        newEmitter(),
@@ -221,7 +222,7 @@ func (c *Command) AddToGroup(name string) *Command {
 
 // Receives a reference to a command, sets the command parent and usage string then adds its to the slice of subcommands. This method is called internally by the `.SubCommand()` method but users can also invoke it directly
 func (c *Command) AddSubCommand(subCmd *Command) *Command {
-	subCmd._setParent(c)
+	subCmd.parent = c
 	c.subCommands = append(c.subCommands, subCmd)
 
 	cmdPath := []string{c.usageStr, subCmd.usageStr}
@@ -502,16 +503,6 @@ func (c *Command) _getAppRef() *Command {
 		return c
 	}
 	return c.appRef
-}
-
-func (c *Command) _setParent(parent *Command) *Command {
-	c.parent = parent
-	return c
-}
-
-func (c *Command) _setIsRoot() *Command {
-	c.isRoot = true
-	return c
 }
 
 func (c *Command) _getUsageStr() string {
