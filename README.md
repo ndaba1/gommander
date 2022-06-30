@@ -263,6 +263,30 @@ func main() {
 
 Note: it is unconventional for the `ValidateWith()` and `ValidatorFunc()` method to be set on a single argument. **One of them will take precedence over the other.**
 
+### Adding types to arguments
+
+Arguments can also be typed meaning that values that are not of a given type will fail the validation. This is achieved as shown below:
+
+```go
+// ...
+func main() {
+    app := gommander.App()
+
+    app.Argument("<int:count>", "Pass a count").
+        Argument("<bool:verbose>", "Verbosity").
+        Argument("<float:percentage>", "Some percentage")
+
+    // ...
+
+    app.Parse()
+}
+
+// ...
+```
+
+When a type is provided to an argument, a validator function is automatically added to the argument that checks if the value provided at runtime matches the arg type. If not, an error is displayed to the user.
+All available types are: `int`, `float`, `bool`, `str`. It is redudant to declare an argument as `str` since it it the default type.
+
 Arguments can also be passed to options. This is discussed in depth in the [options](#options) section
 
 ## Flags
@@ -312,7 +336,7 @@ Options are simply flags that take in a value as input. There are also two ways 
 func main() {
     app := gommander.App()
 
-    app.Option("-p --port <port-number>", "The port number to use")
+    app.Option("-p --port <int:port-number>", "The port number to use")
 }
 // ...
 ```
@@ -328,7 +352,7 @@ func main() {
         gommander.NewOption("port").
             Short('p').
             AddArgument(
-                gommander.NewArgument("<port-number>").
+                gommander.NewArgument("<int:port-number>").
                     Default("9000"),
             ),
     )
