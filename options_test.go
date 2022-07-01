@@ -12,7 +12,7 @@ func TestOptionsCreation(t *testing.T) {
 
 	expL := "-p, --port <port-number> "
 	expF := "The port option"
-	gotL, gotF := opt.generate()
+	gotL, gotF := opt.generate(App())
 
 	assertEq(t, expL, gotL, "The option generate func is faulty")
 	assertEq(t, expF, gotF, "The option generate func is faulty")
