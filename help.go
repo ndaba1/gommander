@@ -12,7 +12,7 @@ func (HelpWriter) Write(c *Command) {
 
 	// TODO: Check settings
 
-	fmter := NewFormatter(app.theme)
+	fmter := NewFormatter(app)
 
 	hasArgs := len(c.arguments) > 0
 	hasDiscussion := len(c.discussion) > 0
