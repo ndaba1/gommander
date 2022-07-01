@@ -1,7 +1,6 @@
 package gommander
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -17,13 +16,13 @@ type Flag struct {
 func NewFlag(name string) *Flag {
 	return &Flag{
 		Name:    name,
-		LongVal: fmt.Sprintf("--%v", name),
+		LongVal: "--" + name,
 	}
 }
 
 // A method that simply sets the short version of a flag. It takes in a rune and appends a `-` to it then sets that as the short value for the flag
 func (f *Flag) Short(val rune) *Flag {
-	f.ShortVal = fmt.Sprintf("-%c", val)
+	f.ShortVal = "-" + string(val)
 	return f
 }
 
@@ -80,13 +79,13 @@ func (f *Flag) generate(app *Command) (string, string) {
 	var leading strings.Builder
 
 	if len(f.ShortVal) > 0 {
-		leading.WriteString(fmt.Sprintf("%v,", f.ShortVal))
+		leading.WriteString(f.ShortVal + ",")
 	} else {
 		leading.WriteString("   ")
 	}
 
 	if len(f.LongVal) > 0 {
-		leading.WriteString(fmt.Sprintf(" %v", f.LongVal))
+		leading.WriteString(" " + f.LongVal)
 	}
 
 	return leading.String(), f.HelpStr
