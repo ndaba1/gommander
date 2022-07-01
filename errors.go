@@ -132,7 +132,7 @@ func (e *Error) Display(c *Command) {
 
 func (e *Error) _writeError(c *Command) *Formatter {
 	app := c._getAppRef()
-	fmter := NewFormatter(app.theme)
+	fmter := NewFormatter(app)
 
 	fmter.Add(ErrorMsg, "error:  ")
 	fmter.Add(Other, strings.ToLower(e.message))
