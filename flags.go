@@ -77,7 +77,7 @@ func newFlag(val string, help string) Flag {
 	return flag
 }
 
-func (f *Flag) generate() (string, string) {
+func (f *Flag) generate(app *Command) (string, string) {
 	var leading strings.Builder
 
 	if len(f.ShortVal) > 0 {
