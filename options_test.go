@@ -59,15 +59,18 @@ func BenchmarkOptAndArgBuilder(b *testing.B) {
 	}
 }
 
-func BenchmarkOptionConstructor(b *testing.B) {
+func BenchmarkOptConstructor(b *testing.B) {
 	fn := func(o Option) {}
 	for i := 0; i < b.N; i++ {
 		fn(Option{
-			Name:       "port",
-			LongVal:    "--port",
-			ShortVal:   "-p",
-			HelpStr:    "port option",
-			Arg:        NewArgument("<port-no>"),
+			Name:     "port",
+			LongVal:  "--port",
+			ShortVal: "-p",
+			HelpStr:  "port option",
+			Arg: &Argument{
+				Name:       "port-no",
+				IsRequired: true,
+			},
 			IsRequired: true,
 		})
 	}
