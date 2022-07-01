@@ -175,7 +175,7 @@ type structComp[model structTypes] interface {
 }
 
 type structTypes interface {
-	*Flag | *Command | *Option | *Argument
+	*Flag | *Command | *Option | *Argument | *Error
 }
 
 func assertStructEq[model structTypes](t *testing.T, first structComp[model], second model, msg ...interface{}) {
