@@ -29,6 +29,7 @@ type Formatter struct {
 	theme      Theme
 	buffer     bytes.Buffer
 	prevOffset int
+	appRef     *Command
 }
 
 type Theme = map[Designation]color.Attribute
@@ -37,9 +38,10 @@ type FormatGenerator interface {
 	generate() (string, string)
 }
 
-func NewFormatter(theme Theme) Formatter {
+func NewFormatter(cmd *Command) Formatter {
 	return Formatter{
-		theme: theme,
+		theme:  cmd.theme,
+		appRef: cmd,
 	}
 }
 
