@@ -42,3 +42,11 @@ func BenchmarkFlagConstructor(b *testing.B) {
 		})
 	}
 }
+
+func BenchmarkFlagGenerateFn(b *testing.B) {
+	f := helpFlag()
+	c := Command{theme: DefaultTheme()}
+	for i := 0; i < b.N; i++ {
+		f.generate(&c)
+	}
+}
