@@ -35,7 +35,7 @@ func TestArgMetadata(t *testing.T) {
 
 	expLeading := "<basic...>"
 	expFloating := "Test argument"
-	gotLeading, gotFloating := arg.generate()
+	gotLeading, gotFloating := arg.generate(App())
 
 	assertEq(t, expLeading, gotLeading, "The arg generate function is problematic")
 	assertEq(t, expFloating, gotFloating, "The arg generate function is problematic")
@@ -50,7 +50,7 @@ func TestOptionalArgs(t *testing.T) {
 
 	expLeading := "[optional]"
 	expFloating := "Optional value with default (default: DEFAULT)"
-	gotLeading, gotFloating := arg.generate()
+	gotLeading, gotFloating := arg.generate(App())
 
 	assertEq(t, expLeading, gotLeading, "The arg generate function is problematic")
 	assertEq(t, expFloating, gotFloating, "The arg generate function is problematic")

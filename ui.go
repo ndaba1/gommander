@@ -29,17 +29,19 @@ type Formatter struct {
 	theme      Theme
 	buffer     bytes.Buffer
 	prevOffset int
+	appRef     *Command
 }
 
 type Theme = map[Designation]color.Attribute
 
 type FormatGenerator interface {
-	generate() (string, string)
+	generate(*Command) (string, string)
 }
 
-func NewFormatter(theme Theme) Formatter {
+func NewFormatter(cmd *Command) Formatter {
 	return Formatter{
-		theme: theme,
+		theme:  cmd.theme,
+		appRef: cmd,
 	}
 }
 
@@ -129,15 +131,17 @@ func (f *Formatter) format(items []FormatGenerator) {
 	values := []([2]string){}
 
 	// TODO: check for sort alphabetically setting
-	sort.Slice(items, func(i, j int) bool {
-		second, _ := items[j].generate()
-		first, _ := items[i].generate()
+	if f.appRef.settings[SortItemsAlphabetically] {
+		sort.Slice(items, func(i, j int) bool {
+			second, _ := items[j].generate(f.appRef)
+			first, _ := items[i].generate(f.appRef)
 
-		return second > first
-	})
+			return second > first
+		})
+	}
 
 	for _, i := range items {
-		leading, floating := i.generate()
+		leading, floating := i.generate(f.appRef)
 		temp := [2]string{leading, floating}
 		values = append(values, temp)
 	}

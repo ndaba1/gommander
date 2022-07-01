@@ -12,7 +12,7 @@ func TestFlagsCreation(t *testing.T) {
 
 	expL := "-h, --help"
 	expF := "The help flag"
-	gotL, gotF := flag.generate()
+	gotL, gotF := flag.generate(App())
 
 	assertEq(t, expL, gotL, "Flag generate method functioning incorrectly")
 	assertEq(t, expF, gotF, "Flag generate method functioning incorrectly")
@@ -40,5 +40,13 @@ func BenchmarkFlagConstructor(b *testing.B) {
 			HelpStr:  "A version flag",
 			IsGlobal: true,
 		})
+	}
+}
+
+func BenchmarkFlagGenerateFn(b *testing.B) {
+	f := helpFlag()
+	c := Command{theme: DefaultTheme()}
+	for i := 0; i < b.N; i++ {
+		f.generate(&c)
 	}
 }

@@ -35,7 +35,6 @@ Features of this package include:
   - [App Themes and UI](#themes-and-ui)
   - [Command Callbacks](#command-callbacks)
   - [Error Handling](#error-handling)
-  - [Public Formatter Interface](#public-formatter-interface)
 
 ## Installation
 
@@ -213,6 +212,10 @@ The `.Argument()` method takes in the value of the argument and its help string/
 | `<arg...>` | Argument is required and is variadic|
 | `[arg]` | Argument is optional|
 | `[arg...]` | Argument is optional but variadic if provided|
+| `<int:arg>` | Required integer argument
+| `<float:arg>` | Required float argument
+| `<bool:arg>` | Argument value should be `true` or `false`
+| `<str:arg>` | Required string arg (all args are strings by default)
 
 ### **AddArgument() method**
 
@@ -403,7 +406,7 @@ func main() {
     app.On(gommander.OutputVersion, func(ec *gommander.EventConfig) {
         app := ec.GetApp()
 
-       fmt.Printf("You are version: %v of %v which was authored by: %v", app.GetVersion(), app.GetName(), app.GetAuthor())
+       fmt.Printf("You are using version: %v of %v which was authored by: %v", app.GetVersion(), app.GetName(), app.GetAuthor())
     })
 }
 // ...
@@ -550,37 +553,3 @@ There are a few things to note about the above example:
 - When defining custom-listeners, the `Command.On()` method does not remove the default listener, it only adds a new one, which will get invoked after the default ones. If you wish to override the default listener completely, use the `Command.Override()` method.
 - Different events have different exit codes that can be accessed via the `EventConfig.GetExitCode()` method.
 - You can add multiple listeners for a single event
-
-## Public Formatter Interface
-
-The formatter used by the package for color printing also has a public interface, which means you can use it to print out colored content if you wish to.
-By convention, the formatter functions on a basis of designations as explained in the [theme](#themes-and-ui) section. However, you can also pass a color directly to the formatter to use as shown below:
-
-```go
-package main
-
-import (
-  "fmt"
-
-  "github.com/ndaba1/gommander"
-  "github.com/fatih/color"
-)
-
-func main() {
-  app := gommander.App()
-
-  app.On(gommander.MissingRequiredArgument, func(pm *gommander.EventConfig) {
-    // Use default theme or create your own
-    fmter := gommander.NewFormatter(gommander.DefaultTheme())
-    fmter.ColorAndPrint(*color.New(color.FgRed), fmt.Sprintf("\nMissing a required argument: `%v`\n", pm.GetArgs()[0]))
-  })
-}
-```
-
-Other public formatter methods include:
-
-- `Formatter.Add()`
-- `Formatter.AddAndPrint()`
-- `Formatter.Print()`
-- `Formatter.Color()`
-- `Formatter.ColorAndPrint()`

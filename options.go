@@ -18,13 +18,13 @@ type Option struct {
 func NewOption(name string) *Option {
 	return &Option{
 		Name:    name,
-		LongVal: fmt.Sprintf("--%v", name),
+		LongVal: "--" + name,
 	}
 }
 
 // Simply sets the shorthand version of the option
 func (o *Option) Short(val rune) *Option {
-	o.ShortVal = fmt.Sprintf("-%c", val)
+	o.ShortVal = "-" + string(val)
 	return o
 }
 
@@ -78,17 +78,17 @@ func newOption(val string, help string, required bool) Option {
 	return opt
 }
 
-func (o *Option) generate() (string, string) {
+func (o *Option) generate(app *Command) (string, string) {
 	var leading, floating strings.Builder
 
 	if len(o.ShortVal) > 0 {
-		leading.WriteString(fmt.Sprintf("%v,", o.ShortVal))
+		leading.WriteString(o.ShortVal + ",")
 	} else {
 		leading.WriteString("   ")
 	}
 
 	if len(o.LongVal) > 0 {
-		leading.WriteString(fmt.Sprintf(" %v ", o.LongVal))
+		leading.WriteString(" " + o.LongVal + " ")
 	}
 
 	if o.Arg != nil {

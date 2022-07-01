@@ -2,12 +2,12 @@
 DATE=`date +"%s"`
 
 CURRENT=$DATE.bench
-BENCHTIME=3s
-BENCHCOUNT=3
+BENCHTIME=4s
+BENCHCOUNT=4
 
 if [ $# -eq 1 ]; then 
     BENCHCOUNT=$1
-elif [ $# -eq 2 ]
+elif [ $# -eq 2 ]; then
     BENCHTIME=$2
 fi
 

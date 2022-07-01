@@ -12,7 +12,7 @@ func TestOptionsCreation(t *testing.T) {
 
 	expL := "-p, --port <port-number> "
 	expF := "The port option"
-	gotL, gotF := opt.generate()
+	gotL, gotF := opt.generate(App())
 
 	assertEq(t, expL, gotL, "The option generate func is faulty")
 	assertEq(t, expF, gotF, "The option generate func is faulty")
@@ -73,5 +73,14 @@ func BenchmarkOptConstructor(b *testing.B) {
 			},
 			IsRequired: true,
 		})
+	}
+}
+
+func BenchmarkOptGenerateFn(b *testing.B) {
+	o := newOption("-p --port <int:port-no>", "a port number", false)
+	c := Command{theme: DefaultTheme()}
+
+	for i := 0; i < b.N; i++ {
+		o.generate(&c)
 	}
 }

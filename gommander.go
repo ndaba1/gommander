@@ -548,7 +548,6 @@ func (c *Command) PrintHelp() {
 
 /****************************** Interface Implementations ****************************/
 
-func (c *Command) generate() (string, string) {
-	// TODO: Check if allow command aliases
+func (c *Command) generate(app *Command) (string, string) {
 	return c.GetName(), c.GetHelp()
 }
