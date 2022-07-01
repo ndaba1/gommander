@@ -75,3 +75,12 @@ func BenchmarkOptConstructor(b *testing.B) {
 		})
 	}
 }
+
+func BenchmarkOptGenerateFn(b *testing.B) {
+	o := newOption("-p --port <int:port-no>", "a port number", false)
+	c := Command{theme: DefaultTheme()}
+
+	for i := 0; i < b.N; i++ {
+		o.generate(&c)
+	}
+}
