@@ -49,7 +49,6 @@ func helpFlag() *Flag {
 		LongVal:  "--help",
 		ShortVal: "-h",
 		HelpStr:  "Print out help information",
-		IsGlobal: true,
 	}
 }
 
