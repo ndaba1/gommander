@@ -131,12 +131,14 @@ func (f *Formatter) format(items []FormatGenerator) {
 	values := []([2]string){}
 
 	// TODO: check for sort alphabetically setting
-	sort.Slice(items, func(i, j int) bool {
-		second, _ := items[j].generate(f.appRef)
-		first, _ := items[i].generate(f.appRef)
+	if f.appRef.settings[SortItemsAlphabetically] {
+		sort.Slice(items, func(i, j int) bool {
+			second, _ := items[j].generate(f.appRef)
+			first, _ := items[i].generate(f.appRef)
 
-		return second > first
-	})
+			return second > first
+		})
+	}
 
 	for _, i := range items {
 		leading, floating := i.generate(f.appRef)
