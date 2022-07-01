@@ -7,7 +7,7 @@ BENCHCOUNT=3
 
 if [ $# -eq 1 ]; then 
     BENCHCOUNT=$1
-elif [ $# -eq 2 ]
+elif [ $# -eq 2 ]; then
     BENCHTIME=$2
 fi
 
