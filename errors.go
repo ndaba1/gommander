@@ -13,30 +13,6 @@ type Error struct {
 	exitCode int
 }
 
-func throwError(kind Event, msg string, ctx string) Error {
-	var exitCode int
-	switch kind {
-	case InvalidArgumentValue:
-		exitCode = 10
-	case MissingRequiredArgument:
-		exitCode = 20
-	case MissingRequiredOption:
-		exitCode = 30
-	case UnknownCommand:
-		exitCode = 40
-	case UnknownOption:
-		exitCode = 50
-	default:
-		exitCode = 1
-	}
-	return Error{
-		kind:     kind,
-		message:  msg,
-		context:  ctx,
-		exitCode: exitCode,
-	}
-}
-
 func generateError(cmd *Command, e Event, args []string) Error {
 	var msg string
 	var ctx string
@@ -49,7 +25,7 @@ func generateError(cmd *Command, e Event, args []string) Error {
 			msg = fmt.Sprintf("missing required argument: `%v`", args[0])
 
 			if len(args) == 1 {
-				ctx = fmt.Sprintf("Expected a required value corresponding to: `%v` but none was provided", args[0])
+				ctx = fmt.Sprintf("Expected a value corresponding to required argument: `%v` but none was provided", args[0])
 			} else {
 				ctx = fmt.Sprintf("Expected a value for argument: `%v`, but instead found: `%v`", args[0], args[1])
 			}
