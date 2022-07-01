@@ -6,110 +6,98 @@ import (
 )
 
 type Option struct {
-	name     string
-	help     string
-	short    string
-	long     string
-	args     []*Argument
-	required bool
+	Name       string
+	HelpStr    string
+	ShortVal   string
+	LongVal    string
+	Arg        *Argument
+	IsRequired bool
 }
 
 // A builder method to generate a new option
 func NewOption(name string) *Option {
 	return &Option{
-		name: name,
-		long: fmt.Sprintf("--%v", name),
+		Name:    name,
+		LongVal: fmt.Sprintf("--%v", name),
 	}
 }
 
 // Simply sets the shorthand version of the option
 func (o *Option) Short(val rune) *Option {
-	o.short = fmt.Sprintf("-%c", val)
+	o.ShortVal = fmt.Sprintf("-%c", val)
 	return o
 }
 
 // A method for setting the help string / description for an option
 func (o *Option) Help(val string) *Option {
-	o.help = val
+	o.HelpStr = val
 	return o
 }
 
 // Sets whether or not the option is required
 func (o *Option) Required(val bool) *Option {
-	o.required = val
+	o.IsRequired = val
 	return o
 }
 
 // A method for adding a new argument to an option. Takes as input the name of the argument
 func (o *Option) Argument(val string) *Option {
-	o.args = append(o.args, newArgument(val, ""))
+	o.AddArgument(newArgument(val, ""))
 	return o
 }
 
 // A builder method for adding an argument. Expects an instance of an argument as input
 func (o *Option) AddArgument(arg *Argument) *Option {
-	o.args = append(o.args, arg)
+	id := fmt.Sprintf("opt-%s-arg-%s", o.Name, arg.Name)
+	if !cache[id] {
+		cache[id] = true
+		o.Arg = arg
+	}
 	return o
 }
 
 func (o *Option) compare(p *Option) bool {
-	return o.name == p.name && o.help == p.help && o.long == p.long && o.short == p.short && o.required == p.required
+	return o.Name == p.Name && o.HelpStr == p.HelpStr && o.LongVal == p.LongVal && o.ShortVal == p.ShortVal && o.IsRequired == p.IsRequired
 }
 
 func newOption(val string, help string, required bool) Option {
+	opt := Option{HelpStr: help, IsRequired: required}
 	values := strings.Split(val, " ")
-
-	short, long := "", ""
-	rawArgs := []string{}
-	args := []*Argument{}
 
 	for _, v := range values {
 		if strings.HasPrefix(v, "--") {
-			long = v
+			opt.LongVal = v
 		} else if strings.HasPrefix(v, "-") {
-			short = v
+			opt.ShortVal = v
 		} else {
-			rawArgs = append(rawArgs, v)
+			opt.Arg = newArgument(v, "")
 		}
 	}
+	opt.Name = strings.TrimPrefix(opt.LongVal, "--")
 
-	for _, a := range rawArgs {
-		arg := newArgument(a, "")
-		args = append(args, arg)
-	}
-
-	return Option{
-		name:     strings.ReplaceAll(long, "-", ""),
-		help:     help,
-		long:     long,
-		short:    short,
-		args:     args,
-		required: required,
-	}
+	return opt
 }
 
 func (o *Option) generate() (string, string) {
 	var leading, floating strings.Builder
 
-	if len(o.short) > 0 {
-		leading.WriteString(fmt.Sprintf("%v,", o.short))
+	if len(o.ShortVal) > 0 {
+		leading.WriteString(fmt.Sprintf("%v,", o.ShortVal))
 	} else {
 		leading.WriteString("   ")
 	}
 
-	if len(o.long) > 0 {
-		leading.WriteString(fmt.Sprintf(" %v ", o.long))
+	if len(o.LongVal) > 0 {
+		leading.WriteString(fmt.Sprintf(" %v ", o.LongVal))
 	}
 
-	if len(o.args) > 0 {
-		for _, a := range o.args {
-			leading.WriteString(fmt.Sprintf("%v ", a.getRawValue()))
-		}
+	if o.Arg != nil {
+		leading.WriteString(fmt.Sprintf("%v ", o.Arg.getRawValue()))
 	}
 
-	floating.WriteString(o.help)
-	if len(o.args) == 1 && o.args[0].hasDefaultValue() {
-		floating.WriteString(fmt.Sprintf(" (default: %v)", o.args[0].defaultValue))
+	floating.WriteString(o.HelpStr)
+	if o.Arg != nil && o.Arg.hasDefaultValue() {
+		floating.WriteString(fmt.Sprintf(" (default: %v)", o.Arg.DefaultValue))
 	}
 
 	return leading.String(), floating.String()

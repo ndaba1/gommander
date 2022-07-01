@@ -54,6 +54,7 @@ func TestEventListeners(t *testing.T) {
 func TestRootCmdArgs(t *testing.T) {
 	// Test single required arg
 	{
+		clearCache()
 		app := App()
 
 		app.Argument("<file>", "file to open").
@@ -67,6 +68,7 @@ func TestRootCmdArgs(t *testing.T) {
 
 	// Test required arg error
 	{
+		clearCache()
 		app := App()
 		app.Argument("<file>", "file to open")
 
@@ -80,6 +82,7 @@ func TestRootCmdArgs(t *testing.T) {
 
 	// Test optional args parsing
 	{
+		clearCache()
 		app := App()
 		app.Argument("[file]", "file to open").
 			Action(func(pm *ParserMatches) {
@@ -111,8 +114,77 @@ func TestRootCmdArgs(t *testing.T) {
 
 }
 
-func BenchmarkBuildEmpty(b *testing.B) {
+func BenchmarkBuildEmptyCmd(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		NewCommand("empty")
 	}
+}
+
+func BenchmarkBuildEmptyApp(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		App()
+	}
+}
+
+func _compareVariants(b *testing.B, vars ...func(*Command)) {
+	for i, fn := range vars {
+		name := ""
+		switch i {
+		case 0:
+			name = "constructor"
+		case 1:
+			name = "builder"
+		case 2:
+			name = "composite-func"
+		}
+		b.Run(name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				fn(NewCommand("empty"))
+			}
+		})
+	}
+}
+
+func BenchmarkBuildWithFlags(b *testing.B) {
+	constructor := func(a *Command) {
+		a.AddFlag(&Flag{
+			Name:     "verbose",
+			LongVal:  "--verbose",
+			ShortVal: "-V",
+			HelpStr:  "Verbosity flag",
+		})
+	}
+
+	builder := func(a *Command) {
+		a.AddFlag(NewFlag("verbose").Help("Verbosity flag").Short('V'))
+	}
+
+	composite := func(a *Command) {
+		a.Flag("-V --verbose", "Verbosity flag")
+	}
+
+	_compareVariants(b, constructor, builder, composite)
+}
+
+func BenchmarkBuildWithArgs(b *testing.B) {
+	constructor := func(a *Command) {
+		a.AddArgument(&Argument{
+			Name:       "arg1",
+			HelpStr:    "Argument one",
+			RawValue:   "<arg1...>",
+			ArgType:    str,
+			IsVariadic: true,
+			IsRequired: true,
+		})
+	}
+
+	buidler := func(a *Command) {
+		a.AddArgument(NewArgument("arg1").Help("Argument one").Required(true).Variadic(true))
+	}
+
+	composite := func(a *Command) {
+		a.Argument("<arg1...>", "Argument one")
+	}
+
+	_compareVariants(b, constructor, buidler, composite)
 }

@@ -6,84 +6,89 @@ import (
 )
 
 type Flag struct {
-	name     string
-	long     string
-	short    string
-	help     string
-	isGlobal bool
+	Name     string
+	LongVal  string
+	ShortVal string
+	HelpStr  string
+	IsGlobal bool
 }
 
 // A Builder method for creating a new flag. It sets the name of the flag and the long version of the flag by appending `--` to the name then returns the flag for further manipulation.
 func NewFlag(name string) *Flag {
 	return &Flag{
-		name: name,
-		long: fmt.Sprintf("--%v", name),
+		Name:    name,
+		LongVal: fmt.Sprintf("--%v", name),
 	}
 }
 
 // A method that simply sets the short version of a flag. It takes in a rune and appends a `-` to it then sets that as the short value for the flag
 func (f *Flag) Short(val rune) *Flag {
-	f.short = fmt.Sprintf("-%c", val)
+	f.ShortVal = fmt.Sprintf("-%c", val)
 	return f
 }
 
 // A method for setting the help string or description of the flag
 func (f *Flag) Help(val string) *Flag {
-	f.help = val
+	f.HelpStr = val
 	return f
 }
 
 // A method for setting a flag as global. Global flags are propagated to all the subcommands of a given command
 func (f *Flag) Global(val bool) *Flag {
-	f.isGlobal = val
+	f.IsGlobal = val
 	return f
 }
 
-func (f *Flag) compare(b *Flag) bool {
-	return f.name == b.name && f.short == b.short && f.long == b.long && f.help == b.help
+func (f *Flag) compare(f2 *Flag) bool {
+	return f.Name == f2.Name && f.ShortVal == f2.ShortVal && f.LongVal == f2.LongVal && f.HelpStr == f2.HelpStr
 }
 
 func helpFlag() *Flag {
-	return NewFlag("help").Short('h').Help("Print out help information")
+	return &Flag{
+		Name:     "help",
+		LongVal:  "--help",
+		ShortVal: "-h",
+		HelpStr:  "Print out help information",
+		IsGlobal: true,
+	}
 }
 
 func versionFlag() *Flag {
-	return NewFlag("version").Short('v').Help("Print out version information")
+	return &Flag{
+		Name:     "version",
+		LongVal:  "--version",
+		ShortVal: "-v",
+		HelpStr:  "Print out version information",
+	}
 }
 
 func newFlag(val string, help string) Flag {
+	flag := Flag{HelpStr: help}
 	values := strings.Split(val, " ")
-
-	short, long := "", ""
 
 	for _, v := range values {
 		if strings.HasPrefix(v, "--") {
-			long = v
+			flag.LongVal = v
 		} else if strings.HasPrefix(v, "-") {
-			short = v
+			flag.ShortVal = v
 		}
 	}
-
-	return Flag{
-		name:  strings.ReplaceAll(long, "-", ""),
-		long:  long,
-		short: short,
-		help:  help,
-	}
+	flag.Name = strings.TrimPrefix(flag.LongVal, "--")
+	return flag
 }
 
 func (f *Flag) generate() (string, string) {
 	var leading strings.Builder
 
-	if len(f.short) > 0 {
-		leading.WriteString(fmt.Sprintf("%v,", f.short))
+	if len(f.ShortVal) > 0 {
+		leading.WriteString(fmt.Sprintf("%v,", f.ShortVal))
 	} else {
 		leading.WriteString("   ")
 	}
 
-	if len(f.long) > 0 {
-		leading.WriteString(fmt.Sprintf(" %v", f.long))
+	if len(f.LongVal) > 0 {
+		leading.WriteString(fmt.Sprintf(" %v", f.LongVal))
 	}
 
-	return leading.String(), f.help
+	return leading.String(), f.HelpStr
 }

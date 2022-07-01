@@ -6,31 +6,29 @@ import (
 	"testing"
 )
 
-func Test_(t *testing.T) {
-	// dummy function to set test_mode env vars
-	// Workaround to set test mode once for all other tests
+func Test_init(t *testing.T) {
 	setGommanderTestMode()
 }
 
-func TestArgsCreation(t *testing.T) {
+func TestArgCreation(t *testing.T) {
 	arg := NewArgument("<test>").Help("Test argument").Variadic(true)
 	argB := newArgument("<test...>", "Test argument")
 
 	assertStructEq[*Argument](t, arg, argB, "Arg creation methods out of sync")
 	assert(t, arg.compare(argB)) // workaround to suppress linter warnings
-	assert(t, arg.isRequired, "Failed to make arg required")
-	assert(t, arg.isVariadic, "Failed to make arg variadic")
-	assertEq(t, arg.name, "test", "Arg name not set correctly")
-	assertEq(t, arg.help, "Test argument", "Arg help string wrongly set")
+	assert(t, arg.IsRequired, "Failed to make arg required")
+	assert(t, arg.IsVariadic, "Failed to make arg variadic")
+	assertEq(t, arg.Name, "test", "Arg name not set correctly")
+	assertEq(t, arg.HelpStr, "Test argument", "Arg help string wrongly set")
 }
 
-func TestArgsMetadata(t *testing.T) {
+func TestArgMetadata(t *testing.T) {
 	arg := NewArgument("<basic>").
 		Variadic(true).
 		Help("Test argument").
 		ValidateWith([]string{"ONE", "TWO"})
 
-	assertNe(t, arg.name, "<basic>", "Enclosures not stripped from name")
+	assertNe(t, arg.Name, "<basic>", "Enclosures not stripped from name")
 	assert(t, arg.testValue("one"), "Arg validation working incorrectly")
 	assert(t, arg.testValue("TWO"), "Arg validation working incorrectly")
 	assertEq(t, arg.getRawValue(), "<basic...>", "Raw value return function working incorrectly")
@@ -46,9 +44,9 @@ func TestArgsMetadata(t *testing.T) {
 func TestOptionalArgs(t *testing.T) {
 	arg := NewArgument("[optional]").Default("DEFAULT").Help("Optional value with default")
 
-	assert(t, !arg.isRequired, "Failed to set argument as optional")
+	assert(t, !arg.IsRequired, "Failed to set argument as optional")
 	assert(t, arg.hasDefaultValue(), "Failed to set default value")
-	assert(t, arg.defaultValue == "DEFAULT", "Failed to set default value")
+	assert(t, arg.DefaultValue == "DEFAULT", "Failed to set default value")
 
 	expLeading := "[optional]"
 	expFloating := "Optional value with default (default: DEFAULT)"
@@ -70,7 +68,7 @@ func TestArgValidValues(t *testing.T) {
 	exec := func() {
 		arg.Default("NEW")
 	}
-	expected := fmt.Sprintf("error occurred when setting default value for argument: %v \n.  the passed value %v does not match the valid values: %v", arg.name, "NEW", arg.validValues)
+	expected := fmt.Sprintf("error occurred when setting default value for argument: %v \n.  the passed value %v does not match the valid values: %v", arg.Name, "NEW", arg.ValidValues)
 	assertStdOut(t, expected, exec, "Argument validation for arguments with valid values is buggy")
 }
 
@@ -91,11 +89,41 @@ func TestArgValidatorFunc(t *testing.T) {
 	exec := func() {
 		arg.Default("notInt")
 	}
-	expected := fmt.Sprintf("you tried to set a default value for argument: %v, but the validator function returned an error for values: %v", arg.name, "notInt")
+	expected := fmt.Sprintf("you tried to set a default value for argument: %v, but the validator function returned an error for values: %v", arg.Name, "notInt")
 	assertStdOut(t, expected, exec, "Argument validation for arguments with validator functions is buggy")
 }
 
-func BenchmarkArgsBuilder(b *testing.B) {
+func TestArgTypeValidation(t *testing.T) {
+	arg := NewArgument("<int:test>").Help("Test argument")
+	arg2 := newArgument("<int:test>", "Test argument")
+
+	assertStructEq[*Argument](t, arg, arg2, "Arg creation methods out of sync")
+	{
+		arg := NewArgument("<int:count>")
+		assert(t, arg.testValue("2"), "Integer arg validation faulty")
+		assertEq(t, arg.testValue("2.0"), false, "Integer arg validation faulty against float")
+		assertEq(t, arg.testValue("two"), false, "Integer arg validation faulty against string")
+	}
+	{
+		arg := NewArgument("<float:count>")
+		assert(t, arg.testValue("2.0"), "Float arg validation faulty")
+		assertEq(t, arg.testValue("two"), false, "Float arg validation faulty against string")
+	}
+	{
+		arg := NewArgument("<bool:count>")
+		assert(t, arg.testValue("true"), "Boolean arg validation faulty")
+		assertEq(t, arg.testValue("2"), false, "Boolean arg validation faulty against int")
+		assertEq(t, arg.testValue("2.0"), false, "Boolean arg validation faulty against float")
+	}
+}
+
+func BenchmarkArgFunc(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		newArgument("<test>", "A test argument")
+	}
+}
+
+func BenchmarkArgBuilder(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		NewArgument("test").
 			Help("A test argument").
@@ -105,7 +133,7 @@ func BenchmarkArgsBuilder(b *testing.B) {
 	}
 }
 
-func BenchmarkComplexArgBuilder(b *testing.B) {
+func BenchmarkArgBuilderFull(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		NewArgument("complex").
 			Help("Arg with many options").
@@ -125,7 +153,26 @@ func BenchmarkComplexArgBuilder(b *testing.B) {
 }
 
 func BenchmarkArgConstructor(b *testing.B) {
+	fn := func(a Argument) {}
 	for i := 0; i < b.N; i++ {
-		newArgument("<test>", "A test argument")
+		fn(Argument{
+			Name:         "test",
+			HelpStr:      "A test argument",
+			IsRequired:   true,
+			ValidValues:  []string{"ONE", "TWO", "THREE"},
+			IsVariadic:   true,
+			RawValue:     "<test...>",
+			DefaultValue: "TEN",
+			ArgType:      integer,
+			ValidatorFns: [](func(s string) error){
+				func(s string) error {
+					_, err := strconv.Atoi(s)
+					if err != nil {
+						return err
+					}
+					return nil
+				},
+			},
+		})
 	}
 }

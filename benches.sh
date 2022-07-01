@@ -2,6 +2,14 @@
 DATE=`date +"%s"`
 
 CURRENT=$DATE.bench
+BENCHTIME=3s
+BENCHCOUNT=3
+
+if [ $# -eq 1 ]; then 
+    BENCHCOUNT=$1
+elif [ $# -eq 2 ]
+    BENCHTIME=$2
+fi
 
 if [ -d ".bench" ]
 then
@@ -13,7 +21,7 @@ else
 fi
 
 echo "Running benchmarks. This may take a while..."
-go test -bench=. -count=5 -run=^@ -benchmem  -cpuprofile cpu.prof  -memprofile mem.prof -benchtime=5s > .bench/$CURRENT
+go test -bench=. -count=$BENCHCOUNT -run=^@ -benchmem  -cpuprofile cpu.prof  -memprofile mem.prof -benchtime=$BENCHTIME > .bench/$CURRENT
 echo "✔ Done"
 
 cd .bench/
@@ -46,4 +54,6 @@ else
     ln latest.bench old.bench
 fi
 echo "✔ All Done. You can now compare the new and previous benches by running 'make benchcmp'. "
+TIME=$((`date +"%s"` - $DATE))
+echo "Successfull after $TIME seconds"
 

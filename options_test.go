@@ -8,7 +8,7 @@ func TestOptionsCreation(t *testing.T) {
 
 	assertStructEq[*Option](t, opt, &optB, "Option creation methods out of sync")
 	assert(t, opt.compare(&optB)) // linter workaround
-	assert(t, opt.required, "Failed to set required value on options")
+	assert(t, opt.IsRequired, "Failed to set required value on options")
 
 	expL := "-p, --port <port-number> "
 	expF := "The port option"
@@ -18,7 +18,13 @@ func TestOptionsCreation(t *testing.T) {
 	assertEq(t, expF, gotF, "The option generate func is faulty")
 
 	expectedArg := NewArgument("<port-number>")
-	assertStructEq[*Argument](t, expectedArg, opt.args[0], "Option args created incorrectly")
+	assertStructEq[*Argument](t, expectedArg, opt.Arg, "Option args created incorrectly")
+}
+
+func BenchmarkOptFunc(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		newOption("-p --port <port-number>", "A port option", true)
+	}
 }
 
 func BenchmarkOptBuilder(b *testing.B) {
@@ -40,7 +46,7 @@ func BenchmarkOptBuilderwArg(b *testing.B) {
 	}
 }
 
-func BenchmarkOptArgBuilder(b *testing.B) {
+func BenchmarkOptAndArgBuilder(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		NewOption("port").
 			Short('p').
@@ -53,8 +59,19 @@ func BenchmarkOptArgBuilder(b *testing.B) {
 	}
 }
 
-func BenchmarkNewOptFn(b *testing.B) {
+func BenchmarkOptConstructor(b *testing.B) {
+	fn := func(o Option) {}
 	for i := 0; i < b.N; i++ {
-		newOption("-p --port <port-number>", "A port option", true)
+		fn(Option{
+			Name:     "port",
+			LongVal:  "--port",
+			ShortVal: "-p",
+			HelpStr:  "port option",
+			Arg: &Argument{
+				Name:       "port-no",
+				IsRequired: true,
+			},
+			IsRequired: true,
+		})
 	}
 }
