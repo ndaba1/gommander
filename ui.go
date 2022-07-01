@@ -35,7 +35,7 @@ type Formatter struct {
 type Theme = map[Designation]color.Attribute
 
 type FormatGenerator interface {
-	generate() (string, string)
+	generate(*Command) (string, string)
 }
 
 func NewFormatter(cmd *Command) Formatter {
@@ -132,14 +132,14 @@ func (f *Formatter) format(items []FormatGenerator) {
 
 	// TODO: check for sort alphabetically setting
 	sort.Slice(items, func(i, j int) bool {
-		second, _ := items[j].generate()
-		first, _ := items[i].generate()
+		second, _ := items[j].generate(f.appRef)
+		first, _ := items[i].generate(f.appRef)
 
 		return second > first
 	})
 
 	for _, i := range items {
-		leading, floating := i.generate()
+		leading, floating := i.generate(f.appRef)
 		temp := [2]string{leading, floating}
 		values = append(values, temp)
 	}
