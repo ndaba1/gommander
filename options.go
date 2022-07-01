@@ -78,7 +78,7 @@ func newOption(val string, help string, required bool) Option {
 	return opt
 }
 
-func (o *Option) generate() (string, string) {
+func (o *Option) generate(app *Command) (string, string) {
 	var leading, floating strings.Builder
 
 	if len(o.ShortVal) > 0 {
