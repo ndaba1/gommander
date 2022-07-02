@@ -156,7 +156,7 @@ func TestParserErrors(t *testing.T) {
 
 	_assertParserError(t, app,
 		[]string{"i", "imageOne", "--port=hello"},
-		[]string{"hello", "hello is not a valid integer"},
+		[]string{"hello", "`hello` is not a valid integer"},
 		InvalidArgumentValue,
 		"invalid argument error detection failed",
 	)
