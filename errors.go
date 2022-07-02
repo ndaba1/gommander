@@ -42,9 +42,10 @@ func generateError(cmd *Command, e Event, args []string) Error {
 			code = 10
 			msg = fmt.Sprintf("the passed value: `%v`, is not a valid argument", args[0])
 
-			if len(args) == 2 {
-				ctx = fmt.Sprintf("The validator function threw the following error: \"%v\" when checking the value: `%v`", args[1], args[0])
-			} else {
+			switch len(args) {
+			case 2:
+				ctx = fmt.Sprintf("Encountered the following error: \"%v\" when checking the value: `%v`", args[1], args[0])
+			default:
 				ctx = fmt.Sprintf("Expected one of: `[%v]`, but instead found: `%v`, which is not a valid value", strings.Join(args[1:], ", "), args[0])
 			}
 		}
