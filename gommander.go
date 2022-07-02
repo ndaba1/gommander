@@ -137,7 +137,7 @@ func (c *Command) Action(cb CommandCallback) *Command {
 // A method for adding a flag to a command. It is similar to the `.Flag()` method except this method receives an instance of an already created flag while `.Flag()` receives a string, creates a flag from it and call this method internally
 func (c *Command) AddFlag(flag *Flag) *Command {
 	id := fmt.Sprintf("flag-%s", flag.Name)
-	if !cache[id] {
+	if !cache[id] || isTestMode() {
 		cache[id] = true
 		c.flags = append(c.flags, flag)
 	}
@@ -147,7 +147,7 @@ func (c *Command) AddFlag(flag *Flag) *Command {
 // A method for adding a new option to a command. The `.Option()` method invokes this one internally. Identical to the `.AddFlag()` method except this one is for options instead of flags
 func (c *Command) AddOption(opt *Option) *Command {
 	id := fmt.Sprintf("option-%s", opt.Name)
-	if !cache[id] {
+	if !cache[id] || isTestMode() {
 		cache[id] = true
 		c.options = append(c.options, opt)
 	}
@@ -162,7 +162,7 @@ func (c *Command) Alias(alias string) *Command {
 
 func (c *Command) AddArgument(arg *Argument) *Command {
 	id := fmt.Sprintf("arg-%s", arg.Name)
-	if !cache[id] {
+	if !cache[id] || isTestMode() {
 		cache[id] = true
 		c.arguments = append(c.arguments, arg)
 	}
@@ -284,7 +284,7 @@ func (c *Command) AddToGroup(name string) *Command {
 // Receives a reference to a command, sets the command parent and usage string then adds its to the slice of subcommands. This method is called internally by the `.SubCommand()` method but users can also invoke it directly
 func (c *Command) AddSubCommand(subCmd *Command) *Command {
 	id := fmt.Sprintf("subcmd-%s", subCmd.name)
-	if !cache[id] {
+	if !cache[id] || isTestMode() {
 		cache[id] = true
 		subCmd.parent = c
 		c.subCommands = append(c.subCommands, subCmd)
