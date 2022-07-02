@@ -19,6 +19,6 @@ const (
 	IgnoreAllErrors
 	// When set to true, all items including flags, args, options and subcommands will be sorted before getting printed out
 	SortItemsAlphabetically
-	// This setting determines whether or not to display the expected type for an argument
-	ShowArgumentTypes
+	// By default, values starting with `-` are treated as options. When this setting is turned on, the values will be checked whether they are digits or not first
+	AllowNegativeNumbers
 )
