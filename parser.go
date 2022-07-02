@@ -164,7 +164,7 @@ func (p *Parser) isFlagLike(val string) bool {
 	return strings.HasPrefix(val, "-")
 }
 
-func (p *Parser) isSpecialOption(val string) bool {
+func (p *Parser) isLongOptSyntax(val string) bool {
 	return strings.HasPrefix(val, "--") && strings.ContainsAny(val, "=")
 }
 
@@ -267,7 +267,7 @@ func (p *Parser) parse(rawArgs []string) (*ParserMatches, *Error) {
 			} else if arg == "--" {
 				p._eat(arg)
 				allowPositionalArgs = true
-			} else if p.isSpecialOption(arg) && !allowPositionalArgs {
+			} else if p.isLongOptSyntax(arg) && !allowPositionalArgs {
 				// parse special option
 				p._eat(arg)
 				parts := strings.Split(arg, "=")
@@ -288,6 +288,9 @@ func (p *Parser) parse(rawArgs []string) (*ParserMatches, *Error) {
 			} else if allowPositionalArgs {
 				p._eat(arg)
 				p.matches.positionalArgs = append(p.matches.positionalArgs, arg)
+			} else if strings.ContainsRune(arg, '=') {
+				err := generateError(p.currentCmd, UnknownOption, []string{})
+				return &p.matches, &err
 			} else if !p._isEaten(arg) && !allowPositionalArgs {
 				values := strings.Split(arg, "")
 
