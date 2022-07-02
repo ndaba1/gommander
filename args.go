@@ -269,11 +269,6 @@ func (a *Argument) generate(app *Command) (string, string) {
 	var floating strings.Builder
 
 	leading.WriteString(a.getRawValue())
-	// TODO: Revisit this
-	// if a.ArgType != str {
-	// 	leading.WriteString(fmt.Sprintf("(%s)", a.ArgType))
-	// }
-
 	floating.WriteString(a.HelpStr)
 	if a.hasDefaultValue() {
 		floating.WriteString(fmt.Sprintf(" (default: %v)", a.DefaultValue))
