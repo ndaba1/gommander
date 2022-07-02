@@ -12,6 +12,7 @@ type argumentType string
 
 const (
 	integer  argumentType = "int"
+	uinteger argumentType = "uint"
 	float    argumentType = "float"
 	boolean  argumentType = "bool"
 	str      argumentType = "str"
@@ -151,8 +152,19 @@ func (a *Argument) addValidatorFns() {
 			a.ValidatorFunc(func(s string) error {
 				_, err := strconv.Atoi(s)
 				if err != nil {
-					return fmt.Errorf("%v is not a valid integer", s)
+					return fmt.Errorf("`%v` is not a valid integer", s)
 				}
+				return nil
+			})
+		}
+	case uinteger:
+		{
+			a.ValidatorFunc(func(s string) error {
+				_, err := strconv.ParseUint(s, 10, 64)
+				if err != nil {
+					return fmt.Errorf("`%v` is not a positive integer", s)
+				}
+
 				return nil
 			})
 		}
@@ -161,7 +173,7 @@ func (a *Argument) addValidatorFns() {
 			a.ValidatorFunc(func(s string) error {
 				_, err := strconv.ParseFloat(s, 64)
 				if err != nil {
-					return fmt.Errorf("%v is not a valid float", s)
+					return fmt.Errorf("`%v` is not a valid float", s)
 				}
 				return nil
 			})
@@ -171,7 +183,7 @@ func (a *Argument) addValidatorFns() {
 		{
 			a.ValidatorFunc(func(s string) error {
 				if s != "true" && s != "false" {
-					return fmt.Errorf("%v is not a valid boolean", s)
+					return fmt.Errorf("`%v` is not a valid boolean", s)
 				}
 				return nil
 			})
@@ -180,7 +192,7 @@ func (a *Argument) addValidatorFns() {
 		{
 			a.ValidatorFunc(func(s string) error {
 				if _, e := os.Stat(s); e != nil {
-					return fmt.Errorf("no such file or directory: %v", s)
+					return fmt.Errorf("no such file or directory: `%v`", s)
 				}
 				return nil
 			})
