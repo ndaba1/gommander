@@ -21,52 +21,60 @@ func clearCache() {
 type CommandCallback = func(*ParserMatches)
 
 type Command struct {
-	aliases        []string
-	arguments      []*Argument
-	author         string
-	callback       CommandCallback
-	discussion     string
-	emitter        EventEmitter
-	flags          []*Flag
-	help           string
-	isRoot         bool
-	name           string
-	options        []*Option
-	parent         *Command
-	subCommands    []*Command
-	settings       AppSettings
-	globalSettings *AppSettings
-	theme          Theme
-	version        string
-	usageStr       string
-	customUsageStr string
-	subCmdGroups   map[string][]*Command
-	appRef         *Command
+	aliases            []string
+	arguments          []*Argument
+	author             string
+	callback           CommandCallback
+	discussion         string
+	emitter            EventEmitter
+	flags              []*Flag
+	help               string
+	isRoot             bool
+	name               string
+	options            []*Option
+	parent             *Command
+	subCommands        []*Command
+	settings           AppSettings
+	globalSettings     *AppSettings
+	theme              Theme
+	version            string
+	usageStr           string
+	customUsageStr     string
+	subCmdGroups       map[string][]*Command
+	appRef             *Command
+	subCmdsHelpHeading string
+	flagsHelpHeading   string
+	optionsHelpHeading string
+	argsHelpHeading    string
 }
 
 func App() *Command {
-	// return NewCommand("")._setRoot().AddFlag(versionFlag()).Theme(DefaultTheme())
-	return &Command{
-		isRoot:       true,
-		flags:        []*Flag{helpFlag(), versionFlag()},
-		parent:       nil,
-		settings:     AppSettings{},
-		emitter:      newEmitter(),
-		subCmdGroups: make(map[string][]*Command),
-		theme:        DefaultTheme(),
-	}
+	return NewCommand("")._setRoot().AddFlag(versionFlag()).Theme(DefaultTheme())
+	// return &Command{
+	// 	isRoot:       true,
+	// 	flags:        []*Flag{helpFlag(), versionFlag()},
+	// 	parent:       nil,
+	// 	settings:     AppSettings{},
+	// 	emitter:      newEmitter(),
+	// 	subCmdGroups: make(map[string][]*Command),
+	// 	theme:        DefaultTheme(),
+	// }
 }
 
 func NewCommand(name string) *Command {
 	return &Command{
-		name:           name,
-		flags:          []*Flag{helpFlag()},
-		settings:       AppSettings{},
-		isRoot:         false,
-		emitter:        newEmitter(),
-		globalSettings: &AppSettings{},
-		usageStr:       name,
-		subCmdGroups:   make(map[string][]*Command),
+		name:               name,
+		flags:              []*Flag{helpFlag()},
+		settings:           AppSettings{},
+		isRoot:             false,
+		emitter:            newEmitter(),
+		globalSettings:     &AppSettings{},
+		usageStr:           name,
+		subCmdGroups:       make(map[string][]*Command),
+		subCmdsHelpHeading: "SUBCOMMANDS",
+		flagsHelpHeading:   "FLAGS",
+		optionsHelpHeading: "OPTIONS",
+		argsHelpHeading:    "ARGS",
 	}
 }
 
@@ -214,6 +222,26 @@ func (c *Command) RequiredOption(val string, help string) *Command {
 // Used to define a custom usage string. If one is present, it will be used instead of the default one
 func (c *Command) UsageStr(val string) *Command {
 	c.customUsageStr = val
+	return c
+}
+
+func (c *Command) SubCmdsHelpHeading(val string) *Command {
+	c.subCmdsHelpHeading = val
+	return c
+}
+
+func (c *Command) FlagsHelpHeading(val string) *Command {
+	c.flagsHelpHeading = val
+	return c
+}
+
+func (c *Command) OptionsHelpHeading(val string) *Command {
+	c.optionsHelpHeading = val
+	return c
+}
+
+func (c *Command) ArgsHelpHeading(val string) *Command {
+	c.argsHelpHeading = val
 	return c
 }
 
@@ -505,6 +533,11 @@ func (c *Command) removeFlag(val string) {
 		}
 	}
 	c.flags = newFlags
+}
+
+func (c *Command) _setRoot() *Command {
+	c.isRoot = true
+	return c
 }
 
 func (c *Command) _getAppRef() *Command {
