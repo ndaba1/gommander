@@ -3,6 +3,7 @@ package gommander
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -27,6 +28,7 @@ type Argument struct {
 	ValidValues  []string
 	DefaultValue string
 	ValidatorFns [](func(string) error)
+	ValidatorRe  *regexp.Regexp
 }
 
 // A Builder method for creating a new argument. Valid values include <arg>, [arg] or simply the name of the arg
@@ -123,6 +125,11 @@ func (a *Argument) ValidatorFunc(fn func(string) error) *Argument {
 	return a
 }
 
+func (a *Argument) ValidatorRegex(val string) *Argument {
+	a.ValidatorRe = regexp.MustCompile(val)
+	return a
+}
+
 // A method for setting what the argument should be displayed as when printing help
 func (a *Argument) DisplayAs(val string) *Argument {
 	a.RawValue = val
@@ -209,6 +216,10 @@ func (a *Argument) testValue(val string) bool {
 		if err == nil {
 			matchCount++
 		}
+	}
+
+	if a.ValidatorRe != nil && !a.ValidatorRe.MatchString(val) {
+		return false
 	}
 
 	return valueMatch && matchCount == len(a.ValidatorFns)
