@@ -19,6 +19,7 @@ func TestCommandMetadata(t *testing.T) {
 }
 
 func TestCommandSettings(t *testing.T) {
+	clearCache()
 	app := App()
 	app.SubCommand("dummy")
 
