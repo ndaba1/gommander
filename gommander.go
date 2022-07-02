@@ -43,9 +43,13 @@ type Command struct {
 	subCmdGroups       map[string][]*Command
 	appRef             *Command
 	subCmdsHelpHeading string
+	subCmdsHelpValue   string
 	flagsHelpHeading   string
+	flagsHelpValue     string
 	optionsHelpHeading string
+	optionsHelpValue   string
 	argsHelpHeading    string
+	argsHelpValue      string
 }
 
 func App() *Command {
@@ -72,9 +76,13 @@ func NewCommand(name string) *Command {
 		usageStr:           name,
 		subCmdGroups:       make(map[string][]*Command),
 		subCmdsHelpHeading: "SUBCOMMANDS",
+		subCmdsHelpValue:   "<SUBCOMMAND>",
 		flagsHelpHeading:   "FLAGS",
+		flagsHelpValue:     "[FLAG]",
 		optionsHelpHeading: "OPTIONS",
+		optionsHelpValue:   "[OPTION]",
 		argsHelpHeading:    "ARGS",
+		argsHelpValue:      "[ARG]",
 	}
 }
 
@@ -242,6 +250,26 @@ func (c *Command) OptionsHelpHeading(val string) *Command {
 
 func (c *Command) ArgsHelpHeading(val string) *Command {
 	c.argsHelpHeading = val
+	return c
+}
+
+func (c *Command) SubCmdsHelpValue(val string) *Command {
+	c.subCmdsHelpValue = val
+	return c
+}
+
+func (c *Command) FlagsHelpValue(val string) *Command {
+	c.flagsHelpValue = val
+	return c
+}
+
+func (c *Command) OptionsHelpValue(val string) *Command {
+	c.optionsHelpValue = val
+	return c
+}
+
+func (c *Command) ArgsHelpValue(val string) *Command {
+	c.argsHelpValue = val
 	return c
 }
 
