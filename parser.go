@@ -3,6 +3,7 @@ package gommander
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -161,6 +162,11 @@ func NewParser(entry *Command) Parser {
 
 // Parser utilties
 func (p *Parser) isFlagLike(val string) bool {
+	if p.rootCmd.settings[AllowNegativeNumbers] {
+		if _, e := strconv.Atoi(val); e == nil {
+			return false
+		}
+	}
 	return strings.HasPrefix(val, "-")
 }
 
