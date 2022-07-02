@@ -10,10 +10,11 @@ import (
 type argumentType string
 
 const (
-	integer = "int"
-	float   = "float"
-	boolean = "bool"
-	str     = "str"
+	integer  argumentType = "int"
+	float    argumentType = "float"
+	boolean  argumentType = "bool"
+	str      argumentType = "str"
+	filename argumentType = "file"
 )
 
 type Argument struct {
@@ -132,6 +133,12 @@ func (a *Argument) DisplayAs(val string) *Argument {
 
 func (a *Argument) addValidatorFns() {
 	switch a.ArgType {
+	case str:
+		{
+			a.ValidatorFunc(func(s string) error {
+				return nil
+			})
+		}
 	case integer:
 		{
 			a.ValidatorFunc(func(s string) error {
@@ -162,12 +169,16 @@ func (a *Argument) addValidatorFns() {
 				return nil
 			})
 		}
-	case str:
+	case filename:
 		{
 			a.ValidatorFunc(func(s string) error {
+				if _, e := os.Stat(s); e != nil {
+					return fmt.Errorf("no such file or directory: %v", s)
+				}
 				return nil
 			})
 		}
+
 	default:
 		{
 			fmt.Println(fmt.Errorf("found unknown argument type: `%v` for argument: `%v`", a.ArgType, a.getRawValue()))
