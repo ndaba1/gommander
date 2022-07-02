@@ -44,7 +44,7 @@ func generateError(cmd *Command, e Event, args []string) Error {
 
 			switch len(args) {
 			case 2:
-				ctx = fmt.Sprintf("Encountered the following error: \"%v\" when checking the value: `%v`", args[1], args[0])
+				ctx = fmt.Sprintf("%v. Encountered this error when validating the value: `%v`", args[1], args[0])
 			default:
 				ctx = fmt.Sprintf("Expected one of: `[%v]`, but instead found: `%v`, which is not a valid value", strings.Join(args[1:], ", "), args[0])
 			}
