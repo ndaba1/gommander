@@ -53,22 +53,22 @@ func (HelpWriter) Write(c *Command) {
 	}
 
 	if hasArgs {
-		fmter.section("ARGS")
+		fmter.section(app.argsHelpHeading)
 		fmter.format(standardize(c.arguments))
 	}
 
 	if hasFlags {
-		fmter.section("FLAGS")
+		fmter.section(app.flagsHelpHeading)
 		fmter.format(standardize(c.flags))
 	}
 
 	if hasOptions {
-		fmter.section("OPTIONS")
+		fmter.section(app.optionsHelpHeading)
 		fmter.format(standardize(c.options))
 	}
 
 	if hasSubcmds && !hasSubcmdGroups {
-		fmter.section("SUBCOMMANDS")
+		fmter.section(app.subCmdsHelpHeading)
 		fmter.format(standardize(c.subCommands))
 	}
 
