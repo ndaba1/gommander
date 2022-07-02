@@ -30,19 +30,19 @@ func (HelpWriter) Write(c *Command) {
 	fmter.Add(Keyword, fmt.Sprintf("    %v", c._getUsageStr()))
 	if !hasCustomUsage {
 		if hasFlags {
-			fmter.Add(Other, " [FLAGS]")
+			fmter.Add(Other, " "+app.flagsHelpValue)
 		}
 
 		if hasOptions {
-			fmter.Add(Other, " [OPTIONS]")
+			fmter.Add(Other, " "+app.optionsHelpValue)
 		}
 
 		if hasArgs {
-			fmter.Add(Other, " <ARGS>")
+			fmter.Add(Other, " "+app.argsHelpValue)
 		}
 
 		if hasSubcmds {
-			fmter.Add(Other, " <SUBCOMMAND>")
+			fmter.Add(Other, " "+app.subCmdsHelpValue)
 		}
 	}
 	fmter.close()
