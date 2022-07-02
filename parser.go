@@ -491,6 +491,14 @@ func (p *Parser) getArgMatches(list []*Argument, args []string) ([]argMatches, *
 			}
 		}
 
+		// test against validator regex if any
+		if argVal.ValidatorRe != nil && !argVal.ValidatorRe.MatchString(input) {
+			args := []string{input, "failed to match value against validator regex"}
+			err := generateError(p.currentCmd, InvalidArgumentValue, args)
+
+			return matches, &err
+		}
+
 		argCfg := argMatches{
 			rawValue:   input,
 			instanceOf: *argVal,
