@@ -530,6 +530,10 @@ func (c *Command) BeforeHelp(cb EventCallback) {
 
 /****************************** Other Command Utilities ****************************/
 
+func (c *Command) hasSubcommands() bool {
+	return len(c.subCommands) > 0
+}
+
 func (c *Command) findSubcommand(val string) (*Command, error) {
 	for _, sc := range c.subCommands {
 		includes := func(val string) bool {
@@ -547,6 +551,42 @@ func (c *Command) findSubcommand(val string) (*Command, error) {
 	}
 
 	return NewCommand(""), errors.New("no such subcmd")
+}
+
+func (c *Command) suggestSubCmd(val string) []string {
+	var minMatchSize = 3
+	var matches []string
+
+	cmdMap := make(map[string]int, 0)
+
+	for _, v := range c.subCommands {
+		cmdMap[v.name] = 0
+	}
+
+	for _, sc := range c.subCommands {
+		for i, v := range strings.Split(val, "") {
+			if len(sc.name) > i {
+				var next string
+				current := string(sc.name[i])
+
+				if len(sc.name) > i+1 {
+					next = string(sc.name[i+1])
+				}
+
+				if next == v || current == v {
+					cmdMap[sc.name] += 1
+				}
+			}
+		}
+	}
+
+	for k, v := range cmdMap {
+		if v >= minMatchSize {
+			matches = append(matches, k)
+		}
+	}
+
+	return matches
 }
 
 func (c *Command) removeFlag(val string) {
