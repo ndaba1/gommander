@@ -14,42 +14,6 @@ var (
 	leadingWhitespace = regexp.MustCompile("(?m)(^[ \t]*)(?:[^ \t\n])")
 )
 
-func suggestSubCmd(c *Command, val string) []string {
-	var minMatchSize = 3
-	var matches []string
-
-	cmdMap := make(map[string]int, 0)
-
-	for _, v := range c.subCommands {
-		cmdMap[v.name] = 0
-	}
-
-	for _, sc := range c.subCommands {
-		for i, v := range strings.Split(val, "") {
-			if len(sc.name) > i {
-				var next string
-				current := string(sc.name[i])
-
-				if len(sc.name) > i+1 {
-					next = string(sc.name[i+1])
-				}
-
-				if next == v || current == v {
-					cmdMap[sc.name] += 1
-				}
-			}
-		}
-	}
-
-	for k, v := range cmdMap {
-		if v >= minMatchSize {
-			matches = append(matches, k)
-		}
-	}
-
-	return matches
-}
-
 /********************************** Text wrap and formatting **************************************/
 
 func dedent(text string) string {
