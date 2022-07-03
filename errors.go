@@ -87,7 +87,7 @@ func generateError(cmd *Command, e Event, args []string) Error {
 		{
 			code = 40
 			msg = fmt.Sprintf("no such subcommand found: `%v`", args[0])
-			suggestions := suggestSubCmd(cmd, args[0])
+			suggestions := cmd.suggestSubCmd(args[0])
 
 			var context strings.Builder
 			context.WriteString(fmt.Sprintf("The value: `%v`, could not be resolved as a subcommand. ", args[0]))
