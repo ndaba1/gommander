@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Updated the Readme documentation to include the newly added functionality for arg types and methods.
 - Added new predefined argument types: `file` for filenames and directories and `uint` for unsigned integers
 - Enabled validation of argument values using regular expressions via the `Arg.ValidatorRegex()` method
 - Integrated the `AllowNegativeNumbers` setting into the program
@@ -22,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Modified some of the error messages to be more concise
 - Renamed struct fields for Options, Arguments and Flags to make them public and enable creation using constructors
 - Modified the `FormatGenerator` interface to take in a pointer to the app for settings integration
+- Moved the suggest subcommands functionality from utils to a method of the `Command` struct
 
 ## [0.2.0] - 2022-06-30
 
