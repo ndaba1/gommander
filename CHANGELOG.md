@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added new predefined argument types: `file` for filenames and directories and `uint` for unsigned integers
+- Enabled validation of argument values using regular expressions via the `Arg.ValidatorRegex()` method
+- Integrated the `AllowNegativeNumbers` setting into the program
+- Enabled customization of the help headings and help values to be used for sub-cmds, arguments, flags and options.
+- Implemented a simple caching policy to improve performance
+
+### Changed
+
+- Improved general package performance and structs creation latency
+- Updated existing and added more benchmarks
+- Modified some of the error messages to be more concise
+- Renamed struct fields for Options, Arguments and Flags to make them public and enable creation using constructors
+- Modified the `FormatGenerator` interface to take in a pointer to the app for settings integration
+
 ## [0.2.0] - 2022-06-30
 
 ### Added
