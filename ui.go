@@ -95,9 +95,12 @@ func (f *Formatter) close() {
 
 func (f *Formatter) Add(dsgn Designation, val string) {
 	c := color.New(f.theme[dsgn])
+	body := c.Sprintf(val)
 
-	coloredVal := c.Sprintf(val)
-	f.buffer.WriteString(coloredVal)
+	if f.appRef.disableColor {
+		body = val
+	}
+	f.buffer.WriteString(body)
 }
 
 func (f *Formatter) AddAndPrint(dsgn Designation, val string) {
@@ -117,7 +120,11 @@ func (f *Formatter) ColorAndPrint(color color.Color, val string) {
 
 func (f *Formatter) Print() {
 	if isTestMode() {
-		fmt.Print(color.New().Sprintf(f.buffer.String()))
+		if f.appRef.disableColor {
+			fmt.Print(f.buffer.String())
+		} else {
+			fmt.Print(color.New().Sprintf(f.buffer.String()))
+		}
 	} else {
 		color.New().Printf(f.buffer.String())
 	}
