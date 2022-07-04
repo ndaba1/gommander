@@ -1,6 +1,7 @@
 package gommander
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"reflect"
@@ -98,10 +99,10 @@ func _throwAssertionError(t *testing.T, errMsg string, first, second interface{}
 	if len(msg) > 0 {
 		t.Error(msg...)
 	} else {
-		t.Errorf("Assertion failed. %s", errMsg)
+		t.Errorf("Assertion failed. %s", strings.ToUpper(errMsg))
 	}
-	t.Errorf("Left hand side is: `%v`", first)
-	t.Errorf("Right hand side is: `%v`", second)
+	err := fmt.Sprintf("\n *********LEFT HAND SIDE IS*********:\n `%v` \n\n *********RIGHT HAND SIDE IS*********:\n `%v` \n", first, second)
+	t.Error(err)
 }
 
 func assert(t *testing.T, val interface{}, msg ...interface{}) {
@@ -145,6 +146,7 @@ func assertStdOut(t *testing.T, expected string, exec func(), msg ...interface{}
 
 	os.Stdout = stdOut
 
+	// println(len(expected), "vs", len(output))
 	if output != expected {
 		_throwAssertionError(t, "Expected output was different from actual output", expected, output, msg...)
 	}
