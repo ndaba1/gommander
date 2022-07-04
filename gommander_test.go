@@ -14,8 +14,8 @@ func TestCommandMetadata(t *testing.T) {
 	assertEq(t, cmd.GetHelp(), "Basic command", "Cmd help field set incorrectly")
 	assertEq(t, cmd.GetAuthor(), "vndaba", "Cmd author set wrongly")
 	assertEq(t, cmd.GetVersion(), "0.1.0", "Cmd Version set wrongly")
-	assertArrEq(t, cmd.GetAliases(), []string{"b"}, "Cmd aliases set wrongly")
-	assertStructEq[*Flag](t, cmd.GetFlags()[0], helpFlag(), "Help flag not added automatically")
+	assertDeepEq(t, cmd.GetAliases(), []string{"b"}, "Cmd aliases set wrongly")
+	assertDeepEq(t, cmd.GetFlags()[0], helpFlag(), "Help flag not added automatically")
 }
 
 func TestCommandSettings(t *testing.T) {
@@ -25,7 +25,7 @@ func TestCommandSettings(t *testing.T) {
 
 	// assertStructArrEq[*Flag](t, app.GetFlags(), []*Flag{helpFlag(), versionFlag()}, "Help and version flags not set correctly")
 	assertEq(t, len(app.GetFlags()), 2, "Help and version flags not set correctly")
-	assertStructEq[*Flag](t, app.GetFlags()[1], versionFlag(), "Version flag not set correctly")
+	assertDeepEq(t, app.GetFlags()[1], versionFlag(), "Version flag not set correctly")
 
 	app.Set(DisableVersionFlag, true)
 	app.Set(IncludeHelpSubcommand, true)
