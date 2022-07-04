@@ -241,10 +241,6 @@ func (a *Argument) hasDefaultValue() bool {
 	return len(a.DefaultValue) > 0
 }
 
-func (a *Argument) compare(b *Argument) bool {
-	return a.HelpStr == b.HelpStr && a.Name == b.Name && a.getRawValue() == b.getRawValue()
-}
-
 func newArgument(val string, help string) *Argument {
 	arg := NewArgument(val)
 	arg.Help(help)
