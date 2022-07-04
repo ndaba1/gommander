@@ -117,11 +117,6 @@ func generateError(cmd *Command, e Event, args []string) Error {
 	}
 }
 
-func (e *Error) compare(err *Error) bool {
-	// TODO: Validate all fields
-	return e.message == err.message && e.context == err.context && e.kind == err.kind
-}
-
 func (e *Error) ErrorMsg() string {
 	return e.message
 }
