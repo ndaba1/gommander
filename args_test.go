@@ -14,8 +14,7 @@ func TestArgCreation(t *testing.T) {
 	arg := NewArgument("<test>").Help("Test argument").Variadic(true)
 	argB := newArgument("<test...>", "Test argument")
 
-	assertStructEq[*Argument](t, arg, argB, "Arg creation methods out of sync")
-	assert(t, arg.compare(argB)) // workaround to suppress linter warnings
+	assertDeepEq(t, arg, argB, "Arg creation methods out of sync")
 	assert(t, arg.IsRequired, "Failed to make arg required")
 	assert(t, arg.IsVariadic, "Failed to make arg variadic")
 	assertEq(t, arg.Name, "test", "Arg name not set correctly")
@@ -94,10 +93,6 @@ func TestArgValidatorFunc(t *testing.T) {
 }
 
 func TestArgTypeValidation(t *testing.T) {
-	arg := NewArgument("<int:test>").Help("Test argument")
-	arg2 := newArgument("<int:test>", "Test argument")
-
-	assertStructEq[*Argument](t, arg, arg2, "Arg creation methods out of sync")
 	{
 		arg := NewArgument("<int:count>")
 		assert(t, arg.testValue("2"), "Integer arg validation faulty")
