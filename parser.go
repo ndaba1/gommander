@@ -3,6 +3,7 @@ package gommander
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -161,10 +162,15 @@ func NewParser(entry *Command) Parser {
 
 // Parser utilties
 func (p *Parser) isFlagLike(val string) bool {
+	if p.rootCmd.settings[AllowNegativeNumbers] {
+		if _, e := strconv.Atoi(val); e == nil {
+			return false
+		}
+	}
 	return strings.HasPrefix(val, "-")
 }
 
-func (p *Parser) isSpecialOption(val string) bool {
+func (p *Parser) isLongOptSyntax(val string) bool {
 	return strings.HasPrefix(val, "--") && strings.ContainsAny(val, "=")
 }
 
@@ -267,7 +273,7 @@ func (p *Parser) parse(rawArgs []string) (*ParserMatches, *Error) {
 			} else if arg == "--" {
 				p._eat(arg)
 				allowPositionalArgs = true
-			} else if p.isSpecialOption(arg) && !allowPositionalArgs {
+			} else if p.isLongOptSyntax(arg) && !allowPositionalArgs {
 				// parse special option
 				p._eat(arg)
 				parts := strings.Split(arg, "=")
@@ -288,6 +294,9 @@ func (p *Parser) parse(rawArgs []string) (*ParserMatches, *Error) {
 			} else if allowPositionalArgs {
 				p._eat(arg)
 				p.matches.positionalArgs = append(p.matches.positionalArgs, arg)
+			} else if strings.ContainsRune(arg, '=') {
+				err := generateError(p.currentCmd, UnknownOption, []string{})
+				return &p.matches, &err
 			} else if !p._isEaten(arg) && !allowPositionalArgs {
 				values := strings.Split(arg, "")
 
@@ -413,7 +422,7 @@ func (p *Parser) parseCmd(rawArgs []string) *Error {
 
 	// expected no args, probably a subcommand
 	if len(rawArgs) > 0 && len(argCfgVals) == 0 {
-		if len(p.currentCmd.subCommands) > 0 && !p._isEaten(rawArgs[0]) {
+		if p.currentCmd.hasSubcommands() && !p._isEaten(rawArgs[0]) {
 			err := generateError(p.currentCmd, UnknownCommand, []string{rawArgs[0]})
 			return &err
 		}
@@ -489,6 +498,14 @@ func (p *Parser) getArgMatches(list []*Argument, args []string) ([]argMatches, *
 
 				return matches, &err
 			}
+		}
+
+		// test against validator regex if any
+		if argVal.ValidatorRe != nil && !argVal.ValidatorRe.MatchString(input) {
+			args := []string{input, "failed to match value against validator regex"}
+			err := generateError(p.currentCmd, InvalidArgumentValue, args)
+
+			return matches, &err
 		}
 
 		argCfg := argMatches{

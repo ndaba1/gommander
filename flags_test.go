@@ -5,10 +5,10 @@ import "testing"
 func TestFlagsCreation(t *testing.T) {
 	flag := NewFlag("help").Short('h').Help("The help flag").Global(true)
 	flagB := newFlag("-h --help", "The help flag")
+	flagB.Global(true)
 
-	assertStructEq[*Flag](t, flag, &flagB, "Flag creation functions are out of sync")
-	assert(t, flag.compare(&flagB)) // linter workaround
 	assert(t, flag.IsGlobal, "Failed to set flag as global")
+	assertDeepEq(t, *flag, flagB, "Flag creation functions are out of sync")
 
 	expL := "-h, --help"
 	expF := "The help flag"

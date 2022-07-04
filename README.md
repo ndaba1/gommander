@@ -213,9 +213,11 @@ The `.Argument()` method takes in the value of the argument and its help string/
 | `[arg]` | Argument is optional|
 | `[arg...]` | Argument is optional but variadic if provided|
 | `<int:arg>` | Required integer argument
+| `<uint:arg>` | Required unsigned integer argument
 | `<float:arg>` | Required float argument
 | `<bool:arg>` | Argument value should be `true` or `false`
 | `<str:arg>` | Required string arg (all args are strings by default)
+| `<file:arg>` | The provided arg must be an existing file or path
 
 ### **AddArgument() method**
 
@@ -236,10 +238,11 @@ func main() {
 // ...
 ```
 
-The `.AddArgument()` method, while more verbose, provides more flexibility in defining arguments. It ought to be used when defining more complex arguments. The `gommander.NewArgument()` returns an instance of an Argument to which you can chain more methods. Most of the methods are axiomatic and you can deduce their functionality from their names.
-The `.ValidateWith()` method sets valid_values for an argument. If the value passed is not one of those values, a well-described error is thrown by the program and printed out.
-The `.ValidatorFunc()` method is similar to the `ValidateWith()` method but instead takes in a function that accepts a string as the input to perform custom validation on and returns an error instance or nil depending on the value.
-The `.Default()` method sets a default value for an argument. The default value is used if the argument is required, but the user passed no value.
+- The `.AddArgument()` method, while more verbose, provides more flexibility in defining arguments. It ought to be used when defining more complex arguments. The `gommander.NewArgument()` returns an instance of an Argument to which you can chain more methods. Most of the methods are axiomatic and you can deduce their functionality from their names.
+- The `.ValidateWith()` method sets valid_values for an argument. If the value passed is not one of those values, a well-described error is thrown by the program and printed out.
+- The `.ValidatorFunc()` method is similar to the `ValidateWith()` method but instead takes in a function that accepts a string as the input to perform custom validation on and returns an error instance or nil depending on the value.
+- The `.Default()` method sets a default value for an argument. The default value is used if the argument is required, but the user passed no value.
+- The `.ValidatorRegex()` method receives a string containing the regex to be used for validating arguments. If the string is invalid regex, the program panics.
 
 An example of the above-discussed methods is shown below:
 
@@ -252,19 +255,27 @@ func main() {
         gommander.
             NewArgument("<language>").
             ValidateWith([]string{"ENGLISH", "SPANISH", "SWAHILI"}).
+            Default("ENGLISH"),
+    ).AddArgument(
+        gommander.
+            NewArgument("<version>").
+            ValidatorRegex(`^v*`).
+            Default("v0.1.0"),
+    ).AddArgument(
+        gommander.
+            NewArgument("<random>").
             ValidatorFunc(func(s string) error {
                 if strings.HasPrefix(s, "X") {
                     return errors.New("values cannot begin with X")
                 }
                 return nil
-            }).
-            Default("ENGLISH"),
+            }),
     )
 }
 // ...
 ```
 
-Note: it is unconventional for the `ValidateWith()` and `ValidatorFunc()` method to be set on a single argument. **One of them will take precedence over the other.**
+Normally, you will use either the `ValidatorFunc` or `ValidatorRegex` or `ValidValues` method. If you use more tha one, **One of them will take precedence over the other:** (`ValidValues` > `ValidatorFunc` > `ValidatorRegex`)
 
 ### Adding types to arguments
 
@@ -387,7 +398,8 @@ func main() {
         Set(gommander.IgnoreAllErrors, false).
         Set(gommander.ShowHelpOnAllErrors, true).
         Set(gommander.ShowCommandAliases, true).
-        Set(gommander.OverrideAllDefaultListeners, false)
+        Set(gommander.OverrideAllDefaultListeners, false).
+        Set(gommander.AllowNegativeNumbers, true)
 
     app.Parse()
 }

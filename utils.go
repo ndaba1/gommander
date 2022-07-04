@@ -1,8 +1,10 @@
 package gommander
 
 import (
+	"fmt"
 	"io"
 	"os"
+	"reflect"
 	"regexp"
 	"strings"
 	"testing"
@@ -13,42 +15,6 @@ var (
 	whitespaceOnly    = regexp.MustCompile("(?m)^[ \t]+$")
 	leadingWhitespace = regexp.MustCompile("(?m)(^[ \t]*)(?:[^ \t\n])")
 )
-
-func suggestSubCmd(c *Command, val string) []string {
-	var minMatchSize = 3
-	var matches []string
-
-	cmdMap := make(map[string]int, 0)
-
-	for _, v := range c.subCommands {
-		cmdMap[v.name] = 0
-	}
-
-	for _, sc := range c.subCommands {
-		for i, v := range strings.Split(val, "") {
-			if len(sc.name) > i {
-				var next string
-				current := string(sc.name[i])
-
-				if len(sc.name) > i+1 {
-					next = string(sc.name[i+1])
-				}
-
-				if next == v || current == v {
-					cmdMap[sc.name] += 1
-				}
-			}
-		}
-	}
-
-	for k, v := range cmdMap {
-		if v >= minMatchSize {
-			matches = append(matches, k)
-		}
-	}
-
-	return matches
-}
 
 /********************************** Text wrap and formatting **************************************/
 
@@ -129,14 +95,14 @@ func setGommanderTestMode() {
 	os.Setenv("GOMMANDER_TEST_MODE", "true")
 }
 
-func _throwAssertionError(t *testing.T, errMsg string, first interface{}, second interface{}, msg ...interface{}) {
+func _throwAssertionError(t *testing.T, errMsg string, first, second interface{}, msg ...interface{}) {
 	if len(msg) > 0 {
 		t.Error(msg...)
 	} else {
-		t.Errorf("Assertion failed. %s", errMsg)
+		t.Errorf("Assertion failed. %s", strings.ToUpper(errMsg))
 	}
-	t.Errorf("Left hand side is: `%v`", first)
-	t.Errorf("Right hand side is: `%v`", second)
+	err := fmt.Sprintf("\n *********LEFT HAND SIDE IS*********:\n `%v` \n\n *********RIGHT HAND SIDE IS*********:\n `%v` \n", first, second)
+	t.Error(err)
 }
 
 func assert(t *testing.T, val interface{}, msg ...interface{}) {
@@ -150,37 +116,21 @@ func assert(t *testing.T, val interface{}, msg ...interface{}) {
 	}
 }
 
-func assertEq(t *testing.T, first interface{}, second interface{}, msg ...interface{}) {
+func assertEq(t *testing.T, first, second interface{}, msg ...interface{}) {
 	if first != second {
 		_throwAssertionError(t, "Expected values to be equal. ", first, second, msg...)
 	}
 }
 
-func assertArrEq[model int | string](t *testing.T, first []model, second []model, msg ...interface{}) {
-	for idx, item := range first {
-		if second[idx] != item {
-			_throwAssertionError(t, "Arrays are not equal", first, second, msg...)
-		}
+func assertDeepEq(t *testing.T, first, second interface{}, msg ...interface{}) {
+	if !reflect.DeepEqual(first, second) {
+		_throwAssertionError(t, "Expected values to be deeply equal. ", first, second, msg...)
 	}
 }
 
-func assertNe(t *testing.T, first interface{}, second interface{}, msg ...interface{}) {
+func assertNe(t *testing.T, first, second interface{}, msg ...interface{}) {
 	if first == second {
 		_throwAssertionError(t, "Did not expect values to be equal.", first, second, msg...)
-	}
-}
-
-type structComp[model structTypes] interface {
-	compare(model) bool
-}
-
-type structTypes interface {
-	*Flag | *Command | *Option | *Argument | *Error
-}
-
-func assertStructEq[model structTypes](t *testing.T, first structComp[model], second model, msg ...interface{}) {
-	if !first.compare(second) {
-		_throwAssertionError(t, "Struct values not equal. ", first, second, msg...)
 	}
 }
 
@@ -196,6 +146,7 @@ func assertStdOut(t *testing.T, expected string, exec func(), msg ...interface{}
 
 	os.Stdout = stdOut
 
+	// println(len(expected), "vs", len(output))
 	if output != expected {
 		_throwAssertionError(t, "Expected output was different from actual output", expected, output, msg...)
 	}

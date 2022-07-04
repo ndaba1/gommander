@@ -21,52 +21,65 @@ func clearCache() {
 type CommandCallback = func(*ParserMatches)
 
 type Command struct {
-	aliases        []string
-	arguments      []*Argument
-	author         string
-	callback       CommandCallback
-	discussion     string
-	emitter        EventEmitter
-	flags          []*Flag
-	help           string
-	isRoot         bool
-	name           string
-	options        []*Option
-	parent         *Command
-	subCommands    []*Command
-	settings       AppSettings
-	globalSettings *AppSettings
-	theme          Theme
-	version        string
-	usageStr       string
-	customUsageStr string
-	subCmdGroups   map[string][]*Command
-	appRef         *Command
+	aliases            []string
+	arguments          []*Argument
+	author             string
+	callback           CommandCallback
+	discussion         string
+	emitter            EventEmitter
+	flags              []*Flag
+	help               string
+	isRoot             bool
+	name               string
+	options            []*Option
+	parent             *Command
+	subCommands        []*Command
+	settings           AppSettings
+	globalSettings     *AppSettings
+	theme              Theme
+	version            string
+	usageStr           string
+	customUsageStr     string
+	subCmdGroups       map[string][]*Command
+	appRef             *Command
+	subCmdsHelpHeading string
+	subCmdsHelpValue   string
+	flagsHelpHeading   string
+	flagsHelpValue     string
+	optionsHelpHeading string
+	optionsHelpValue   string
+	argsHelpHeading    string
+	argsHelpValue      string
+	disableColor       bool
 }
 
 func App() *Command {
-	// return NewCommand("")._setRoot().AddFlag(versionFlag()).Theme(DefaultTheme())
-	return &Command{
-		isRoot:       true,
-		flags:        []*Flag{helpFlag(), versionFlag()},
-		parent:       nil,
-		settings:     AppSettings{},
-		emitter:      newEmitter(),
-		subCmdGroups: make(map[string][]*Command),
-		theme:        DefaultTheme(),
-	}
+	app := NewCommand("")
+	app.isRoot = true
+	app.flags = append(app.flags, versionFlag())
+	app.theme = DefaultTheme()
+
+	return app
 }
 
 func NewCommand(name string) *Command {
 	return &Command{
-		name:           name,
-		flags:          []*Flag{helpFlag()},
-		settings:       AppSettings{},
-		isRoot:         false,
-		emitter:        newEmitter(),
-		globalSettings: &AppSettings{},
-		usageStr:       name,
-		subCmdGroups:   make(map[string][]*Command),
+		name:               name,
+		flags:              []*Flag{helpFlag()},
+		settings:           AppSettings{},
+		isRoot:             false,
+		emitter:            newEmitter(),
+		globalSettings:     &AppSettings{},
+		usageStr:           name,
+		subCmdGroups:       make(map[string][]*Command),
+		subCmdsHelpHeading: "SUBCOMMANDS",
+		subCmdsHelpValue:   "<SUBCOMMAND>",
+		flagsHelpHeading:   "FLAGS",
+		flagsHelpValue:     "[FLAG]",
+		optionsHelpHeading: "OPTIONS",
+		optionsHelpValue:   "[OPTION]",
+		argsHelpHeading:    "ARGS",
+		argsHelpValue:      "[ARG]",
 	}
 }
 
@@ -214,6 +227,51 @@ func (c *Command) RequiredOption(val string, help string) *Command {
 // Used to define a custom usage string. If one is present, it will be used instead of the default one
 func (c *Command) UsageStr(val string) *Command {
 	c.customUsageStr = val
+	return c
+}
+
+func (c *Command) SubCmdsHelpHeading(val string) *Command {
+	c.subCmdsHelpHeading = val
+	return c
+}
+
+func (c *Command) FlagsHelpHeading(val string) *Command {
+	c.flagsHelpHeading = val
+	return c
+}
+
+func (c *Command) OptionsHelpHeading(val string) *Command {
+	c.optionsHelpHeading = val
+	return c
+}
+
+func (c *Command) ArgsHelpHeading(val string) *Command {
+	c.argsHelpHeading = val
+	return c
+}
+
+func (c *Command) SubCmdsHelpValue(val string) *Command {
+	c.subCmdsHelpValue = val
+	return c
+}
+
+func (c *Command) FlagsHelpValue(val string) *Command {
+	c.flagsHelpValue = val
+	return c
+}
+
+func (c *Command) OptionsHelpValue(val string) *Command {
+	c.optionsHelpValue = val
+	return c
+}
+
+func (c *Command) ArgsHelpValue(val string) *Command {
+	c.argsHelpValue = val
+	return c
+}
+
+func (c *Command) DisableColor() *Command {
+	c.disableColor = true
 	return c
 }
 
@@ -478,6 +536,10 @@ func (c *Command) BeforeHelp(cb EventCallback) {
 
 /****************************** Other Command Utilities ****************************/
 
+func (c *Command) hasSubcommands() bool {
+	return len(c.subCommands) > 0
+}
+
 func (c *Command) findSubcommand(val string) (*Command, error) {
 	for _, sc := range c.subCommands {
 		includes := func(val string) bool {
@@ -495,6 +557,42 @@ func (c *Command) findSubcommand(val string) (*Command, error) {
 	}
 
 	return NewCommand(""), errors.New("no such subcmd")
+}
+
+func (c *Command) suggestSubCmd(val string) []string {
+	var minMatchSize = 3
+	var matches []string
+
+	cmdMap := make(map[string]int, 0)
+
+	for _, v := range c.subCommands {
+		cmdMap[v.name] = 0
+	}
+
+	for _, sc := range c.subCommands {
+		for i, v := range strings.Split(val, "") {
+			if len(sc.name) > i {
+				var next string
+				current := string(sc.name[i])
+
+				if len(sc.name) > i+1 {
+					next = string(sc.name[i+1])
+				}
+
+				if next == v || current == v {
+					cmdMap[sc.name] += 1
+				}
+			}
+		}
+	}
+
+	for k, v := range cmdMap {
+		if v >= minMatchSize {
+			matches = append(matches, k)
+		}
+	}
+
+	return matches
 }
 
 func (c *Command) removeFlag(val string) {

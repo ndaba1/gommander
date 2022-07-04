@@ -38,10 +38,6 @@ func (f *Flag) Global(val bool) *Flag {
 	return f
 }
 
-func (f *Flag) compare(f2 *Flag) bool {
-	return f.Name == f2.Name && f.ShortVal == f2.ShortVal && f.LongVal == f2.LongVal && f.HelpStr == f2.HelpStr
-}
-
 func helpFlag() *Flag {
 	return &Flag{
 		Name:     "help",

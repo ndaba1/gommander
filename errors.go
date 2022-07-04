@@ -27,7 +27,7 @@ func generateError(cmd *Command, e Event, args []string) Error {
 			if len(args) == 1 {
 				ctx = fmt.Sprintf("Expected a value corresponding to required argument: `%v` but none was provided", args[0])
 			} else {
-				ctx = fmt.Sprintf("Expected a value for argument: `%v`, but instead found: `%v`", args[0], args[1])
+				ctx = fmt.Sprintf("Expected a value for argument: `%v`, but instead found option: `%v`", args[0], args[1])
 			}
 
 		}
@@ -42,9 +42,10 @@ func generateError(cmd *Command, e Event, args []string) Error {
 			code = 10
 			msg = fmt.Sprintf("the passed value: `%v`, is not a valid argument", args[0])
 
-			if len(args) == 2 {
-				ctx = fmt.Sprintf("The validator function threw the following error: \"%v\" when checking the value: `%v`", args[1], args[0])
-			} else {
+			switch len(args) {
+			case 2:
+				ctx = fmt.Sprintf("%v. Encountered this error when validating the value: `%v`", args[1], args[0])
+			default:
 				ctx = fmt.Sprintf("Expected one of: `[%v]`, but instead found: `%v`, which is not a valid value", strings.Join(args[1:], ", "), args[0])
 			}
 		}
@@ -63,10 +64,15 @@ func generateError(cmd *Command, e Event, args []string) Error {
 					msg = fmt.Sprintf("failed to resolve option: %v in value: %v", args[0], args[1])
 					ctx = fmt.Sprintf("Found value: %v, with long option syntax but the option: %v is not valid in this context", args[1], args[0])
 				}
-			default:
+			case 3:
 				{
 					msg = fmt.Sprintf("unknown shorthand flag: `%v` in: `%v`", args[0], args[1])
 					ctx = fmt.Sprintf("Expected to find valid flags values in: `%v`, but instead found: `-%v` , which could not be resolved as a flag", args[1], args[0])
+				}
+			default:
+				{
+					msg = "syntax not supported"
+					ctx = "Passing option arguments using the `=` sign is only supported when using long options i.e. --port=8000 is valid but -p=8000 is not"
 				}
 			}
 
@@ -81,7 +87,7 @@ func generateError(cmd *Command, e Event, args []string) Error {
 		{
 			code = 40
 			msg = fmt.Sprintf("no such subcommand found: `%v`", args[0])
-			suggestions := suggestSubCmd(cmd, args[0])
+			suggestions := cmd.suggestSubCmd(args[0])
 
 			var context strings.Builder
 			context.WriteString(fmt.Sprintf("The value: `%v`, could not be resolved as a subcommand. ", args[0]))
@@ -109,11 +115,6 @@ func generateError(cmd *Command, e Event, args []string) Error {
 		args:     args,
 		exitCode: code,
 	}
-}
-
-func (e *Error) compare(err *Error) bool {
-	// TODO: Validate all fields
-	return e.message == err.message && e.context == err.context && e.kind == err.kind
 }
 
 func (e *Error) ErrorMsg() string {

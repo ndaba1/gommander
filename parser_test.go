@@ -23,9 +23,9 @@ func TestParseStandard(t *testing.T) {
 	parser := NewParser(app)
 	matches, _ := parser.parse([]string{"first", "-v", "-n", "one", "-n", "two"})
 
-	assertEq(t, matches.GetMatchedCommand().name, "first", "Subcommand resolution has some errors")
 	assert(t, matches.ContainsFlag("verbose"), "Flag parsing has some errors")
-	assertArrEq(t, matches.GetAllOptionInstances("name"), []string{"one", "two"}, "Multiple option argument parsing failed")
+	assertEq(t, matches.GetMatchedCommand().name, "first", "Subcommand resolution has some errors")
+	assertDeepEq(t, matches.GetAllOptionInstances("name"), []string{"one", "two"}, "Multiple option argument parsing failed")
 }
 
 func TestParseComplex(t *testing.T) {
@@ -57,9 +57,9 @@ func TestParseComplex(t *testing.T) {
 	parser := NewParser(app)
 	matches, _ := parser.parse([]string{"i", "image-one", "--all", "-p", "800", "--", "ng", "serve"})
 
-	assertEq(t, matches.GetMatchedCommand().name, "image", "Subcommand resolution has some errors")
 	assert(t, matches.ContainsFlag("all"), "Flag parsing has some errors")
-	assertArrEq(t, matches.GetPositionalArgs(), []string{"ng", "serve"}, "Positional args parsing failed")
+	assertEq(t, matches.GetMatchedCommand().name, "image", "Subcommand resolution has some errors")
+	assertDeepEq(t, matches.GetPositionalArgs(), []string{"ng", "serve"}, "Positional args parsing failed")
 
 	v, _ := matches.GetArgValue("<image-name>")
 	v2, _ := matches.GetOptionValue("--port")
@@ -92,8 +92,7 @@ func _assertParserError(t *testing.T, app *Command, parserArgs, errorArgs []stri
 	_, err := parser.parse(parserArgs)
 	expected := generateError(app, event, errorArgs)
 
-	assert(t, err.compare(&expected), msg)
-	assertStructEq[*Error](t, err, &expected, msg)
+	assertDeepEq(t, *err, expected, msg)
 }
 
 func TestParserErrors(t *testing.T) {
@@ -156,7 +155,7 @@ func TestParserErrors(t *testing.T) {
 
 	_assertParserError(t, app,
 		[]string{"i", "imageOne", "--port=hello"},
-		[]string{"hello", "hello is not a valid integer"},
+		[]string{"hello", "`hello` is not a valid integer"},
 		InvalidArgumentValue,
 		"invalid argument error detection failed",
 	)

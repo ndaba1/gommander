@@ -3,6 +3,7 @@ package gommander
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -10,10 +11,12 @@ import (
 type argumentType string
 
 const (
-	integer = "int"
-	float   = "float"
-	boolean = "bool"
-	str     = "str"
+	integer  argumentType = "int"
+	uinteger argumentType = "uint"
+	float    argumentType = "float"
+	boolean  argumentType = "bool"
+	str      argumentType = "str"
+	filename argumentType = "file"
 )
 
 type Argument struct {
@@ -26,6 +29,7 @@ type Argument struct {
 	ValidValues  []string
 	DefaultValue string
 	ValidatorFns [](func(string) error)
+	ValidatorRe  *regexp.Regexp
 }
 
 // A Builder method for creating a new argument. Valid values include <arg>, [arg] or simply the name of the arg
@@ -107,6 +111,7 @@ func (a *Argument) Required(val bool) *Argument {
 
 func (a *Argument) Type(val argumentType) *Argument {
 	a.ArgType = val
+	a.addValidatorFns()
 	return a
 }
 
@@ -122,6 +127,11 @@ func (a *Argument) ValidatorFunc(fn func(string) error) *Argument {
 	return a
 }
 
+func (a *Argument) ValidatorRegex(val string) *Argument {
+	a.ValidatorRe = regexp.MustCompile(val)
+	return a
+}
+
 // A method for setting what the argument should be displayed as when printing help
 func (a *Argument) DisplayAs(val string) *Argument {
 	a.RawValue = val
@@ -132,13 +142,27 @@ func (a *Argument) DisplayAs(val string) *Argument {
 
 func (a *Argument) addValidatorFns() {
 	switch a.ArgType {
+	case str:
+		{
+		}
 	case integer:
 		{
 			a.ValidatorFunc(func(s string) error {
 				_, err := strconv.Atoi(s)
 				if err != nil {
-					return fmt.Errorf("%v is not a valid integer", s)
+					return fmt.Errorf("`%v` is not a valid integer", s)
 				}
+				return nil
+			})
+		}
+	case uinteger:
+		{
+			a.ValidatorFunc(func(s string) error {
+				_, err := strconv.ParseUint(s, 10, 64)
+				if err != nil {
+					return fmt.Errorf("`%v` is not a positive integer", s)
+				}
+
 				return nil
 			})
 		}
@@ -147,7 +171,7 @@ func (a *Argument) addValidatorFns() {
 			a.ValidatorFunc(func(s string) error {
 				_, err := strconv.ParseFloat(s, 64)
 				if err != nil {
-					return fmt.Errorf("%v is not a valid float", s)
+					return fmt.Errorf("`%v` is not a valid float", s)
 				}
 				return nil
 			})
@@ -157,17 +181,21 @@ func (a *Argument) addValidatorFns() {
 		{
 			a.ValidatorFunc(func(s string) error {
 				if s != "true" && s != "false" {
-					return fmt.Errorf("%v is not a valid boolean", s)
+					return fmt.Errorf("`%v` is not a valid boolean", s)
 				}
 				return nil
 			})
 		}
-	case str:
+	case filename:
 		{
 			a.ValidatorFunc(func(s string) error {
+				if _, e := os.Stat(s); e != nil {
+					return fmt.Errorf("no such file or directory: `%v`", s)
+				}
 				return nil
 			})
 		}
+
 	default:
 		{
 			fmt.Println(fmt.Errorf("found unknown argument type: `%v` for argument: `%v`", a.ArgType, a.getRawValue()))
@@ -200,15 +228,15 @@ func (a *Argument) testValue(val string) bool {
 		}
 	}
 
+	if a.ValidatorRe != nil && !a.ValidatorRe.MatchString(val) {
+		return false
+	}
+
 	return valueMatch && matchCount == len(a.ValidatorFns)
 }
 
 func (a *Argument) hasDefaultValue() bool {
 	return len(a.DefaultValue) > 0
-}
-
-func (a *Argument) compare(b *Argument) bool {
-	return a.HelpStr == b.HelpStr && a.Name == b.Name && a.getRawValue() == b.getRawValue()
 }
 
 func newArgument(val string, help string) *Argument {
@@ -247,11 +275,6 @@ func (a *Argument) generate(app *Command) (string, string) {
 	var floating strings.Builder
 
 	leading.WriteString(a.getRawValue())
-	// TODO: Revisit this
-	// if a.ArgType != str {
-	// 	leading.WriteString(fmt.Sprintf("(%s)", a.ArgType))
-	// }
-
 	floating.WriteString(a.HelpStr)
 	if a.hasDefaultValue() {
 		floating.WriteString(fmt.Sprintf(" (default: %v)", a.DefaultValue))
