@@ -3,6 +3,7 @@ package gommander
 import (
 	"io"
 	"os"
+	"reflect"
 	"regexp"
 	"strings"
 	"testing"
@@ -93,7 +94,7 @@ func setGommanderTestMode() {
 	os.Setenv("GOMMANDER_TEST_MODE", "true")
 }
 
-func _throwAssertionError(t *testing.T, errMsg string, first interface{}, second interface{}, msg ...interface{}) {
+func _throwAssertionError(t *testing.T, errMsg string, first, second interface{}, msg ...interface{}) {
 	if len(msg) > 0 {
 		t.Error(msg...)
 	} else {
@@ -114,9 +115,15 @@ func assert(t *testing.T, val interface{}, msg ...interface{}) {
 	}
 }
 
-func assertEq(t *testing.T, first interface{}, second interface{}, msg ...interface{}) {
+func assertEq(t *testing.T, first, second interface{}, msg ...interface{}) {
 	if first != second {
 		_throwAssertionError(t, "Expected values to be equal. ", first, second, msg...)
+	}
+}
+
+func assertDeepEq(t *testing.T, first, second interface{}, msg ...interface{}) {
+	if !reflect.DeepEqual(first, second) {
+		_throwAssertionError(t, "Expected values to be deeply equal. ", first, second, msg...)
 	}
 }
 
@@ -128,7 +135,7 @@ func assertArrEq[model int | string](t *testing.T, first []model, second []model
 	}
 }
 
-func assertNe(t *testing.T, first interface{}, second interface{}, msg ...interface{}) {
+func assertNe(t *testing.T, first, second interface{}, msg ...interface{}) {
 	if first == second {
 		_throwAssertionError(t, "Did not expect values to be equal.", first, second, msg...)
 	}
