@@ -127,31 +127,9 @@ func assertDeepEq(t *testing.T, first, second interface{}, msg ...interface{}) {
 	}
 }
 
-func assertArrEq[model int | string](t *testing.T, first []model, second []model, msg ...interface{}) {
-	for idx, item := range first {
-		if second[idx] != item {
-			_throwAssertionError(t, "Arrays are not equal", first, second, msg...)
-		}
-	}
-}
-
 func assertNe(t *testing.T, first, second interface{}, msg ...interface{}) {
 	if first == second {
 		_throwAssertionError(t, "Did not expect values to be equal.", first, second, msg...)
-	}
-}
-
-type structComp[model structTypes] interface {
-	compare(model) bool
-}
-
-type structTypes interface {
-	*Flag | *Command | *Option | *Argument | *Error
-}
-
-func assertStructEq[model structTypes](t *testing.T, first structComp[model], second model, msg ...interface{}) {
-	if !first.compare(second) {
-		_throwAssertionError(t, "Struct values not equal. ", first, second, msg...)
 	}
 }
 
