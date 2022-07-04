@@ -6,8 +6,7 @@ func TestOptionsCreation(t *testing.T) {
 	opt := NewOption("port").Short('p').Help("The port option").Argument("<port-number>").Required(true)
 	optB := newOption("-p --port <port-number>", "The port option", true)
 
-	assertStructEq[*Option](t, opt, &optB, "Option creation methods out of sync")
-	assert(t, opt.compare(&optB)) // linter workaround
+	assertDeepEq(t, *opt, optB, "Option creation methods out of sync")
 	assert(t, opt.IsRequired, "Failed to set required value on options")
 
 	expL := "-p, --port <port-number> "
@@ -18,7 +17,7 @@ func TestOptionsCreation(t *testing.T) {
 	assertEq(t, expF, gotF, "The option generate func is faulty")
 
 	expectedArg := NewArgument("<port-number>")
-	assertStructEq[*Argument](t, expectedArg, opt.Arg, "Option args created incorrectly")
+	assertDeepEq(t, expectedArg, opt.Arg, "Option args created incorrectly")
 }
 
 func BenchmarkOptFunc(b *testing.B) {
