@@ -111,6 +111,7 @@ func (a *Argument) Required(val bool) *Argument {
 
 func (a *Argument) Type(val argumentType) *Argument {
 	a.ArgType = val
+	a.addValidatorFns()
 	return a
 }
 
