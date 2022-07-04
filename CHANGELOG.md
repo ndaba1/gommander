@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Modified the `FormatGenerator` interface to take in a pointer to the app for settings integration
 - Moved the suggest subcommands functionality from utils to a method of the `Command` struct
 
+### Removed
+
+- Removed unused assertion utility functions such as the assertArrEq and assertStructEq.
+- Removed the `.compare()` method for the StructComp interface implementations. Now comparing structs using the reflect.DeepEqual method.
+
 ## [0.2.0] - 2022-06-30
 
 ### Added
