@@ -25,12 +25,15 @@ func TestArgMetadata(t *testing.T) {
 	arg := NewArgument("<basic>").
 		Variadic(true).
 		Help("Test argument").
-		ValidateWith([]string{"ONE", "TWO"})
+		ValidateWith([]string{"ONE", "TWO"}).
+		Type(str)
 
 	assertNe(t, arg.Name, "<basic>", "Enclosures not stripped from name")
 	assert(t, arg.testValue("one"), "Arg validation working incorrectly")
 	assert(t, arg.testValue("TWO"), "Arg validation working incorrectly")
 	assertEq(t, arg.getRawValue(), "<basic...>", "Raw value return function working incorrectly")
+	assertEq(t, arg.ArgType, str, "Arg builder Type method not working correctly")
+	assertEq(t, len(arg.ValidatorFns), 0, "Unnecessary validator func added for strings")
 
 	expLeading := "<basic...>"
 	expFloating := "Test argument"
@@ -92,12 +95,28 @@ func TestArgValidatorFunc(t *testing.T) {
 	assertStdOut(t, expected, exec, "Argument validation for arguments with validator functions is buggy")
 }
 
+func TestArgRegexValidator(t *testing.T) {
+	clearCache()
+	{
+		arg := NewArgument("version").ValidatorRegex(`^v[\d\.]`)
+		assert(t, arg.testValue("v0.1.0"), "Regex validation is buggy")
+		assert(t, !arg.testValue("1.1"), "Regex validation working incorrectly")
+		assert(t, !arg.testValue("vA.1"), "Regex validation working incorrectly")
+	}
+}
+
 func TestArgTypeValidation(t *testing.T) {
 	{
 		arg := NewArgument("<int:count>")
 		assert(t, arg.testValue("2"), "Integer arg validation faulty")
+		assert(t, arg.testValue("-2"), "Integer arg validation faulty")
 		assertEq(t, arg.testValue("2.0"), false, "Integer arg validation faulty against float")
 		assertEq(t, arg.testValue("two"), false, "Integer arg validation faulty against string")
+	}
+	{
+		arg := NewArgument("<uint:count>")
+		assert(t, arg.testValue("4"), "Uinteger arg validation is faulty")
+		assert(t, !arg.testValue("-4"), "Uinteger arg validation is faulty")
 	}
 	{
 		arg := NewArgument("<float:count>")
@@ -109,6 +128,19 @@ func TestArgTypeValidation(t *testing.T) {
 		assert(t, arg.testValue("true"), "Boolean arg validation faulty")
 		assertEq(t, arg.testValue("2"), false, "Boolean arg validation faulty against int")
 		assertEq(t, arg.testValue("2.0"), false, "Boolean arg validation faulty against float")
+	}
+	{
+		arg := NewArgument("<file:path>")
+		assert(t, !arg.testValue("fake.png"), "Filename arg validation faulty")
+		assert(t, arg.testValue("go.mod"), "Filename arg validation faulty")
+	}
+	{
+		exec := func() {
+			NewArgument("<fake:arg>")
+		}
+		expected := "found unknown argument type: `fake` for argument: `<arg>`\n"
+
+		assertStdOut(t, expected, exec, "Unknown arg types pass on undetected")
 	}
 }
 
