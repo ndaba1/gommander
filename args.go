@@ -144,9 +144,6 @@ func (a *Argument) addValidatorFns() {
 	switch a.ArgType {
 	case str:
 		{
-			a.ValidatorFunc(func(s string) error {
-				return nil
-			})
 		}
 	case integer:
 		{
