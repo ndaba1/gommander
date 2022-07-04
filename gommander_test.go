@@ -21,7 +21,7 @@ func TestCommandMetadata(t *testing.T) {
 func TestCommandSettings(t *testing.T) {
 	clearCache()
 	app := App()
-	app.SubCommand("dummy")
+	app.SubCommand("dummy").Argument("<uint:count>", "a count arg")
 
 	// assertStructArrEq[*Flag](t, app.GetFlags(), []*Flag{helpFlag(), versionFlag()}, "Help and version flags not set correctly")
 	assertEq(t, len(app.GetFlags()), 2, "Help and version flags not set correctly")
@@ -29,6 +29,7 @@ func TestCommandSettings(t *testing.T) {
 
 	app.Set(DisableVersionFlag, true)
 	app.Set(IncludeHelpSubcommand, true)
+	app.Set(AllowNegativeNumbers, true)
 	// TODO: Complete the other settings
 	app._init()
 
