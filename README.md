@@ -68,7 +68,7 @@ func main() {
   app.Subcommand("greet").
       Argument("<name>", "The name to greet").
       Help("A simple command that greets the provided name").
-      Option("-c --count <number>", "The number of times to greet the name")
+      Option("-c --count <int:number>", "The number of times to greet the name")
 
   app.Parse()
 }
