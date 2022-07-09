@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Integrated the `AllowNegativeNumbers` setting into the program
 - Enabled customization of the help headings and help values to be used for sub-cmds, arguments, flags and options.
 - Implemented a simple caching policy to improve performance
+- Integrated `DisableColor` setting and functionality
 
 ### Changed
 
