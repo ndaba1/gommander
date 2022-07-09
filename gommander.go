@@ -50,7 +50,6 @@ type Command struct {
 	optionsHelpValue   string
 	argsHelpHeading    string
 	argsHelpValue      string
-	disableColor       bool
 }
 
 func App() *Command {
@@ -267,11 +266,6 @@ func (c *Command) OptionsHelpValue(val string) *Command {
 
 func (c *Command) ArgsHelpValue(val string) *Command {
 	c.argsHelpValue = val
-	return c
-}
-
-func (c *Command) DisableColor() *Command {
-	c.disableColor = true
 	return c
 }
 

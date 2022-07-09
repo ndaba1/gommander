@@ -97,7 +97,7 @@ func (f *Formatter) Add(dsgn Designation, val string) {
 	c := color.New(f.theme[dsgn])
 	body := c.Sprintf(val)
 
-	if f.appRef.disableColor {
+	if f.appRef.settings[DisableColor] {
 		body = val
 	}
 	f.buffer.WriteString(body)
@@ -120,7 +120,7 @@ func (f *Formatter) ColorAndPrint(color color.Color, val string) {
 
 func (f *Formatter) Print() {
 	if isTestMode() {
-		if f.appRef.disableColor {
+		if f.appRef.settings[DisableColor] {
 			fmt.Print(f.buffer.String())
 		} else {
 			fmt.Print(color.New().Sprintf(f.buffer.String()))

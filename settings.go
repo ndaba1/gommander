@@ -21,4 +21,6 @@ const (
 	SortItemsAlphabetically
 	// By default, values starting with `-` are treated as options. When this setting is turned on, the values will be checked whether they are digits or not first
 	AllowNegativeNumbers
+	// A setting to enable or disable color formatting and printing
+	DisableColor
 )
