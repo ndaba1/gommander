@@ -93,7 +93,7 @@ func main() {
 	app.SubCommandGroup("Commands", []*gommander.Command{attach, build, commit, cp, create, diff})
 
 	// The real docker-cli has no color printing
-	app.UsePredefinedTheme(gommander.PlainTheme)
+	app.Set(gommander.DisableColor, true)
 
 	app.Parse()
 }
