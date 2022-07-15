@@ -15,6 +15,7 @@ RUN if [ "${NODE_VERSION}" != "none" ]; then su vscode -c "umask 0002 && . /usr/
 # [Optional] Uncomment the next lines to use go get to install anything else you need
 # USER vscode
 # RUN go get -x <your-dependency-or-tool>
+RUN go install golang.org/x/perf/cmd/benchstat
 RUN curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh"
 
 # [Optional] Uncomment this line to install global node packages.
