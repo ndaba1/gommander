@@ -22,7 +22,7 @@ The goals of this package are very simple:
 
 # Testing
 
-All the current tests are using custom-made assertion utils. Something like [testify]("https://github.com/u/testify") would also serve nicely but as mentioned, we're trying to keep the dependencies to a minimum. This may be changed in the future.
+All the current tests are using custom-made assertion utils. Something like [testify]("https://github.com/stretchr/testify") would also serve nicely but as mentioned, we're trying to keep the dependencies to a minimum. This may be changed in the future.
 
 The code coverage is also tracked with codecov and changes increasing the coverage are always welcome. If you make changes but don't write tests for them, these will cause the codecov status checks in the coverage workflow to fail upon your pull request. However, the PR can still be merged as tests can always be added later.
 
