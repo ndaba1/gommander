@@ -2,8 +2,8 @@
 DATE=`date +"%s"`
 
 CURRENT=$DATE.bench
-BENCHTIME=4s
-BENCHCOUNT=4
+BENCHTIME=5s
+BENCHCOUNT=5
 
 if [ $# -eq 1 ]; then 
     BENCHCOUNT=$1
