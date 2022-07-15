@@ -11,7 +11,7 @@ $(warning "could not find golangci-lint in your PATH, run: curl -sfL https://ins
 endif
 
 ifeq (, $(shell which benchstat))
-$(warning "could not find benchstat in your PATH. Is benchstat installed?")
+$(warning "could not find benchstat in your PATH. Is benchstat installed? If not, run: go install golang.org/x/perf/cmd/benchstat")
 endif
 
 all: test lint bench
