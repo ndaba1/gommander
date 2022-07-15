@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2022-07-16
+
 ### Added
 
 - Updated the Readme documentation to include the newly added functionality for arg types and methods.
@@ -16,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enabled customization of the help headings and help values to be used for sub-cmds, arguments, flags and options.
 - Implemented a simple caching policy to improve performance
 - Integrated `DisableColor` setting and functionality
+- Created a simple contributing guide
 
 ### Changed
 
@@ -157,7 +160,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Simple examples and indepth docs
 - Fair amount of tests and coverage
 
-[unreleased]: https://github.com/ndaba1/gommander/compare/v0.2.0...HEAD
+[unreleased]: https://github.com/ndaba1/gommander/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/ndaba1/gommander/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/ndaba1/gommander/compare/v0.1.7...v0.2.0
 [0.1.7]: https://github.com/ndaba1/gommander/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/ndaba1/gommander/compare/v0.1.5...v0.1.6
