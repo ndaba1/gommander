@@ -16,6 +16,17 @@ func TestFlagsCreation(t *testing.T) {
 
 	assertEq(t, expL, gotL, "Flag generate method functioning incorrectly")
 	assertEq(t, expF, gotF, "Flag generate method functioning incorrectly")
+
+	{
+		flag := newFlag("--help", "Help flag")
+
+		expL := "    --help"
+		expF := "Help flag"
+		gotL, gotF := flag.generate(App())
+
+		assertEq(t, expL, gotL, "Flag generate method functioning incorrectly")
+		assertEq(t, expF, gotF, "Flag generate method functioning incorrectly")
+	}
 }
 
 func BenchmarkFlagBuilder(b *testing.B) {

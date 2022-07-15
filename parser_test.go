@@ -117,12 +117,28 @@ func TestParserErrors(t *testing.T) {
 				Help("A simple test flag"),
 		)
 
-		// test missing required argument
+	app.SubCommand("basic").
+		Flag("-a --all", "All flag").
+		Flag("-V --verbose", "Verbosity").
+		AddArgument(
+			NewArgument("<lang>").
+				Help("Language").
+				ValidateWith([]string{"eng", "fre", "spa", "swa", "ru"}),
+		)
+
+	// test missing required argument errors
 	_assertParserError(t, app,
 		[]string{"i"},
 		[]string{"<image-name>"},
 		MissingRequiredArgument,
 		"Missing required arg error detection failed",
+	)
+
+	_assertParserError(t, app,
+		[]string{"i", "-p", "90"},
+		[]string{"<image-name>", "-p"},
+		MissingRequiredArgument,
+		"Expected required arg but found option error detection failed",
 	)
 
 	_assertParserError(t, app,
@@ -132,6 +148,7 @@ func TestParserErrors(t *testing.T) {
 		"Missing required option error detection failed",
 	)
 
+	// test unknown command errors
 	_assertParserError(t, app,
 		[]string{"invalid"},
 		[]string{"invalid"},
@@ -139,6 +156,7 @@ func TestParserErrors(t *testing.T) {
 		"Unknown command error detection failed",
 	)
 
+	// test unknown option errors
 	_assertParserError(t, app,
 		[]string{"i", "imageOne", "--port=90", "-x"},
 		[]string{"-x"},
@@ -147,17 +165,47 @@ func TestParserErrors(t *testing.T) {
 	)
 
 	_assertParserError(t, app,
+		[]string{"i", "imageOne", "--extra=90"},
+		[]string{"--extra", "--extra=90"},
+		UnknownOption,
+		"Unknown option(with long syntax) error detection failed",
+	)
+
+	_assertParserError(t, app,
+		[]string{"basic", "eng", "-Vx"},
+		[]string{"x", "-Vx", ""},
+		UnknownOption,
+		"Unknown option(with posix flag syntax) error detection failed",
+	)
+
+	_assertParserError(t, app,
+		[]string{"i", "imageOne", "-p=90"},
+		[]string{},
+		UnknownOption,
+		"Short option synatx not supported error detection failed",
+	)
+
+	// test unresolved args errors
+	_assertParserError(t, app,
 		[]string{"i", "imageOne", "--port=90", "invalid"},
 		[]string{"invalid"},
 		UnresolvedArgument,
 		"Unresolved argument error detection failed",
 	)
 
+	// test invalid args values
 	_assertParserError(t, app,
 		[]string{"i", "imageOne", "--port=hello"},
 		[]string{"hello", "`hello` is not a valid integer"},
 		InvalidArgumentValue,
 		"invalid argument error detection failed",
+	)
+
+	_assertParserError(t, app,
+		[]string{"basic", "urdu"},
+		[]string{"urdu", "eng", "fre", "spa", "swa", "ru"},
+		InvalidArgumentValue,
+		"invalid argument(with default values) error detection failed",
 	)
 
 }
